@@ -172,9 +172,52 @@ class Download
         }
     }
 
+    private $_outputFile = null;
+    private $_isTemporaryFile = false;
+
+    public function setOutputFile($outputFile)
+    {
+        if (is_resource($this->_outputFile) && $this->_isTemporaryFile) {
+            fclose($this->_outputFile);
+        } elseif (is_string($this->_outputFile) && $this->_isTemporaryFile && file_exists($this->_outputFile)) {
+            unlink($this->_outputFile);
+        }
+        $this->_outputFile = $outputFile;
+        $this->_isTemporaryFile = false;
+        return $this;
+    }
+
+    public function getOutputFile()
+    {
+        return $this->_outputFile;
+    }
+
+    public function outputFile($outputFile = null)
+    {
+        if (!is_null($outputFile)) {
+            return $this->setOutputFile($outputFile);
+        } else {
+            return $this->getOutputFile();
+        }
+    }
+
+    public function tempFile()
+    {
+        $result = $this->setOutputFile(tmpfile());
+        $this->_isTemporaryFile = true;
+        return $result;
+    }
+
+    public function tempFilename()
+    {
+        $result = $this->setOutputFile(tempnam(sys_get_temp_dir(), uniqid(time())));
+        $this->_isTemporaryFile = true;
+        return $result;
+    }
+
     protected function getCurlOptions()
     {
-        $curlOptions = [];
+        $curlOptions = [CURLINFO_HEADER_OUT => true];
         $url = $this->getUrl();
         if (is_string($url)) {
             $curlOptions[CURLOPT_URL] = $url;
@@ -239,6 +282,15 @@ class Download
         if (is_int($timeout)) {
             $curlOptions[CURLOPT_TIMEOUT] = $timeout;
         }
+        $outputFile = $this->getOutputFile();
+        if (is_resource($outputFile) || is_string($outputFile)) {
+            $curlOptions[CURLOPT_FILE] = $outputFile;
+        }
         return $curlOptions;
+    }
+
+    public function __destruct()
+    {
+        $this->setOutputFile(null);
     }
 }
