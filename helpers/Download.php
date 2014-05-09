@@ -150,7 +150,29 @@ class Download
         }
     }
 
-    private $_timeout = null;
+    private $_connectTimeout = 5;
+
+    public function setConnectTimeout($connectTimeout)
+    {
+        $this->_connectTimeout = $connectTimeout;
+        return $this;
+    }
+
+    public function getConnectTimeout()
+    {
+        return $this->_connectTimeout;
+    }
+
+    public function connectTimeout($connectTimeout = null)
+    {
+        if (!is_null($connectTimeout)) {
+            return $this->setConnectTimeout($connectTimeout);
+        } else {
+            return $this->getConnectTimeout();
+        }
+    }
+
+    private $_timeout = 3600;
 
     public function setTimeout($timeout)
     {
@@ -227,6 +249,8 @@ class Download
     {
         $options = is_array($this->_options) ? $this->_options : [];
         $options[CURLINFO_HEADER_OUT] = true;
+        $options[CURLOPT_FOLLOWLOCATION] = true;
+        $options[CURLOPT_MAXREDIRS] = 5;
         $url = $this->getUrl();
         if (is_string($url)) {
             $options[CURLOPT_URL] = $url;
@@ -287,9 +311,13 @@ class Download
             }
             $options[CURLOPT_HTTPHEADER] = $httpHeader2;
         }
+        $connectTimeout = $this->getConnectTimeout();
+        if (is_int($connectTimeout)) {
+            $options[CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
+        }
         $timeout = $this->getTimeout();
         if (is_int($timeout)) {
-            $options[CURLOPT_CONNECTTIMEOUT] = $timeout;
+            $options[CURLOPT_TIMEOUT] = $timeout;
         }
         $outputFile = $this->getOutputFile();
         if (is_resource($outputFile) || is_string($outputFile)) {
