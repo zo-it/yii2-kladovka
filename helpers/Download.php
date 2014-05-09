@@ -40,25 +40,25 @@ class Download
         }
     }
 
-    private $_timeout = null;
+    private $_postFields = null;
 
-    public function setTimeout($timeout)
+    public function setPostFields($postFields)
     {
-        $this->_timeout = $timeout;
+        $this->_postFields = $postFields;
         return $this;
     }
 
-    public function getTimeout()
+    public function getPostFields()
     {
-        return $this->_timeout;
+        return $this->_postFields;
     }
 
-    public function timeout($timeout = null)
+    public function postFields($postFields = null)
     {
-        if (!is_null($timeout)) {
-            return $this->setTimeout($timeout);
+        if (!is_null($postFields)) {
+            return $this->setPostFields($postFields);
         } else {
-            return $this->getTimeout();
+            return $this->getPostFields();
         }
     }
 
@@ -150,6 +150,28 @@ class Download
         }
     }
 
+    private $_timeout = null;
+
+    public function setTimeout($timeout)
+    {
+        $this->_timeout = $timeout;
+        return $this;
+    }
+
+    public function getTimeout()
+    {
+        return $this->_timeout;
+    }
+
+    public function timeout($timeout = null)
+    {
+        if (!is_null($timeout)) {
+            return $this->setTimeout($timeout);
+        } else {
+            return $this->getTimeout();
+        }
+    }
+
     protected function getCurlOptions()
     {
         $curlOptions = [];
@@ -157,9 +179,25 @@ class Download
         if (is_string($url)) {
             $curlOptions[CURLOPT_URL] = $url;
         }
-        $timeout = $this->getTimeout();
-        if (is_int($timeout)) {
-            $curlOptions[CURLOPT_TIMEOUT] = $timeout;
+        $postFields = $this->getPostFields();
+        $curlOptions[CURLOPT_POST] = !is_null($postFields);
+        if (is_string($postFields)) {
+            $curlOptions[CURLOPT_POSTFIELDS] = $postFields;
+        } elseif (is_array($postFields)) {
+            $isMultiPartFormData = false;
+            $postFields2 = [];
+            foreach ($postFields as $key => $value) {
+                if (is_int($key) && is_string($value)) {
+                    $postFields2[] = $value;
+                } elseif (is_string($key) && is_string($value)) {
+                    if ((strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
+                        $isMultiPartFormData = true;
+                        break;
+                    }
+                    $postFields2[] = $key . '=' . urlencode($value);
+                }
+            }
+            $curlOptions[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
         }
         $cookie = $this->getCookie();
         if (is_string($cookie)) {
@@ -196,6 +234,10 @@ class Download
                 }
             }
             $curlOptions[CURLOPT_HTTPHEADER] = $httpHeader2;
+        }
+        $timeout = $this->getTimeout();
+        if (is_int($timeout)) {
+            $curlOptions[CURLOPT_TIMEOUT] = $timeout;
         }
         return $curlOptions;
     }
