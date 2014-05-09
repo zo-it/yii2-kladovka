@@ -6,6 +6,18 @@ namespace ivanchkv\kladovka\helpers;
 class Download
 {
 
+    public static function init($url = null)
+    {
+        return new self($url);
+    }
+
+    public function __construct($url = null)
+    {
+        if (!is_null($url)) {
+            $this->setUrl($url);
+        }
+    }
+
     private $_url = null;
 
     public function setUrl($url)
@@ -136,5 +148,55 @@ class Download
         } else {
             return $this->getHttpHeader();
         }
+    }
+
+    protected function getCurlOptions()
+    {
+        $curlOptions = [];
+        $url = $this->getUrl();
+        if (is_string($url)) {
+            $curlOptions[CURLOPT_URL] = $url;
+        }
+        $timeout = $this->getTimeout();
+        if (is_int($timeout)) {
+            $curlOptions[CURLOPT_TIMEOUT] = $timeout;
+        }
+        $cookie = $this->getCookie();
+        if (is_string($cookie)) {
+            $curlOptions[CURLOPT_COOKIE] = $cookie;
+        } elseif (is_array($cookie)) {
+            $cookie2 = [];
+            foreach ($cookie as $key => $value) {
+                if (is_int($key) && is_string($value)) {
+                    $cookie2[] = $value;
+                } elseif (is_string($key) && is_string($value)) {
+                    $cookie2[] = $key . '=' . urlencode($value);
+                }
+            }
+            $curlOptions[CURLOPT_COOKIE] = implode('; ', $cookie2);
+        }
+        $referer = $this->getReferer();
+        if (is_string($referer)) {
+            $curlOptions[CURLOPT_REFERER] = $referer;
+        }
+        $userAgent = $this->getUserAgent();
+        if (is_string($userAgent)) {
+            $curlOptions[CURLOPT_USERAGENT] = $userAgent;
+        }
+        $httpHeader = $this->getHttpHeader();
+        if (is_string($httpHeader)) {
+            $curlOptions[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
+        } elseif (is_array($httpHeader)) {
+            $httpHeader2 = [];
+            foreach ($httpHeader as $key => $value) {
+                if (is_int($key) && is_string($value)) {
+                    $httpHeader2[] = $value;
+                } elseif (is_string($key) && is_string($value)) {
+                    $httpHeader2[] = $key . ': ' . $value;
+                }
+            }
+            $curlOptions[CURLOPT_HTTPHEADER] = $httpHeader2;
+        }
+        return $curlOptions;
     }
 }
