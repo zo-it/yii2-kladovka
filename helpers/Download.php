@@ -28,7 +28,7 @@ class Download
         }
     }
 
-    private $_timeout = 5;
+    private $_timeout = null;
 
     public function setTimeout($timeout)
     {
@@ -47,6 +47,50 @@ class Download
             return $this->setTimeout($timeout);
         } else {
             return $this->getTimeout();
+        }
+    }
+
+    private $_cookie = null;
+
+    public function setCookie($cookie)
+    {
+        $this->_cookie = $cookie;
+        return $this;
+    }
+
+    public function getCookie()
+    {
+        return $this->_cookie;
+    }
+
+    public function cookie($cookie = null)
+    {
+        if (!is_null($cookie)) {
+            return $this->setCookie($cookie);
+        } else {
+            return $this->getCookie();
+        }
+    }
+
+    private $_referer = null;
+
+    public function setReferer($referer)
+    {
+        $this->_referer = $referer;
+        return $this;
+    }
+
+    public function getReferer()
+    {
+        return $this->_referer;
+    }
+
+    public function referer($referer = null)
+    {
+        if (!is_null($referer)) {
+            return $this->setReferer($referer);
+        } else {
+            return $this->getReferer();
         }
     }
 }
