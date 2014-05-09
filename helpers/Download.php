@@ -215,17 +215,17 @@ class Download
         return $result;
     }
 
-    protected function getCurlOptions()
+    protected function getOptions()
     {
-        $curlOptions = [CURLINFO_HEADER_OUT => true];
+        $options = [CURLINFO_HEADER_OUT => true];
         $url = $this->getUrl();
         if (is_string($url)) {
-            $curlOptions[CURLOPT_URL] = $url;
+            $options[CURLOPT_URL] = $url;
         }
         $postFields = $this->getPostFields();
-        $curlOptions[CURLOPT_POST] = !is_null($postFields);
+        $options[CURLOPT_POST] = !is_null($postFields);
         if (is_string($postFields)) {
-            $curlOptions[CURLOPT_POSTFIELDS] = $postFields;
+            $options[CURLOPT_POSTFIELDS] = $postFields;
         } elseif (is_array($postFields)) {
             $isMultiPartFormData = false;
             $postFields2 = [];
@@ -240,11 +240,11 @@ class Download
                     $postFields2[] = $key . '=' . urlencode($value);
                 }
             }
-            $curlOptions[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
+            $options[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
         }
         $cookie = $this->getCookie();
         if (is_string($cookie)) {
-            $curlOptions[CURLOPT_COOKIE] = $cookie;
+            $options[CURLOPT_COOKIE] = $cookie;
         } elseif (is_array($cookie)) {
             $cookie2 = [];
             foreach ($cookie as $key => $value) {
@@ -254,19 +254,19 @@ class Download
                     $cookie2[] = $key . '=' . urlencode($value);
                 }
             }
-            $curlOptions[CURLOPT_COOKIE] = implode('; ', $cookie2);
+            $options[CURLOPT_COOKIE] = implode('; ', $cookie2);
         }
         $referer = $this->getReferer();
         if (is_string($referer)) {
-            $curlOptions[CURLOPT_REFERER] = $referer;
+            $options[CURLOPT_REFERER] = $referer;
         }
         $userAgent = $this->getUserAgent();
         if (is_string($userAgent)) {
-            $curlOptions[CURLOPT_USERAGENT] = $userAgent;
+            $options[CURLOPT_USERAGENT] = $userAgent;
         }
         $httpHeader = $this->getHttpHeader();
         if (is_string($httpHeader)) {
-            $curlOptions[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
+            $options[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
         } elseif (is_array($httpHeader)) {
             $httpHeader2 = [];
             foreach ($httpHeader as $key => $value) {
@@ -276,17 +276,80 @@ class Download
                     $httpHeader2[] = $key . ': ' . $value;
                 }
             }
-            $curlOptions[CURLOPT_HTTPHEADER] = $httpHeader2;
+            $options[CURLOPT_HTTPHEADER] = $httpHeader2;
         }
         $timeout = $this->getTimeout();
         if (is_int($timeout)) {
-            $curlOptions[CURLOPT_TIMEOUT] = $timeout;
+            $options[CURLOPT_CONNECTTIMEOUT] = $timeout;
         }
         $outputFile = $this->getOutputFile();
         if (is_resource($outputFile) || is_string($outputFile)) {
-            $curlOptions[CURLOPT_FILE] = $outputFile;
+            $options[CURLOPT_FILE] = $outputFile;
         }
-        return $curlOptions;
+        return $options;
+    }
+
+    private $_httpCode = null;
+
+    protected function setHttpCode($httpCode)
+    {
+        $this->_httpCode = $httpCode;
+        return $this;
+    }
+
+    public function getHttpCode()
+    {
+        return $this->_httpCode;
+    }
+
+    private $_contentLengthDownload = null;
+
+    protected function setContentLengthDownload($contentLengthDownload)
+    {
+        $this->_contentLengthDownload = $contentLengthDownload;
+        return $this;
+    }
+
+    public function getContentLengthDownload()
+    {
+        return $this->_contentLengthDownload;
+    }
+
+    public function execute()
+    {
+        $result = false;
+        $this->setHttpCode(null)->setContentLengthDownload(null);
+        $url = $this->getUrl();
+        $ch = curl_init($url);
+        if ($ch) {
+            $options = $this->getOptions();
+            $isOutputFileString = false;
+            if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
+                $isOutputFileString = true;
+                $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
+            }
+            if (curl_setopt_array($ch, $options)) {
+                $result = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $n = 0;
+                while (!$result && !$httpCode && (++ $n <= 3)) {
+                    sleep(5);
+                    $result = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                }
+                $contentLengthDownload = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                if (($httpCode == 200) && ($contentLengthDownload <= 0)) {
+                    $httpCode = 204; // No Content
+                }
+                $this->setHttpCode($httpCode)->setContentLengthDownload($contentLengthDownload);
+                $result = ($httpCode == 200);
+            }
+            if ($isOutputFileString) {
+                fclose($options[CURLOPT_FILE]);
+            }
+            curl_close($ch);
+        }
+        return $result;
     }
 
     public function __destruct()
