@@ -337,37 +337,33 @@ class Download
         }
     }
 
-    private $_httpCode = null;
+    private $_info = null;
 
-    protected function setHttpCode($httpCode)
+    protected function setInfo($info)
     {
-        $this->_httpCode = $httpCode;
+        $this->_info = $info;
         return $this;
+    }
+
+    public function getInfo()
+    {
+        return $this->_info;
     }
 
     public function getHttpCode()
     {
-        return $this->_httpCode;
+        return is_array($this->_info) ? $this->_info['http_code'] : null;
     }
 
-    private $_contentLengthDownload = null;
-
-    protected function setContentLengthDownload($contentLengthDownload)
+    public function getContentLength()
     {
-        $this->_contentLengthDownload = $contentLengthDownload;
-        return $this;
-    }
-
-    public function getContentLengthDownload()
-    {
-        return $this->_contentLengthDownload;
+        return is_array($this->_info) ? $this->_info['download_content_length'] : null;
     }
 
     public function execute()
     {
         $result = false;
-        $this->setHttpCode(null)->setContentLengthDownload(null);
-        $url = $this->getUrl();
+        $url = $this->setInfo(null)->getUrl();
         $ch = curl_init($url);
         if ($ch) {
             $options = $this->getOptions();
@@ -378,18 +374,17 @@ class Download
             }
             if (curl_setopt_array($ch, $options)) {
                 $result = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $info = curl_getinfo($ch);
                 $n = 0;
-                while (!$result && !$httpCode && (++ $n <= 3)) {
+                while (!$result && !$info['http_code'] && (++ $n <= 3)) {
                     sleep(5);
                     $result = curl_exec($ch);
-                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    $info = curl_getinfo($ch);
                 }
-                $contentLengthDownload = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                if (($httpCode == 200) && ($contentLengthDownload <= 0)) {
-                    $httpCode = 204; // No Content
+                if (($info['http_code'] == 200) && ($info['download_content_length'] <= 0)) {
+                    $info['http_code'] = 204; // No Content
                 }
-                $this->setHttpCode($httpCode)->setContentLengthDownload($contentLengthDownload);
+                $this->setInfo($info);
             }
             if ($isOutputFileString) {
                 fclose($options[CURLOPT_FILE]);
