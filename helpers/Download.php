@@ -294,6 +294,8 @@ class Download
         $outputFile = $this->getOutputFile();
         if (is_resource($outputFile) || is_string($outputFile)) {
             $options[CURLOPT_FILE] = $outputFile;
+        } else {
+            $options[CURLOPT_RETURNTRANSFER] = true;
         }
         return $options;
     }
@@ -360,7 +362,6 @@ class Download
                     $httpCode = 204; // No Content
                 }
                 $this->setHttpCode($httpCode)->setContentLengthDownload($contentLengthDownload);
-                $result = ($httpCode == 200);
             }
             if ($isOutputFileString) {
                 fclose($options[CURLOPT_FILE]);
