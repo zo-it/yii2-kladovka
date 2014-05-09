@@ -93,4 +93,48 @@ class Download
             return $this->getReferer();
         }
     }
+
+    private $_userAgent = null;
+
+    public function setUserAgent($userAgent)
+    {
+        $this->_userAgent = $userAgent;
+        return $this;
+    }
+
+    public function getUserAgent()
+    {
+        return $this->_userAgent;
+    }
+
+    public function userAgent($userAgent = null)
+    {
+        if (!is_null($userAgent)) {
+            return $this->setUserAgent($userAgent);
+        } else {
+            return $this->getUserAgent();
+        }
+    }
+
+    private $_httpHeader = null;
+
+    public function setHttpHeader($httpHeader)
+    {
+        $this->_httpHeader = $httpHeader;
+        return $this;
+    }
+
+    public function getHttpHeader()
+    {
+        return $this->_httpHeader;
+    }
+
+    public function httpHeader($httpHeader = null)
+    {
+        if (!is_null($httpHeader)) {
+            return $this->setHttpHeader($httpHeader);
+        } else {
+            return $this->getHttpHeader();
+        }
+    }
 }
