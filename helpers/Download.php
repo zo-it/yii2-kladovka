@@ -215,9 +215,18 @@ class Download
         return $result;
     }
 
-    protected function getOptions()
+    private $_options = null;
+
+    public function setOptions($options)
     {
-        $options = [CURLINFO_HEADER_OUT => true];
+        $this->_options = $options;
+        return $this;
+    }
+
+    public function getOptions()
+    {
+        $options = is_array($this->_options) ? $this->_options : [];
+        $options[CURLINFO_HEADER_OUT] = true;
         $url = $this->getUrl();
         if (is_string($url)) {
             $options[CURLOPT_URL] = $url;
@@ -287,6 +296,15 @@ class Download
             $options[CURLOPT_FILE] = $outputFile;
         }
         return $options;
+    }
+
+    public function options($options = null)
+    {
+        if (!is_null($options)) {
+            return $this->setOptions($options);
+        } else {
+            return $this->getOptions();
+        }
     }
 
     private $_httpCode = null;
