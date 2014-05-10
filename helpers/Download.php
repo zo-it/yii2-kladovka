@@ -199,6 +199,26 @@ class Download
     public function setUrl($url)
     {
         $this->_url = $url;
+        $parsedUrl = parse_url($url);
+        if ($parsedUrl && is_array($parsedUrl)) {
+            $this->setScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
+            $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
+            $this->setPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
+            $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
+            $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
+            $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
+            $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
+            $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
+        } else {
+            $this->setScheme(null);
+            $this->setHost(null);
+            $this->setPort(null);
+            $this->setUser(null);
+            $this->setPassword(null);
+            $this->setPath(null);
+            $this->setQuery(null);
+            $this->setFragment(null);
+        }
         return $this;
     }
 
@@ -427,76 +447,123 @@ class Download
         $options[CURLINFO_HEADER_OUT] = true;
         $options[CURLOPT_FOLLOWLOCATION] = true;
         $options[CURLOPT_MAXREDIRS] = 5;
-        $url = $this->getUrl();
-        if (is_string($url)) {
+        // url
+        $scheme = $this->getScheme();
+        $host = $this->getHost();
+        if ($scheme && is_string($scheme) && $host && is_string($host)) {
+            $url = $scheme . '://' . $host;
+            $port = $this->getPort();
+            if ($port && is_int($port)) {
+                $url .= ':' . $port;
+            }
+            $path = $this->getPath();
+            if ($path && is_string($path)) {
+                $url .= $path;
+            }
+            $query = $this->getQuery();
+            if (is_string($query)) {
+                $url .= '?' . $query;
+            }
+            $fragment = $this->getFragment();
+            if (is_string($fragment)) {
+                $url .= '#' . $fragment;
+            }
+        } else {
+            $url = $this->getUrl();
+        }
+        if ($url && is_string($url)) {
             $options[CURLOPT_URL] = $url;
         }
+        // user password
+        $user = $this->getUser();
+        if ($user && is_string($user)) {
+            $password = $this->getPassword();
+            if ($password && is_string($password)) {
+                $options[CURLOPT_USERPWD] = $user . ':' . $password;
+            } else {
+                $options[CURLOPT_USERPWD] = $user . ':';
+            }
+        }
+        // post fields
         $postFields = $this->getPostFields();
         $options[CURLOPT_POST] = !is_null($postFields);
-        if (is_string($postFields)) {
-            $options[CURLOPT_POSTFIELDS] = $postFields;
-        } elseif (is_array($postFields)) {
-            $isMultiPartFormData = false;
-            $postFields2 = [];
-            foreach ($postFields as $key => $value) {
-                if (is_int($key) && is_string($value)) {
-                    $postFields2[] = $value;
-                } elseif (is_string($key) && is_string($value)) {
-                    if ((strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
-                        $isMultiPartFormData = true;
-                        break;
+        if ($postFields) {
+            if (is_string($postFields)) {
+                $options[CURLOPT_POSTFIELDS] = $postFields;
+            } elseif (is_array($postFields)) {
+                $isMultiPartFormData = false;
+                $postFields2 = [];
+                foreach ($postFields as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $postFields2[] = $value;
+                    } elseif (is_string($key) && is_string($value)) {
+                        if ((strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
+                            $isMultiPartFormData = true;
+                            break;
+                        }
+                        $postFields2[] = $key . '=' . urlencode($value);
                     }
-                    $postFields2[] = $key . '=' . urlencode($value);
                 }
+                $options[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
             }
-            $options[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
         }
+        // cookie
         $cookie = $this->getCookie();
-        if (is_string($cookie)) {
-            $options[CURLOPT_COOKIE] = $cookie;
-        } elseif (is_array($cookie)) {
-            $cookie2 = [];
-            foreach ($cookie as $key => $value) {
-                if (is_int($key) && is_string($value)) {
-                    $cookie2[] = $value;
-                } elseif (is_string($key) && is_string($value)) {
-                    $cookie2[] = $key . '=' . urlencode($value);
+        if ($cookie) {
+            if (is_string($cookie)) {
+                $options[CURLOPT_COOKIE] = $cookie;
+            } elseif (is_array($cookie)) {
+                $cookie2 = [];
+                foreach ($cookie as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $cookie2[] = $value;
+                    } elseif (is_string($key) && is_string($value)) {
+                        $cookie2[] = $key . '=' . urlencode($value);
+                    }
                 }
+                $options[CURLOPT_COOKIE] = implode('; ', $cookie2);
             }
-            $options[CURLOPT_COOKIE] = implode('; ', $cookie2);
         }
+        // referer
         $referer = $this->getReferer();
-        if (is_string($referer)) {
+        if ($referer && is_string($referer)) {
             $options[CURLOPT_REFERER] = $referer;
         }
+        // user agent
         $userAgent = $this->getUserAgent();
-        if (is_string($userAgent)) {
+        if ($userAgent && is_string($userAgent)) {
             $options[CURLOPT_USERAGENT] = $userAgent;
         }
+        // http header
         $httpHeader = $this->getHttpHeader();
-        if (is_string($httpHeader)) {
-            $options[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
-        } elseif (is_array($httpHeader)) {
-            $httpHeader2 = [];
-            foreach ($httpHeader as $key => $value) {
-                if (is_int($key) && is_string($value)) {
-                    $httpHeader2[] = $value;
-                } elseif (is_string($key) && is_string($value)) {
-                    $httpHeader2[] = $key . ': ' . $value;
+        if ($httpHeader) {
+            if (is_string($httpHeader)) {
+                $options[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
+            } elseif (is_array($httpHeader)) {
+                $httpHeader2 = [];
+                foreach ($httpHeader as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $httpHeader2[] = $value;
+                    } elseif (is_string($key) && is_string($value)) {
+                        $httpHeader2[] = $key . ': ' . $value;
+                    }
                 }
+                $options[CURLOPT_HTTPHEADER] = $httpHeader2;
             }
-            $options[CURLOPT_HTTPHEADER] = $httpHeader2;
         }
+        // connect timeout
         $connectTimeout = $this->getConnectTimeout();
-        if (is_int($connectTimeout)) {
+        if ($connectTimeout && is_int($connectTimeout)) {
             $options[CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
         }
+        // timeout
         $timeout = $this->getTimeout();
-        if (is_int($timeout)) {
+        if ($timeout && is_int($timeout)) {
             $options[CURLOPT_TIMEOUT] = $timeout;
         }
+        // output file
         $outputFile = $this->getOutputFile();
-        if (is_resource($outputFile) || is_string($outputFile)) {
+        if ($outputFile && (is_resource($outputFile) || is_string($outputFile))) {
             $options[CURLOPT_FILE] = $outputFile;
         } else {
             $options[CURLOPT_RETURNTRANSFER] = true;
