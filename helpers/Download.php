@@ -18,6 +18,182 @@ class Download
         }
     }
 
+    private $_scheme = null;
+
+    public function setScheme($scheme)
+    {
+        $this->_scheme = $scheme;
+        return $this;
+    }
+
+    public function getScheme()
+    {
+        return $this->_scheme;
+    }
+
+    public function scheme($scheme = null)
+    {
+        if (!is_null($scheme)) {
+            return $this->setScheme($scheme);
+        } else {
+            return $this->getScheme();
+        }
+    }
+
+    private $_host = null;
+
+    public function setHost($host)
+    {
+        $this->_host = $host;
+        return $this;
+    }
+
+    public function getHost()
+    {
+        return $this->_host;
+    }
+
+    public function host($host = null)
+    {
+        if (!is_null($host)) {
+            return $this->setHost($host);
+        } else {
+            return $this->getHost();
+        }
+    }
+
+    private $_port = null;
+
+    public function setPort($port)
+    {
+        $this->_port = $port;
+        return $this;
+    }
+
+    public function getPort()
+    {
+        return $this->_port;
+    }
+
+    public function port($port = null)
+    {
+        if (!is_null($port)) {
+            return $this->setPort($port);
+        } else {
+            return $this->getPort();
+        }
+    }
+
+    private $_user = null;
+
+    public function setUser($user)
+    {
+        $this->_user = $user;
+        return $this;
+    }
+
+    public function getUser()
+    {
+        return $this->_user;
+    }
+
+    public function user($user = null)
+    {
+        if (!is_null($user)) {
+            return $this->setUser($user);
+        } else {
+            return $this->getUser();
+        }
+    }
+
+    private $_password = null;
+
+    public function setPassword($password)
+    {
+        $this->_password = $password;
+        return $this;
+    }
+
+    public function getPassword()
+    {
+        return $this->_password;
+    }
+
+    public function password($password = null)
+    {
+        if (!is_null($password)) {
+            return $this->setPassword($password);
+        } else {
+            return $this->getPassword();
+        }
+    }
+
+    private $_path = null;
+
+    public function setPath($path)
+    {
+        $this->_path = $path;
+        return $this;
+    }
+
+    public function getPath()
+    {
+        return $this->_path;
+    }
+
+    public function path($path = null)
+    {
+        if (!is_null($path)) {
+            return $this->setPath($path);
+        } else {
+            return $this->getPath();
+        }
+    }
+
+    private $_query = null;
+
+    public function setQuery($query)
+    {
+        $this->_query = $query;
+        return $this;
+    }
+
+    public function getQuery()
+    {
+        return $this->_query;
+    }
+
+    public function query($query = null)
+    {
+        if (!is_null($query)) {
+            return $this->setQuery($query);
+        } else {
+            return $this->getQuery();
+        }
+    }
+
+    private $_fragment = null;
+
+    public function setFragment($fragment)
+    {
+        $this->_fragment = $fragment;
+        return $this;
+    }
+
+    public function getFragment()
+    {
+        return $this->_fragment;
+    }
+
+    public function fragment($fragment = null)
+    {
+        if (!is_null($fragment)) {
+            return $this->setFragment($fragment);
+        } else {
+            return $this->getFragment();
+        }
+    }
+
     private $_url = null;
 
     public function setUrl($url)
