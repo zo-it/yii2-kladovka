@@ -40,6 +40,50 @@ class Download
         }
     }
 
+    private $_user = null;
+
+    public function setUser($user)
+    {
+        $this->_user = $user;
+        return $this;
+    }
+
+    public function getUser()
+    {
+        return $this->_user;
+    }
+
+    public function user($user = null)
+    {
+        if (!is_null($user)) {
+            return $this->setUser($user);
+        } else {
+            return $this->getUser();
+        }
+    }
+
+    private $_password = null;
+
+    public function setPassword($password)
+    {
+        $this->_password = $password;
+        return $this;
+    }
+
+    public function getPassword()
+    {
+        return $this->_password;
+    }
+
+    public function password($password = null)
+    {
+        if (!is_null($password)) {
+            return $this->setPassword($password);
+        } else {
+            return $this->getPassword();
+        }
+    }
+
     private $_host = null;
 
     public function setHost($host)
@@ -150,50 +194,6 @@ class Download
         }
     }
 
-    private $_user = null;
-
-    public function setUser($user)
-    {
-        $this->_user = $user;
-        return $this;
-    }
-
-    public function getUser()
-    {
-        return $this->_user;
-    }
-
-    public function user($user = null)
-    {
-        if (!is_null($user)) {
-            return $this->setUser($user);
-        } else {
-            return $this->getUser();
-        }
-    }
-
-    private $_password = null;
-
-    public function setPassword($password)
-    {
-        $this->_password = $password;
-        return $this;
-    }
-
-    public function getPassword()
-    {
-        return $this->_password;
-    }
-
-    public function password($password = null)
-    {
-        if (!is_null($password)) {
-            return $this->setPassword($password);
-        } else {
-            return $this->getPassword();
-        }
-    }
-
     private $_url = null;
 
     public function setUrl($url)
@@ -202,19 +202,17 @@ class Download
         $parsedUrl = parse_url($url);
         if ($parsedUrl && is_array($parsedUrl)) {
             $this->setScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
+            $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
+            $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
             $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
             $this->setPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
             $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
             $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
             $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
-            if (array_key_exists('user', $parsedUrl)) {
-                $this->setUser($parsedUrl['user']);
-            }
-            if (array_key_exists('pass', $parsedUrl)) {
-                $this->setPassword($parsedUrl['pass']);
-            }
         } else {
             $this->setScheme(null);
+            $this->setUser(null);
+            $this->setPassword(null);
             $this->setHost(null);
             $this->setPort(null);
             $this->setPath(null);
