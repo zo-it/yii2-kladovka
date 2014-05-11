@@ -204,17 +204,19 @@ class Download
             $this->setScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
             $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
             $this->setPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
-            $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
             $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
             $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
             $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
+            if (array_key_exists('user', $parsedUrl)) {
+                $this->setUser($parsedUrl['user']);
+            }
+            if (array_key_exists('pass', $parsedUrl)) {
+                $this->setPassword($parsedUrl['pass']);
+            }
         } else {
             $this->setScheme(null);
             $this->setHost(null);
             $this->setPort(null);
-            $this->setUser(null);
-            $this->setPassword(null);
             $this->setPath(null);
             $this->setQuery(null);
             $this->setFragment(null);
