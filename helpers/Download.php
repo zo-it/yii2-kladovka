@@ -84,50 +84,6 @@ class Download
         }
     }
 
-    private $_user = null;
-
-    public function setUser($user)
-    {
-        $this->_user = $user;
-        return $this;
-    }
-
-    public function getUser()
-    {
-        return $this->_user;
-    }
-
-    public function user($user = null)
-    {
-        if (!is_null($user)) {
-            return $this->setUser($user);
-        } else {
-            return $this->getUser();
-        }
-    }
-
-    private $_password = null;
-
-    public function setPassword($password)
-    {
-        $this->_password = $password;
-        return $this;
-    }
-
-    public function getPassword()
-    {
-        return $this->_password;
-    }
-
-    public function password($password = null)
-    {
-        if (!is_null($password)) {
-            return $this->setPassword($password);
-        } else {
-            return $this->getPassword();
-        }
-    }
-
     private $_path = null;
 
     public function setPath($path)
@@ -194,6 +150,50 @@ class Download
         }
     }
 
+    private $_user = null;
+
+    public function setUser($user)
+    {
+        $this->_user = $user;
+        return $this;
+    }
+
+    public function getUser()
+    {
+        return $this->_user;
+    }
+
+    public function user($user = null)
+    {
+        if (!is_null($user)) {
+            return $this->setUser($user);
+        } else {
+            return $this->getUser();
+        }
+    }
+
+    private $_password = null;
+
+    public function setPassword($password)
+    {
+        $this->_password = $password;
+        return $this;
+    }
+
+    public function getPassword()
+    {
+        return $this->_password;
+    }
+
+    public function password($password = null)
+    {
+        if (!is_null($password)) {
+            return $this->setPassword($password);
+        } else {
+            return $this->getPassword();
+        }
+    }
+
     private $_url = null;
 
     public function setUrl($url)
@@ -235,6 +235,154 @@ class Download
             return $this->setUrl($url);
         } else {
             return $this->getUrl();
+        }
+    }
+
+    private $_proxyScheme = null;
+
+    public function setProxyScheme($proxyScheme)
+    {
+        $this->_proxyScheme = $proxyScheme;
+        return $this;
+    }
+
+    public function getProxyScheme()
+    {
+        return $this->_proxyScheme;
+    }
+
+    public function proxyScheme($proxyScheme = null)
+    {
+        if (!is_null($proxyScheme)) {
+            return $this->setProxyScheme($proxyScheme);
+        } else {
+            return $this->getProxyScheme();
+        }
+    }
+
+    private $_proxyHost = null;
+
+    public function setProxyHost($proxyHost)
+    {
+        $this->_proxyHost = $proxyHost;
+        return $this;
+    }
+
+    public function getProxyHost()
+    {
+        return $this->_proxyHost;
+    }
+
+    public function proxyHost($proxyHost = null)
+    {
+        if (!is_null($proxyHost)) {
+            return $this->setProxyHost($proxyHost);
+        } else {
+            return $this->getProxyHost();
+        }
+    }
+
+    private $_proxyPort = null;
+
+    public function setProxyPort($proxyPort)
+    {
+        $this->_proxyPort = $proxyPort;
+        return $this;
+    }
+
+    public function getProxyPort()
+    {
+        return $this->_proxyPort;
+    }
+
+    public function proxyPort($proxyPort = null)
+    {
+        if (!is_null($proxyPort)) {
+            return $this->setProxyPort($proxyPort);
+        } else {
+            return $this->getProxyPort();
+        }
+    }
+
+    private $_proxyUser = null;
+
+    public function setProxyUser($proxyUser)
+    {
+        $this->_proxyUser = $proxyUser;
+        return $this;
+    }
+
+    public function getProxyUser()
+    {
+        return $this->_proxyUser;
+    }
+
+    public function proxyUser($proxyUser = null)
+    {
+        if (!is_null($proxyUser)) {
+            return $this->setProxyUser($proxyUser);
+        } else {
+            return $this->getProxyUser();
+        }
+    }
+
+    private $_proxyPassword = null;
+
+    public function setProxyPassword($proxyPassword)
+    {
+        $this->_proxyPassword = $proxyPassword;
+        return $this;
+    }
+
+    public function getProxyPassword()
+    {
+        return $this->_proxyPassword;
+    }
+
+    public function proxyPassword($proxyPassword = null)
+    {
+        if (!is_null($proxyPassword)) {
+            return $this->setProxyPassword($proxyPassword);
+        } else {
+            return $this->getProxyPassword();
+        }
+    }
+
+    private $_proxyUrl = null;
+
+    public function setProxyUrl($proxyUrl)
+    {
+        $this->_proxyUrl = $proxyUrl;
+        $parsedUrl = parse_url($proxyUrl);
+        if ($parsedUrl && is_array($parsedUrl)) {
+            $this->setProxyScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
+            $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
+            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
+            if (array_key_exists('user', $parsedUrl)) {
+                $this->setProxyUser($parsedUrl['user']);
+            }
+            if (array_key_exists('pass', $parsedUrl)) {
+                $this->setProxyPassword($parsedUrl['pass']);
+            }
+        } else {
+            $this->setProxyScheme(null);
+            $this->setProxyHost(null);
+            $this->setProxyPort(null);
+        }
+        return $this;
+    }
+
+    public function getProxyUrl()
+    {
+        return $this->_proxyUrl;
+    }
+
+    public function proxyUrl($proxyUrl = null)
+    {
+        if (!is_null($proxyUrl)) {
+            return $this->setProxyUrl($proxyUrl);
+        } else {
+            return $this->getProxyUrl();
         }
     }
 
