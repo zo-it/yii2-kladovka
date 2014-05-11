@@ -258,50 +258,6 @@ class Download
         }
     }
 
-    private $_proxyHost = null;
-
-    public function setProxyHost($proxyHost)
-    {
-        $this->_proxyHost = $proxyHost;
-        return $this;
-    }
-
-    public function getProxyHost()
-    {
-        return $this->_proxyHost;
-    }
-
-    public function proxyHost($proxyHost = null)
-    {
-        if (!is_null($proxyHost)) {
-            return $this->setProxyHost($proxyHost);
-        } else {
-            return $this->getProxyHost();
-        }
-    }
-
-    private $_proxyPort = null;
-
-    public function setProxyPort($proxyPort)
-    {
-        $this->_proxyPort = $proxyPort;
-        return $this;
-    }
-
-    public function getProxyPort()
-    {
-        return $this->_proxyPort;
-    }
-
-    public function proxyPort($proxyPort = null)
-    {
-        if (!is_null($proxyPort)) {
-            return $this->setProxyPort($proxyPort);
-        } else {
-            return $this->getProxyPort();
-        }
-    }
-
     private $_proxyUser = null;
 
     public function setProxyUser($proxyUser)
@@ -346,6 +302,50 @@ class Download
         }
     }
 
+    private $_proxyHost = null;
+
+    public function setProxyHost($proxyHost)
+    {
+        $this->_proxyHost = $proxyHost;
+        return $this;
+    }
+
+    public function getProxyHost()
+    {
+        return $this->_proxyHost;
+    }
+
+    public function proxyHost($proxyHost = null)
+    {
+        if (!is_null($proxyHost)) {
+            return $this->setProxyHost($proxyHost);
+        } else {
+            return $this->getProxyHost();
+        }
+    }
+
+    private $_proxyPort = null;
+
+    public function setProxyPort($proxyPort)
+    {
+        $this->_proxyPort = $proxyPort;
+        return $this;
+    }
+
+    public function getProxyPort()
+    {
+        return $this->_proxyPort;
+    }
+
+    public function proxyPort($proxyPort = null)
+    {
+        if (!is_null($proxyPort)) {
+            return $this->setProxyPort($proxyPort);
+        } else {
+            return $this->getProxyPort();
+        }
+    }
+
     private $_proxyUrl = null;
 
     public function setProxyUrl($proxyUrl)
@@ -354,16 +354,14 @@ class Download
         $parsedUrl = parse_url($proxyUrl);
         if ($parsedUrl && is_array($parsedUrl)) {
             $this->setProxyScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
+            $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
+            $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
             $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
             $this->setProxyPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
-            if (array_key_exists('user', $parsedUrl)) {
-                $this->setProxyUser($parsedUrl['user']);
-            }
-            if (array_key_exists('pass', $parsedUrl)) {
-                $this->setProxyPassword($parsedUrl['pass']);
-            }
         } else {
             $this->setProxyScheme(null);
+            $this->setProxyUser(null);
+            $this->setProxyPassword(null);
             $this->setProxyHost(null);
             $this->setProxyPort(null);
         }
