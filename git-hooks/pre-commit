@@ -1,0 +1,16 @@
+#!/bin/sh
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+if [ $BRANCH = master ]
+then
+    echo 'You cannot commit to the master branch!'
+    echo 'Stash your changes and apply them to the develop branch:'
+    echo 'git stash'
+    echo 'git checkout develop'
+    echo 'git stash apply'
+    exit 1
+fi
+if [ ! -d /media/$USER/BACKUPFLASH/git ]
+then
+    echo 'You cannot commit without BACKUPFLASH!'
+    exit 1
+fi

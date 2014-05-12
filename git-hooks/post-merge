@@ -1,0 +1,8 @@
+#!/bin/sh
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+git push backup-flash $BRANCH
+git push router-home $BRANCH
+if [ $BRANCH != master ]
+then
+    git push origin $BRANCH
+fi

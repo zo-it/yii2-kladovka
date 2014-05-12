@@ -205,7 +205,7 @@ class Download
             $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
             $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
             $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
+            $this->setPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
             $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
             $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
             $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
@@ -236,25 +236,28 @@ class Download
         }
     }
 
-    private $_proxyScheme = null;
+    const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
+    const PROXY_TYPE_SOCKS5 = CURLPROXY_SOCKS5;
 
-    public function setProxyScheme($proxyScheme)
+    private $_proxyType = null;
+
+    public function setProxyType($proxyType)
     {
-        $this->_proxyScheme = $proxyScheme;
+        $this->_proxyType = $proxyType;
         return $this;
     }
 
-    public function getProxyScheme()
+    public function getProxyType()
     {
-        return $this->_proxyScheme;
+        return $this->_proxyType;
     }
 
-    public function proxyScheme($proxyScheme = null)
+    public function proxyType($proxyType = null)
     {
-        if (!is_null($proxyScheme)) {
-            return $this->setProxyScheme($proxyScheme);
+        if (!is_null($proxyType)) {
+            return $this->setProxyType($proxyType);
         } else {
-            return $this->getProxyScheme();
+            return $this->getProxyType();
         }
     }
 
@@ -353,13 +356,24 @@ class Download
         $this->_proxyUrl = $proxyUrl;
         $parsedUrl = parse_url($proxyUrl);
         if ($parsedUrl && is_array($parsedUrl)) {
-            $this->setProxyScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
+            if (array_key_exists('scheme', $parsedUrl)) {
+                $scheme = strtolower($parsedUrl['scheme']);
+                if (strncmp($scheme, 'http', 4) == 0) {
+                    $this->setProxyType(self::PROXY_TYPE_HTTP);
+                } elseif (strncmp($scheme, 'sock', 4) == 0) {
+                    $this->setProxyType(self::PROXY_TYPE_SOCKS5);
+                } else {
+                    $this->setProxyType(null);
+                }
+            } else {
+                $this->setProxyType(null);
+            }
             $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
             $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
             $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? $parsedUrl['port'] : null);
+            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
         } else {
-            $this->setProxyScheme(null);
+            $this->setProxyType(null);
             $this->setProxyUser(null);
             $this->setProxyPassword(null);
             $this->setProxyHost(null);
@@ -630,6 +644,23 @@ class Download
                 $options[CURLOPT_USERPWD] = $user . ':';
             }
         }
+$proxyScheme = $this->getProxyScheme();
+$proxyHost = $this->getProxyHost();
+$proxyPort = $this->getProxyPort();
+if ($proxyPort && is_int($proxyPort)) {
+$options[CURLOPT_PROXYPORT] = $proxyPort;
+}
+
+$proxyUser = $this->getProxyUser();
+if ($proxyUser && is_string($proxyUser)) {
+$proxyPassword = $this->getProxyPassword();
+if ($proxyPassword && is_string($proxyPassword)) {
+$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
+} else {
+$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':';
+}
+}
+
         // post fields
         $postFields = $this->getPostFields();
         $options[CURLOPT_POST] = !is_null($postFields);
