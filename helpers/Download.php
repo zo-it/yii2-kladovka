@@ -601,13 +601,8 @@ class Download
         return $this;
     }
 
-    public function getOptions()
+    protected function buildUrl()
     {
-        $options = is_array($this->_options) ? $this->_options : [];
-        $options[CURLINFO_HEADER_OUT] = true;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_MAXREDIRS] = 5;
-        // url
         $scheme = $this->getScheme();
         $host = $this->getHost();
         if ($scheme && is_string($scheme) && $host && is_string($host)) {
@@ -628,7 +623,20 @@ class Download
             if (is_string($fragment)) {
                 $url .= '#' . $fragment;
             }
-        } else {
+            return $url;
+        }
+        return false;
+    }
+
+    public function getOptions()
+    {
+        $options = is_array($this->_options) ? $this->_options : [];
+        $options[CURLINFO_HEADER_OUT] = true;
+        $options[CURLOPT_FOLLOWLOCATION] = true;
+        $options[CURLOPT_MAXREDIRS] = 5;
+        // url
+        $url = $this->buildUrl();
+        if (!$url) {
             $url = $this->getUrl();
         }
         if ($url && is_string($url)) {
@@ -641,26 +649,26 @@ class Download
             if ($password && is_string($password)) {
                 $options[CURLOPT_USERPWD] = $user . ':' . $password;
             } else {
-                $options[CURLOPT_USERPWD] = $user . ':';
+                $options[CURLOPT_USERPWD] = $user;
             }
         }
-$proxyScheme = $this->getProxyScheme();
+$proxyType = $this->getProxyType();
 $proxyHost = $this->getProxyHost();
 $proxyPort = $this->getProxyPort();
 if ($proxyPort && is_int($proxyPort)) {
 $options[CURLOPT_PROXYPORT] = $proxyPort;
 }
 
-$proxyUser = $this->getProxyUser();
-if ($proxyUser && is_string($proxyUser)) {
-$proxyPassword = $this->getProxyPassword();
-if ($proxyPassword && is_string($proxyPassword)) {
-$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
-} else {
-$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':';
-}
-}
-
+        // proxy user password
+        $proxyUser = $this->getProxyUser();
+        if ($proxyUser && is_string($proxyUser)) {
+            $proxyPassword = $this->getProxyPassword();
+            if ($proxyPassword && is_string($proxyPassword)) {
+                $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
+            } else {
+                $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
+            }
+        }
         // post fields
         $postFields = $this->getPostFields();
         $options[CURLOPT_POST] = !is_null($postFields);
@@ -673,8 +681,8 @@ $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':';
                 foreach ($postFields as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $postFields2[] = $value;
-                    } elseif (is_string($key) && is_string($value)) {
-                        if ((strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
+                    } elseif (is_string($key) && is_scalar($value)) {
+                        if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
                             $isMultiPartFormData = true;
                             break;
                         }
@@ -694,7 +702,7 @@ $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':';
                 foreach ($cookie as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $cookie2[] = $value;
-                    } elseif (is_string($key) && is_string($value)) {
+                    } elseif (is_string($key) && is_scalar($value)) {
                         $cookie2[] = $key . '=' . urlencode($value);
                     }
                 }
@@ -721,7 +729,7 @@ $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':';
                 foreach ($httpHeader as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $httpHeader2[] = $value;
-                    } elseif (is_string($key) && is_string($value)) {
+                    } elseif (is_string($key) && is_scalar($value)) {
                         $httpHeader2[] = $key . ': ' . $value;
                     }
                 }
