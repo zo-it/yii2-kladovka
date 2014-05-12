@@ -943,6 +943,7 @@ class Download
 
     protected function executeOnce($retryCount = 1)
     {
+$this->setInfo(null);
 $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
 call_user_func($beforeExecute, $this, $retryCount);
@@ -951,7 +952,7 @@ call_user_func($beforeExecute, $this, $retryCount);
         if (!$ch) {
             throw new \Exception('curl_init');
         }
-        $options = $this->setInfo(null)->getOptions();
+        $options = $this->getOptions();
         $isOutputFileString = false;
         if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
             $isOutputFileString = true;
