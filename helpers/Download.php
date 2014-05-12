@@ -629,7 +629,6 @@ class Download
             if (is_string($fragment)) {
                 $url .= '#' . $fragment;
             }
-            return $url;
         } else {
             $url = $this->getUrl();
         }
