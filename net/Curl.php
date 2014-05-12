@@ -754,11 +754,15 @@ class Curl
         }
         if ($url && is_string($url)) {
             $options[CURLOPT_URL] = $url;
+        } else {
+            $options[CURLOPT_URL] = null;
         }
         // port
         $port = $this->getPort();
         if ($port && is_int($port)) {
             $options[CURLOPT_PORT] = $port;
+        } else {
+            $options[CURLOPT_PORT] = null;
         }
         // user password
         $user = $this->getUser();
@@ -769,75 +773,98 @@ class Curl
             } else {
                 $options[CURLOPT_USERPWD] = $user;
             }
+        } else {
+            $options[CURLOPT_USERPWD] = null;
         }
         // post fields
         $postFields = $this->buildPostFields();
         if ($postFields && (is_string($postFields) || is_array($postFields))) {
-            $options[CURLOPT_POSTFIELDS] = $postFields;
             $options[CURLOPT_POST] = true;
+            $options[CURLOPT_POSTFIELDS] = $postFields;
         } else {
             $options[CURLOPT_POST] = false;
+            $options[CURLOPT_POSTFIELDS] = null;
         }
         // cookie
         $cookie = $this->buildCookie();
         if ($cookie && is_string($cookie)) {
             $options[CURLOPT_COOKIE] = $cookie;
+        } else {
+            $options[CURLOPT_COOKIE] = null;
         }
         // referer
         $referer = $this->getReferer();
         if ($referer && is_string($referer)) {
             $options[CURLOPT_REFERER] = $referer;
+        } else {
+            $options[CURLOPT_REFERER] = null;
         }
         // user agent
         $userAgent = $this->getUserAgent();
         if ($userAgent && is_string($userAgent)) {
             $options[CURLOPT_USERAGENT] = $userAgent;
+        } else {
+            $options[CURLOPT_USERAGENT] = null;
         }
         // http header
         $httpHeader = $this->buildHttpHeader();
         if ($httpHeader && is_array($httpHeader)) {
             $options[CURLOPT_HTTPHEADER] = $httpHeader;
+        } else {
+            $options[CURLOPT_HTTPHEADER] = null;
         }
         // max redirs
         $maxRedirs = $this->getMaxRedirs();
         if ($maxRedirs && is_int($maxRedirs)) {
-            $options[CURLOPT_MAXREDIRS] = $maxRedirs;
             $options[CURLOPT_FOLLOWLOCATION] = true;
+            $options[CURLOPT_MAXREDIRS] = $maxRedirs;
         } else {
             $options[CURLOPT_FOLLOWLOCATION] = false;
+            $options[CURLOPT_MAXREDIRS] = null;
         }
         // connect timeout
         $connectTimeout = $this->getConnectTimeout();
         if ($connectTimeout && is_int($connectTimeout)) {
             $options[CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
+        } else {
+            $options[CURLOPT_CONNECTTIMEOUT] = null;
         }
         // timeout
         $timeout = $this->getTimeout();
         if ($timeout && is_int($timeout)) {
             $options[CURLOPT_TIMEOUT] = $timeout;
+        } else {
+            $options[CURLOPT_TIMEOUT] = null;
         }
         // output file
         $outputFile = $this->getOutputFile();
         if ($outputFile && (is_resource($outputFile) || is_string($outputFile))) {
-            $options[CURLOPT_FILE] = $outputFile;
             $options[CURLOPT_RETURNTRANSFER] = false;
+            $options[CURLOPT_FILE] = $outputFile;
         } else {
             $options[CURLOPT_RETURNTRANSFER] = true;
+            $options[CURLOPT_FILE] = null;
         }
         // proxy type
         $proxyType = $this->getProxyType();
         if ($proxyType && is_int($proxyType)) {
             $options[CURLOPT_PROXYTYPE] = $proxyType;
+        } else {
+            $options[CURLOPT_PROXYTYPE] = null;
         }
         // proxy host
         $proxyHost = $this->getProxyHost();
         if ($proxyHost && is_string($proxyHost)) {
             $options[CURLOPT_PROXY] = $proxyHost;
+        } else {
+            $options[CURLOPT_PROXY] = null;
         }
         // proxy port
         $proxyPort = $this->getProxyPort();
         if ($proxyPort && is_int($proxyPort)) {
             $options[CURLOPT_PROXYPORT] = $proxyPort;
+        } else {
+            $options[CURLOPT_PROXYPORT] = null;
         }
         // proxy user password
         $proxyUser = $this->getProxyUser();
@@ -848,6 +875,8 @@ class Curl
             } else {
                 $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
             }
+        } else {
+            $options[CURLOPT_PROXYUSERPWD] = null;
         }
         return $options;
     }
