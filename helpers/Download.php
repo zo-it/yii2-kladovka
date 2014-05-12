@@ -236,166 +236,6 @@ class Download
         }
     }
 
-    const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
-    const PROXY_TYPE_SOCKS5 = CURLPROXY_SOCKS5;
-
-    private $_proxyType = null;
-
-    public function setProxyType($proxyType)
-    {
-        $this->_proxyType = $proxyType;
-        return $this;
-    }
-
-    public function getProxyType()
-    {
-        return $this->_proxyType;
-    }
-
-    public function proxyType($proxyType = null)
-    {
-        if (!is_null($proxyType)) {
-            return $this->setProxyType($proxyType);
-        } else {
-            return $this->getProxyType();
-        }
-    }
-
-    private $_proxyUser = null;
-
-    public function setProxyUser($proxyUser)
-    {
-        $this->_proxyUser = $proxyUser;
-        return $this;
-    }
-
-    public function getProxyUser()
-    {
-        return $this->_proxyUser;
-    }
-
-    public function proxyUser($proxyUser = null)
-    {
-        if (!is_null($proxyUser)) {
-            return $this->setProxyUser($proxyUser);
-        } else {
-            return $this->getProxyUser();
-        }
-    }
-
-    private $_proxyPassword = null;
-
-    public function setProxyPassword($proxyPassword)
-    {
-        $this->_proxyPassword = $proxyPassword;
-        return $this;
-    }
-
-    public function getProxyPassword()
-    {
-        return $this->_proxyPassword;
-    }
-
-    public function proxyPassword($proxyPassword = null)
-    {
-        if (!is_null($proxyPassword)) {
-            return $this->setProxyPassword($proxyPassword);
-        } else {
-            return $this->getProxyPassword();
-        }
-    }
-
-    private $_proxyHost = null;
-
-    public function setProxyHost($proxyHost)
-    {
-        $this->_proxyHost = $proxyHost;
-        return $this;
-    }
-
-    public function getProxyHost()
-    {
-        return $this->_proxyHost;
-    }
-
-    public function proxyHost($proxyHost = null)
-    {
-        if (!is_null($proxyHost)) {
-            return $this->setProxyHost($proxyHost);
-        } else {
-            return $this->getProxyHost();
-        }
-    }
-
-    private $_proxyPort = null;
-
-    public function setProxyPort($proxyPort)
-    {
-        $this->_proxyPort = $proxyPort;
-        return $this;
-    }
-
-    public function getProxyPort()
-    {
-        return $this->_proxyPort;
-    }
-
-    public function proxyPort($proxyPort = null)
-    {
-        if (!is_null($proxyPort)) {
-            return $this->setProxyPort($proxyPort);
-        } else {
-            return $this->getProxyPort();
-        }
-    }
-
-    private $_proxyUrl = null;
-
-    public function setProxyUrl($proxyUrl)
-    {
-        $this->_proxyUrl = $proxyUrl;
-        $parsedUrl = parse_url($proxyUrl);
-        if ($parsedUrl && is_array($parsedUrl)) {
-            if (array_key_exists('scheme', $parsedUrl)) {
-                $scheme = strtolower($parsedUrl['scheme']);
-                if (strncmp($scheme, 'http', 4) == 0) {
-                    $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif (strncmp($scheme, 'sock', 4) == 0) {
-                    $this->setProxyType(self::PROXY_TYPE_SOCKS5);
-                } else {
-                    $this->setProxyType(null);
-                }
-            } else {
-                $this->setProxyType(null);
-            }
-            $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
-            $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
-        } else {
-            $this->setProxyType(null);
-            $this->setProxyUser(null);
-            $this->setProxyPassword(null);
-            $this->setProxyHost(null);
-            $this->setProxyPort(null);
-        }
-        return $this;
-    }
-
-    public function getProxyUrl()
-    {
-        return $this->_proxyUrl;
-    }
-
-    public function proxyUrl($proxyUrl = null)
-    {
-        if (!is_null($proxyUrl)) {
-            return $this->setProxyUrl($proxyUrl);
-        } else {
-            return $this->getProxyUrl();
-        }
-    }
-
     private $_postFields = null;
 
     public function setPostFields($postFields)
@@ -593,6 +433,166 @@ class Download
         return $result;
     }
 
+    const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
+    const PROXY_TYPE_SOCKS5 = CURLPROXY_SOCKS5;
+
+    private $_proxyType = null;
+
+    public function setProxyType($proxyType)
+    {
+        $this->_proxyType = $proxyType;
+        return $this;
+    }
+
+    public function getProxyType()
+    {
+        return $this->_proxyType;
+    }
+
+    public function proxyType($proxyType = null)
+    {
+        if (!is_null($proxyType)) {
+            return $this->setProxyType($proxyType);
+        } else {
+            return $this->getProxyType();
+        }
+    }
+
+    private $_proxyUser = null;
+
+    public function setProxyUser($proxyUser)
+    {
+        $this->_proxyUser = $proxyUser;
+        return $this;
+    }
+
+    public function getProxyUser()
+    {
+        return $this->_proxyUser;
+    }
+
+    public function proxyUser($proxyUser = null)
+    {
+        if (!is_null($proxyUser)) {
+            return $this->setProxyUser($proxyUser);
+        } else {
+            return $this->getProxyUser();
+        }
+    }
+
+    private $_proxyPassword = null;
+
+    public function setProxyPassword($proxyPassword)
+    {
+        $this->_proxyPassword = $proxyPassword;
+        return $this;
+    }
+
+    public function getProxyPassword()
+    {
+        return $this->_proxyPassword;
+    }
+
+    public function proxyPassword($proxyPassword = null)
+    {
+        if (!is_null($proxyPassword)) {
+            return $this->setProxyPassword($proxyPassword);
+        } else {
+            return $this->getProxyPassword();
+        }
+    }
+
+    private $_proxyHost = null;
+
+    public function setProxyHost($proxyHost)
+    {
+        $this->_proxyHost = $proxyHost;
+        return $this;
+    }
+
+    public function getProxyHost()
+    {
+        return $this->_proxyHost;
+    }
+
+    public function proxyHost($proxyHost = null)
+    {
+        if (!is_null($proxyHost)) {
+            return $this->setProxyHost($proxyHost);
+        } else {
+            return $this->getProxyHost();
+        }
+    }
+
+    private $_proxyPort = null;
+
+    public function setProxyPort($proxyPort)
+    {
+        $this->_proxyPort = $proxyPort;
+        return $this;
+    }
+
+    public function getProxyPort()
+    {
+        return $this->_proxyPort;
+    }
+
+    public function proxyPort($proxyPort = null)
+    {
+        if (!is_null($proxyPort)) {
+            return $this->setProxyPort($proxyPort);
+        } else {
+            return $this->getProxyPort();
+        }
+    }
+
+    private $_proxyUrl = null;
+
+    public function setProxyUrl($proxyUrl)
+    {
+        $this->_proxyUrl = $proxyUrl;
+        $parsedUrl = parse_url($proxyUrl);
+        if ($parsedUrl && is_array($parsedUrl)) {
+            if (array_key_exists('scheme', $parsedUrl)) {
+                $scheme = strtolower($parsedUrl['scheme']);
+                if (strncmp($scheme, 'http', 4) == 0) {
+                    $this->setProxyType(self::PROXY_TYPE_HTTP);
+                } elseif (strncmp($scheme, 'sock', 4) == 0) {
+                    $this->setProxyType(self::PROXY_TYPE_SOCKS5);
+                } else {
+                    $this->setProxyType(null);
+                }
+            } else {
+                $this->setProxyType(null);
+            }
+            $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
+            $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
+            $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
+            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
+        } else {
+            $this->setProxyType(null);
+            $this->setProxyUser(null);
+            $this->setProxyPassword(null);
+            $this->setProxyHost(null);
+            $this->setProxyPort(null);
+        }
+        return $this;
+    }
+
+    public function getProxyUrl()
+    {
+        return $this->_proxyUrl;
+    }
+
+    public function proxyUrl($proxyUrl = null)
+    {
+        if (!is_null($proxyUrl)) {
+            return $this->setProxyUrl($proxyUrl);
+        } else {
+            return $this->getProxyUrl();
+        }
+    }
+
     private $_options = null;
 
     public function setOptions($options)
@@ -650,31 +650,6 @@ class Download
                 $options[CURLOPT_USERPWD] = $user;
             }
         }
-// proxy type
-$proxyType = $this->getProxyType();
-if ($proxyType && is_int($proxyType)) {
-$options[CURLOPT_PROXYTYPE] = $proxyType;
-}
-// proxy host
-$proxyHost = $this->getProxyHost();
-if ($proxyHost && is_string($proxyHost)) {
-$options[CURLOPT_PROXY] = $proxyHost;
-}
-// proxy port
-$proxyPort = $this->getProxyPort();
-if ($proxyPort && is_int($proxyPort)) {
-$options[CURLOPT_PROXYPORT] = $proxyPort;
-}
-// proxy user password
-$proxyUser = $this->getProxyUser();
-if ($proxyUser && is_string($proxyUser)) {
-$proxyPassword = $this->getProxyPassword();
-if ($proxyPassword && is_string($proxyPassword)) {
-$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
-} else {
-$options[CURLOPT_PROXYUSERPWD] = $proxyUser;
-}
-}
         // post fields
         $postFields = $this->getPostFields();
         $options[CURLOPT_POST] = !is_null($postFields);
@@ -758,6 +733,31 @@ $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
             $options[CURLOPT_FILE] = $outputFile;
         } else {
             $options[CURLOPT_RETURNTRANSFER] = true;
+        }
+        // proxy type
+        $proxyType = $this->getProxyType();
+        if ($proxyType && is_int($proxyType)) {
+            $options[CURLOPT_PROXYTYPE] = $proxyType;
+        }
+        // proxy host
+        $proxyHost = $this->getProxyHost();
+        if ($proxyHost && is_string($proxyHost)) {
+            $options[CURLOPT_PROXY] = $proxyHost;
+        }
+        // proxy port
+        $proxyPort = $this->getProxyPort();
+        if ($proxyPort && is_int($proxyPort)) {
+            $options[CURLOPT_PROXYPORT] = $proxyPort;
+        }
+        // proxy user password
+        $proxyUser = $this->getProxyUser();
+        if ($proxyUser && is_string($proxyUser)) {
+            $proxyPassword = $this->getProxyPassword();
+            if ($proxyPassword && is_string($proxyPassword)) {
+                $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
+            } else {
+                $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
+            }
         }
         return $options;
     }
