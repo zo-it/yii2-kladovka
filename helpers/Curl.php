@@ -3,7 +3,7 @@
 namespace ivanchkv\kladovka\helpers;
 
 
-class Download
+class Curl
 {
 
     public static function init($url = null)
