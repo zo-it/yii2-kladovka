@@ -11,14 +11,13 @@ class Curl
         return new self($url);
     }
 
-    private $_handle = null;
-
     public function __construct($url = null)
     {
-        $this->_handle = curl_init();
-        if (!$this->_handle) {
+        $handle = curl_init();
+        if (!$handle) {
             throw new \Exception('curl_init');
         }
+        $this->setHandle($handle);
         if (!is_null($url)) {
             $this->setUrl($url);
         }
@@ -26,10 +25,19 @@ class Curl
 
     public function __clone()
     {
-        $this->_handle = curl_init();
-        if (!$this->_handle) {
+        $handle = curl_init();
+        if (!$handle) {
             throw new \Exception('curl_init');
         }
+        $this->setHandle($handle);
+    }
+
+    private $_handle = null;
+
+    protected function setHandle($handle)
+    {
+        $this->_handle = $handle;
+        return $this;
     }
 
     public function getHandle()
@@ -1028,11 +1036,12 @@ call_user_func($beforeExecute, $this, $retryCount);
             $isOutputFileString = true;
             $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
         }
-        if (!curl_setopt_array($this->_handle, $options)) {
+        $handle = $this->getHandle();
+        if (!curl_setopt_array($handle, $options)) {
             //throw new \Exception('curl_setopt_array');
         }
-        $result = curl_exec($this->_handle);
-        $info = curl_getinfo($this->_handle);
+        $result = curl_exec($handle);
+        $info = curl_getinfo($handle);
         if (($info['http_code'] == 200) && !$info['download_content_length']) {
             $info['http_code'] = 204; // No Content
         }
@@ -1113,6 +1122,6 @@ call_user_func($afterExecute, $this, $retryCount);
     public function __destruct()
     {
         $this->setOutputFile(null);
-        curl_close($this->_handle);
+        curl_close($this->getHandle());
     }
 }
