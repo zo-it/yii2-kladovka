@@ -1,6 +1,6 @@
 <?php
 
-namespace ivanchkv\kladovka\helpers;
+namespace ivanchkv\kladovka\net;
 
 
 class Curl
@@ -261,7 +261,7 @@ class Curl
     {
         $scheme = $this->getScheme();
         $host = $this->getHost();
-        if ($scheme && is_string($scheme) && $host && is_string($host)) {
+        if ($scheme && $host && is_string($scheme) && is_string($host)) {
             $url = $scheme . '://' . $host;
             /*$port = $this->getPort();
             if ($port && is_int($port)) {
