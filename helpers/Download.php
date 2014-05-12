@@ -846,10 +846,10 @@ class Download
         if (array_key_exists('curl', $constants)) {
             $options = $this->getOptions();
             $options2 = [];
-            foreach ($options as $optionKey => $optionValue) {
-                foreach ($constants['curl'] as $constantName => $constantValue) {
-                    if ($optionKey == $constantValue) {
-                        $options2[$constantName] = $optionValue;
+            foreach ($options as $key => $value) {
+                foreach ($constants['curl'] as $constName => $constValue) {
+                    if ($key == $constValue) {
+                        $options2[$constName] = $value;
                         break;
                     }
                 }
@@ -941,8 +941,12 @@ class Download
         return $this->getContentLength();
     }
 
-    protected function executeOnce()
+    protected function executeOnce($retryCount = 1)
     {
+$beforeExecute = $this->getBeforeExecute();
+if ($beforeExecute && is_callable($beforeExecute)) {
+call_user_func($beforeExecute, $this, $retryCount);
+}
         $ch = curl_init();
         if (!$ch) {
             throw new \Exception('curl_init');
@@ -966,28 +970,32 @@ class Download
             fclose($options[CURLOPT_FILE]);
         }
         curl_close($ch);
+$afterExecute = $this->getAfterExecute();
+if ($afterExecute && is_callable($afterExecute)) {
+call_user_func($afterExecute, $this, $retryCount);
+}
         return $result;
     }
 
-    private $_retryCount = 0;
+    private $_maxRetries = 0;
 
-    public function setRetryCount($retryCount)
+    public function setMaxRetries($maxRetries)
     {
-        $this->_retryCount = $retryCount;
+        $this->_maxRetries = $maxRetries;
         return $this;
     }
 
-    public function getRetryCount()
+    public function getMaxRetries()
     {
-        return $this->_retryCount;
+        return $this->_maxRetries;
     }
 
-    public function retryCount($retryCount = null)
+    public function maxRetries($maxRetries = null)
     {
-        if (!is_null($retryCount)) {
-            return $this->setRetryCount($retryCount);
+        if (!is_null($maxRetries)) {
+            return $this->setMaxRetries($maxRetries);
         } else {
-            return $this->getRetryCount();
+            return $this->getMaxRetries();
         }
     }
 
@@ -1018,14 +1026,14 @@ class Download
         $result = $this->executeOnce();
         $info = $this->getInfo();
         if (!$result && (!$info || !$info['http_code'])) {
-            $n = 0;
-            $retryCount = $this->getRetryCount();
+            $retryCount = 0;
+            $maxRetries = $this->getMaxRetries();
             $retryDelay = $this->getRetryDelay();
-            while (!$result && (!$info || !$info['http_code']) && (++ $n <= $retryCount)) {
+            while (!$result && (!$info || !$info['http_code']) && (++ $retryCount <= $maxRetries)) {
                 if ($retryDelay) {
                     sleep($retryDelay);
                 }
-                $result = $this->executeOnce();
+                $result = $this->executeOnce($retryCount);
                 $info = $this->getInfo();
             }
         }
