@@ -765,6 +765,50 @@ $options[CURLOPT_PROXYPORT] = $proxyPort;
         }
     }
 
+    private $_retryCount = 0;
+
+    public function setRetryCount($retryCount)
+    {
+        $this->_retryCount = $retryCount;
+        return $this;
+    }
+
+    public function getRetryCount()
+    {
+        return $this->_retryCount;
+    }
+
+    public function retryCount($retryCount = null)
+    {
+        if (!is_null($retryCount)) {
+            return $this->setRetryCount($retryCount);
+        } else {
+            return $this->getRetryCount();
+        }
+    }
+
+    private $_retryDelay = 0;
+
+    public function setRetryDelay($retryDelay)
+    {
+        $this->_retryDelay = $retryDelay;
+        return $this;
+    }
+
+    public function getRetryDelay()
+    {
+        return $this->_retryDelay;
+    }
+
+    public function retryDelay($retryDelay = null)
+    {
+        if (!is_null($retryDelay)) {
+            return $this->setRetryCount($retryDelay);
+        } else {
+            return $this->getRetryCount();
+        }
+    }
+
     private $_info = null;
 
     protected function setInfo($info)
@@ -788,13 +832,27 @@ $options[CURLOPT_PROXYPORT] = $proxyPort;
         return is_array($this->_info) ? $this->_info['download_content_length'] : null;
     }
 
+    public function info()
+    {
+        return $this->getInfo();
+    }
+
+    public function httpCode()
+    {
+        return $this->getHttpCode();
+    }
+
+    public function contentLength()
+    {
+        return $this->getContentLength();
+    }
+
     public function execute()
     {
         $result = false;
-        $url = $this->setInfo(null)->getUrl();
-        $ch = curl_init($url);
+        $ch = curl_init();
         if ($ch) {
-            $options = $this->getOptions();
+            $options = $this->setInfo(null)->getOptions();
             $isOutputFileString = false;
             if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
                 $isOutputFileString = true;
@@ -804,12 +862,14 @@ $options[CURLOPT_PROXYPORT] = $proxyPort;
                 $result = curl_exec($ch);
                 $info = curl_getinfo($ch);
                 $n = 0;
-                while (!$result && !$info['http_code'] && (++ $n <= 3)) {
-                    sleep(5);
+                $retryCount = $this->getRetryCount();
+                $retryDelay = $this->getRetryDelay();
+                while (!$result && !$info['http_code'] && (++ $n <= $retryCount)) {
+                    sleep($retryDelay);
                     $result = curl_exec($ch);
                     $info = curl_getinfo($ch);
                 }
-                if (($info['http_code'] == 200) && ($info['download_content_length'] <= 0)) {
+                if (($info['http_code'] == 200) && !$info['download_content_length']) {
                     $info['http_code'] = 204; // No Content
                 }
                 $this->setInfo($info);
