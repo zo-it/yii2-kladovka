@@ -11,11 +11,35 @@ class Curl
         return new self($url);
     }
 
+    private $_handle = null;
+
     public function __construct($url = null)
     {
+        $this->_handle = curl_init();
+        if (!$this->_handle) {
+            throw new \Exception('curl_init');
+        }
         if (!is_null($url)) {
             $this->setUrl($url);
         }
+    }
+
+    public function __clone()
+    {
+        $this->_handle = curl_init();
+        if (!$this->_handle) {
+            throw new \Exception('curl_init');
+        }
+    }
+
+    public function getHandle()
+    {
+        return $this->_handle;
+    }
+
+    public function handle()
+    {
+        return $this->getHandle();
     }
 
     private $_scheme = null;
@@ -998,21 +1022,17 @@ $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
 call_user_func($beforeExecute, $this, $retryCount);
 }
-        $ch = curl_init();
-        if (!$ch) {
-            throw new \Exception('curl_init');
-        }
         $options = $this->getOptions();
         $isOutputFileString = false;
         if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
             $isOutputFileString = true;
             $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
         }
-        if (!curl_setopt_array($ch, $options)) {
+        if (!curl_setopt_array($this->_handle, $options)) {
             //throw new \Exception('curl_setopt_array');
         }
-        $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
+        $result = curl_exec($this->_handle);
+        $info = curl_getinfo($this->_handle);
         if (($info['http_code'] == 200) && !$info['download_content_length']) {
             $info['http_code'] = 204; // No Content
         }
@@ -1020,7 +1040,6 @@ call_user_func($beforeExecute, $this, $retryCount);
         if ($isOutputFileString) {
             fclose($options[CURLOPT_FILE]);
         }
-        curl_close($ch);
 $afterExecute = $this->getAfterExecute();
 if ($afterExecute && is_callable($afterExecute)) {
 call_user_func($afterExecute, $this, $retryCount);
@@ -1094,5 +1113,6 @@ call_user_func($afterExecute, $this, $retryCount);
     public function __destruct()
     {
         $this->setOutputFile(null);
+        curl_close($this->_handle);
     }
 }
