@@ -923,7 +923,7 @@ class Download
     {
         $ch = curl_init();
         if (!$ch) {
-            throw new Exception('curl_init');
+            throw new \Exception('curl_init');
         }
         $options = $this->setInfo(null)->getOptions();
         $isOutputFileString = false;
@@ -932,7 +932,7 @@ class Download
             $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
         }
         if (!curl_setopt_array($ch, $options)) {
-            throw new Exception('curl_setopt_array');
+            //throw new \Exception('curl_setopt_array');
         }
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
