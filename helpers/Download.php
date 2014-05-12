@@ -859,47 +859,47 @@ class Download
         return false;
     }
 
-    private $_retryCount = 0;
+    private $_beforeExecute = null;
 
-    public function setRetryCount($retryCount)
+    public function setBeforeExecute($beforeExecute)
     {
-        $this->_retryCount = $retryCount;
+        $this->_beforeExecute = $beforeExecute;
         return $this;
     }
 
-    public function getRetryCount()
+    public function getBeforeExecute()
     {
-        return $this->_retryCount;
+        return $this->_beforeExecute;
     }
 
-    public function retryCount($retryCount = null)
+    public function beforeExecute($beforeExecute = null)
     {
-        if (!is_null($retryCount)) {
-            return $this->setRetryCount($retryCount);
+        if (!is_null($beforeExecute)) {
+            return $this->setBeforeExecute($beforeExecute);
         } else {
-            return $this->getRetryCount();
+            return $this->getBeforeExecute();
         }
     }
 
-    private $_retryDelay = 0;
+    private $_afterExecute = null;
 
-    public function setRetryDelay($retryDelay)
+    public function setAfterExecute($afterExecute)
     {
-        $this->_retryDelay = $retryDelay;
+        $this->_afterExecute = $afterExecute;
         return $this;
     }
 
-    public function getRetryDelay()
+    public function getAfterExecute()
     {
-        return $this->_retryDelay;
+        return $this->_afterExecute;
     }
 
-    public function retryDelay($retryDelay = null)
+    public function afterExecute($afterExecute = null)
     {
-        if (!is_null($retryDelay)) {
-            return $this->setRetryCount($retryDelay);
+        if (!is_null($afterExecute)) {
+            return $this->setAfterExecute($afterExecute);
         } else {
-            return $this->getRetryCount();
+            return $this->getAfterExecute();
         }
     }
 
@@ -967,6 +967,50 @@ class Download
         }
         curl_close($ch);
         return $result;
+    }
+
+    private $_retryCount = 0;
+
+    public function setRetryCount($retryCount)
+    {
+        $this->_retryCount = $retryCount;
+        return $this;
+    }
+
+    public function getRetryCount()
+    {
+        return $this->_retryCount;
+    }
+
+    public function retryCount($retryCount = null)
+    {
+        if (!is_null($retryCount)) {
+            return $this->setRetryCount($retryCount);
+        } else {
+            return $this->getRetryCount();
+        }
+    }
+
+    private $_retryDelay = 0;
+
+    public function setRetryDelay($retryDelay)
+    {
+        $this->_retryDelay = $retryDelay;
+        return $this;
+    }
+
+    public function getRetryDelay()
+    {
+        return $this->_retryDelay;
+    }
+
+    public function retryDelay($retryDelay = null)
+    {
+        if (!is_null($retryDelay)) {
+            return $this->setRetryCount($retryDelay);
+        } else {
+            return $this->getRetryCount();
+        }
     }
 
     public function execute()
