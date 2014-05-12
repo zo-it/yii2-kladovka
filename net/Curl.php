@@ -1037,17 +1037,20 @@ call_user_func($beforeExecute, $this, $retryCount);
             $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
         }
         $handle = $this->getHandle();
-        if (!curl_setopt_array($handle, $options)) {
-            //throw new \Exception('curl_setopt_array');
+        $setopt = curl_setopt_array($handle, $options);
+        if ($setopt) {
+            $result = curl_exec($handle);
+            $info = curl_getinfo($handle);
+            if (($info['http_code'] == 200) && !$info['download_content_length']) {
+                $info['http_code'] = 204; // No Content
+            }
+            $this->setInfo($info);
         }
-        $result = curl_exec($handle);
-        $info = curl_getinfo($handle);
-        if (($info['http_code'] == 200) && !$info['download_content_length']) {
-            $info['http_code'] = 204; // No Content
-        }
-        $this->setInfo($info);
         if ($isOutputFileString) {
             fclose($options[CURLOPT_FILE]);
+        }
+        if (!$setopt) {
+            throw new \Exception('curl_setopt_array');
         }
 $afterExecute = $this->getAfterExecute();
 if ($afterExecute && is_callable($afterExecute)) {
