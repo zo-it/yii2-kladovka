@@ -1,6 +1,6 @@
 <?php
 
-namespace ivanchkv\kladovka\helpers;
+namespace ivanchkv\kladovka\net;
 
 
 class Curl
@@ -13,9 +13,41 @@ class Curl
 
     public function __construct($url = null)
     {
+        $ch = curl_init();
+        if (!$ch) {
+            throw new \Exception('Unable to init cURL handle.');
+        }
+        $this->setCh($ch);
         if (!is_null($url)) {
             $this->setUrl($url);
         }
+    }
+
+    public function __clone()
+    {
+        $ch = curl_init();
+        if (!$ch) {
+            throw new \Exception('Unable to init cURL handle.');
+        }
+        $this->setCh($ch);
+    }
+
+    private $_ch = null;
+
+    protected function setCh($ch)
+    {
+        $this->_ch = $ch;
+        return $this;
+    }
+
+    public function getCh()
+    {
+        return $this->_ch;
+    }
+
+    public function ch()
+    {
+        return $this->getCh();
     }
 
     private $_scheme = null;
@@ -261,7 +293,7 @@ class Curl
     {
         $scheme = $this->getScheme();
         $host = $this->getHost();
-        if ($scheme && is_string($scheme) && $host && is_string($host)) {
+        if ($scheme && $host && is_string($scheme) && is_string($host)) {
             $url = $scheme . '://' . $host;
             /*$port = $this->getPort();
             if ($port && is_int($port)) {
@@ -754,11 +786,15 @@ class Curl
         }
         if ($url && is_string($url)) {
             $options[CURLOPT_URL] = $url;
+        } else {
+            $options[CURLOPT_URL] = null;
         }
         // port
         $port = $this->getPort();
         if ($port && is_int($port)) {
             $options[CURLOPT_PORT] = $port;
+        } else {
+            $options[CURLOPT_PORT] = null;
         }
         // user password
         $user = $this->getUser();
@@ -769,75 +805,98 @@ class Curl
             } else {
                 $options[CURLOPT_USERPWD] = $user;
             }
+        } else {
+            $options[CURLOPT_USERPWD] = null;
         }
         // post fields
         $postFields = $this->buildPostFields();
         if ($postFields && (is_string($postFields) || is_array($postFields))) {
-            $options[CURLOPT_POSTFIELDS] = $postFields;
             $options[CURLOPT_POST] = true;
+            $options[CURLOPT_POSTFIELDS] = $postFields;
         } else {
             $options[CURLOPT_POST] = false;
+            $options[CURLOPT_POSTFIELDS] = null;
         }
         // cookie
         $cookie = $this->buildCookie();
         if ($cookie && is_string($cookie)) {
             $options[CURLOPT_COOKIE] = $cookie;
+        } else {
+            $options[CURLOPT_COOKIE] = null;
         }
         // referer
         $referer = $this->getReferer();
         if ($referer && is_string($referer)) {
             $options[CURLOPT_REFERER] = $referer;
+        } else {
+            $options[CURLOPT_REFERER] = null;
         }
         // user agent
         $userAgent = $this->getUserAgent();
         if ($userAgent && is_string($userAgent)) {
             $options[CURLOPT_USERAGENT] = $userAgent;
+        } else {
+            $options[CURLOPT_USERAGENT] = null;
         }
         // http header
         $httpHeader = $this->buildHttpHeader();
         if ($httpHeader && is_array($httpHeader)) {
             $options[CURLOPT_HTTPHEADER] = $httpHeader;
+        } else {
+            $options[CURLOPT_HTTPHEADER] = null;
         }
         // max redirs
         $maxRedirs = $this->getMaxRedirs();
         if ($maxRedirs && is_int($maxRedirs)) {
-            $options[CURLOPT_MAXREDIRS] = $maxRedirs;
             $options[CURLOPT_FOLLOWLOCATION] = true;
+            $options[CURLOPT_MAXREDIRS] = $maxRedirs;
         } else {
             $options[CURLOPT_FOLLOWLOCATION] = false;
+            $options[CURLOPT_MAXREDIRS] = null;
         }
         // connect timeout
         $connectTimeout = $this->getConnectTimeout();
         if ($connectTimeout && is_int($connectTimeout)) {
             $options[CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
+        } else {
+            $options[CURLOPT_CONNECTTIMEOUT] = null;
         }
         // timeout
         $timeout = $this->getTimeout();
         if ($timeout && is_int($timeout)) {
             $options[CURLOPT_TIMEOUT] = $timeout;
+        } else {
+            $options[CURLOPT_TIMEOUT] = null;
         }
         // output file
         $outputFile = $this->getOutputFile();
         if ($outputFile && (is_resource($outputFile) || is_string($outputFile))) {
-            $options[CURLOPT_FILE] = $outputFile;
             $options[CURLOPT_RETURNTRANSFER] = false;
+            $options[CURLOPT_FILE] = $outputFile;
         } else {
             $options[CURLOPT_RETURNTRANSFER] = true;
+            $options[CURLOPT_FILE] = null;
         }
         // proxy type
         $proxyType = $this->getProxyType();
         if ($proxyType && is_int($proxyType)) {
             $options[CURLOPT_PROXYTYPE] = $proxyType;
+        } else {
+            $options[CURLOPT_PROXYTYPE] = null;
         }
         // proxy host
         $proxyHost = $this->getProxyHost();
         if ($proxyHost && is_string($proxyHost)) {
             $options[CURLOPT_PROXY] = $proxyHost;
+        } else {
+            $options[CURLOPT_PROXY] = null;
         }
         // proxy port
         $proxyPort = $this->getProxyPort();
         if ($proxyPort && is_int($proxyPort)) {
             $options[CURLOPT_PROXYPORT] = $proxyPort;
+        } else {
+            $options[CURLOPT_PROXYPORT] = null;
         }
         // proxy user password
         $proxyUser = $this->getProxyUser();
@@ -848,6 +907,8 @@ class Curl
             } else {
                 $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
             }
+        } else {
+            $options[CURLOPT_PROXYUSERPWD] = null;
         }
         return $options;
     }
@@ -969,29 +1030,33 @@ $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
 call_user_func($beforeExecute, $this, $retryCount);
 }
-        $ch = curl_init();
-        if (!$ch) {
-            throw new \Exception('curl_init');
-        }
         $options = $this->getOptions();
         $isOutputFileString = false;
         if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
             $isOutputFileString = true;
-            $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
+            $outputFilename = $options[CURLOPT_FILE];
+            $fh = fopen($outputFilename, 'w');
+            if (!$fh) {
+                throw new \Exception('Unable to open file "' . $outputFilename . '".');
+            }
+            $options[CURLOPT_FILE] = $fh;
         }
-        if (!curl_setopt_array($ch, $options)) {
-            //throw new \Exception('curl_setopt_array');
+        $ch = $this->getCh();
+        $setopt = curl_setopt_array($ch, $options);
+        if ($setopt) {
+            $result = curl_exec($ch);
+            $info = curl_getinfo($ch);
+            if (($info['http_code'] == 200) && !$info['download_content_length']) {
+                $info['http_code'] = 204; // No Content
+            }
+            $this->setInfo($info);
         }
-        $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        if (($info['http_code'] == 200) && !$info['download_content_length']) {
-            $info['http_code'] = 204; // No Content
+        if ($isOutputFileString && isset($fh) && is_resource($fh)) {
+            fclose($fh);
         }
-        $this->setInfo($info);
-        if ($isOutputFileString) {
-            fclose($options[CURLOPT_FILE]);
+        if (!$setopt) {
+            throw new \Exception('curl_setopt_array');
         }
-        curl_close($ch);
 $afterExecute = $this->getAfterExecute();
 if ($afterExecute && is_callable($afterExecute)) {
 call_user_func($afterExecute, $this, $retryCount);
@@ -1065,5 +1130,6 @@ call_user_func($afterExecute, $this, $retryCount);
     public function __destruct()
     {
         $this->setOutputFile(null);
+        curl_close($this->getCh());
     }
 }
