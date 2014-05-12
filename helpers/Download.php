@@ -671,10 +671,10 @@ class Download
         $parsedUrl = parse_url($proxyUrl);
         if ($parsedUrl && is_array($parsedUrl)) {
             if (array_key_exists('scheme', $parsedUrl)) {
-                $scheme = strtolower($parsedUrl['scheme']);
-                if (strncmp($scheme, 'http', 4) == 0) {
+                $proxyScheme = strtolower($parsedUrl['scheme']);
+                if (strncmp($proxyScheme, 'http', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif (strncmp($scheme, 'sock', 4) == 0) {
+                } elseif (strncmp($proxyScheme, 'sock', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_SOCKS5);
                 } else {
                     $this->setProxyType(null);
@@ -748,7 +748,7 @@ class Download
         }
         // post fields
         $postFields = $this->buildPostFields();
-        if ($postFields !== false) {
+        if (!$postFields) {
             $options[CURLOPT_POSTFIELDS] = $postFields;
             $options[CURLOPT_POST] = true;
         } else {
@@ -756,7 +756,7 @@ class Download
         }
         // cookie
         $cookie = $this->buildCookie();
-        if ($cookie !== false) {
+        if (!$cookie) {
             $options[CURLOPT_COOKIE] = $cookie;
         }
         // referer
@@ -771,7 +771,7 @@ class Download
         }
         // http header
         $httpHeader = $this->buildHttpHeader();
-        if ($httpHeader !== false) {
+        if (!$httpHeader) {
             $options[CURLOPT_HTTPHEADER] = $httpHeader;
         }
         // max redirs
@@ -919,39 +919,49 @@ class Download
         return $this->getContentLength();
     }
 
+    protected function executeOnce()
+    {
+        $ch = curl_init();
+        if (!$ch) {
+            throw new Exception('curl_init');
+        }
+        $options = $this->setInfo(null)->getOptions();
+        $isOutputFileString = false;
+        if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
+            $isOutputFileString = true;
+            $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
+        }
+        if (!curl_setopt_array($ch, $options)) {
+            throw new Exception('curl_setopt_array');
+        }
+        $result = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        if (($info['http_code'] == 200) && !$info['download_content_length']) {
+            $info['http_code'] = 204; // No Content
+        }
+        $this->setInfo($info);
+        if ($isOutputFileString) {
+            fclose($options[CURLOPT_FILE]);
+        }
+        curl_close($ch);
+        return $result;
+    }
+
     public function execute()
     {
-        $result = false;
-        $ch = curl_init();
-        if ($ch) {
-            $options = $this->setInfo(null)->getOptions();
-            $isOutputFileString = false;
-            if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
-                $isOutputFileString = true;
-                $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
-            }
-            if (curl_setopt_array($ch, $options)) {
-                $result = curl_exec($ch);
-                $info = curl_getinfo($ch);
-                $n = 0;
-                $retryCount = $this->getRetryCount();
-                $retryDelay = $this->getRetryDelay();
-                while (!$result && !$info['http_code'] && (++ $n <= $retryCount)) {
-                    if ($retryDelay) {
-                        sleep($retryDelay);
-                    }
-                    $result = curl_exec($ch);
-                    $info = curl_getinfo($ch);
+        $result = $this->executeOnce();
+        $info = $this->getInfo();
+        if (!$result && (!$info || !$info['http_code'])) {
+            $n = 0;
+            $retryCount = $this->getRetryCount();
+            $retryDelay = $this->getRetryDelay();
+            while (!$result && (!$info || !$info['http_code']) && (++ $n <= $retryCount)) {
+                if ($retryDelay) {
+                    sleep($retryDelay);
                 }
-                if (($info['http_code'] == 200) && !$info['download_content_length']) {
-                    $info['http_code'] = 204; // No Content
-                }
-                $this->setInfo($info);
+                $result = $this->executeOnce();
+                $info = $this->getInfo();
             }
-            if ($isOutputFileString) {
-                fclose($options[CURLOPT_FILE]);
-            }
-            curl_close($ch);
         }
         return $result;
     }
