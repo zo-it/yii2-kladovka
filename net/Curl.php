@@ -13,11 +13,11 @@ class Curl
 
     public function __construct($url = null)
     {
-        $handle = curl_init();
-        if (!$handle) {
-            throw new \Exception('curl_init');
+        $ch = curl_init();
+        if (!$ch) {
+            throw new \Exception('Unable to init cURL handle.');
         }
-        $this->setHandle($handle);
+        $this->setCh($ch);
         if (!is_null($url)) {
             $this->setUrl($url);
         }
@@ -25,29 +25,29 @@ class Curl
 
     public function __clone()
     {
-        $handle = curl_init();
-        if (!$handle) {
-            throw new \Exception('curl_init');
+        $ch = curl_init();
+        if (!$ch) {
+            throw new \Exception('Unable to init cURL handle.');
         }
-        $this->setHandle($handle);
+        $this->setCh($ch);
     }
 
-    private $_handle = null;
+    private $_ch = null;
 
-    protected function setHandle($handle)
+    protected function setCh($ch)
     {
-        $this->_handle = $handle;
+        $this->_ch = $ch;
         return $this;
     }
 
-    public function getHandle()
+    public function getCh()
     {
-        return $this->_handle;
+        return $this->_ch;
     }
 
-    public function handle()
+    public function ch()
     {
-        return $this->getHandle();
+        return $this->getCh();
     }
 
     private $_scheme = null;
@@ -1034,20 +1034,25 @@ call_user_func($beforeExecute, $this, $retryCount);
         $isOutputFileString = false;
         if (array_key_exists(CURLOPT_FILE, $options) && is_string($options[CURLOPT_FILE])) {
             $isOutputFileString = true;
-            $options[CURLOPT_FILE] = fopen($options[CURLOPT_FILE], 'w');
+            $outputFilename = $options[CURLOPT_FILE];
+            $fh = fopen($outputFilename, 'w');
+            if (!$fh) {
+                throw new \Exception('Unable to open file "' . $outputFilename . '".');
+            }
+            $options[CURLOPT_FILE] = $fh;
         }
-        $handle = $this->getHandle();
-        $setopt = curl_setopt_array($handle, $options);
+        $ch = $this->getCh();
+        $setopt = curl_setopt_array($ch, $options);
         if ($setopt) {
-            $result = curl_exec($handle);
-            $info = curl_getinfo($handle);
+            $result = curl_exec($ch);
+            $info = curl_getinfo($ch);
             if (($info['http_code'] == 200) && !$info['download_content_length']) {
                 $info['http_code'] = 204; // No Content
             }
             $this->setInfo($info);
         }
-        if ($isOutputFileString) {
-            fclose($options[CURLOPT_FILE]);
+        if ($isOutputFileString && isset($fh) && is_resource($fh)) {
+            fclose($fh);
         }
         if (!$setopt) {
             throw new \Exception('curl_setopt_array');
@@ -1125,6 +1130,6 @@ call_user_func($afterExecute, $this, $retryCount);
     public function __destruct()
     {
         $this->setOutputFile(null);
-        curl_close($this->getHandle());
+        curl_close($this->getCh());
     }
 }
