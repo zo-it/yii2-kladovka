@@ -847,9 +847,9 @@ class Download
             $options = $this->getOptions();
             $options2 = [];
             foreach ($options as $key => $value) {
-                foreach ($constants['curl'] as $constName => $constValue) {
-                    if ($key == $constValue) {
-                        $options2[$constName] = $value;
+                foreach ($constants['curl'] as $constantName => $constantValue) {
+                    if ($key == $constantValue) {
+                        $options2[$constantName] = $value;
                         break;
                     }
                 }
