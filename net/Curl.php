@@ -565,10 +565,12 @@ class Curl
 
     public function setOutputFile($outputFile)
     {
-        if (is_resource($this->_outputFile) && $this->_isTemporaryFile) {
-            fclose($this->_outputFile);
-        } elseif (is_string($this->_outputFile) && $this->_isTemporaryFile && file_exists($this->_outputFile)) {
-            unlink($this->_outputFile);
+        if ($this->_outputFile && $this->_isTemporaryFile) {
+            if (is_resource($this->_outputFile)) {
+                fclose($this->_outputFile);
+            } elseif (is_string($this->_outputFile) && file_exists($this->_outputFile)) {
+                unlink($this->_outputFile);
+            }
         }
         $this->_outputFile = $outputFile;
         $this->_isTemporaryFile = false;
@@ -577,7 +579,7 @@ class Curl
 
     public function getOutputFile()
     {
-        if (is_resource($this->_outputFile) && $this->_isTemporaryFile) {
+        if ($this->_outputFile && $this->_isTemporaryFile && is_resource($this->_outputFile)) {
             fseek($this->_outputFile, 0);
         }
         return $this->_outputFile;
