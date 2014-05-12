@@ -524,6 +524,9 @@ class Download
 
     public function getOutputFile()
     {
+        if (is_resource($this->_outputFile) && $this->_isTemporaryFile) {
+            fseek($this->_outputFile, 0);
+        }
         return $this->_outputFile;
     }
 
@@ -538,16 +541,16 @@ class Download
 
     public function tempFile()
     {
-        $result = $this->setOutputFile(tmpfile());
+        $self = $this->setOutputFile(tmpfile());
         $this->_isTemporaryFile = true;
-        return $result;
+        return $self;
     }
 
     public function tempFilename()
     {
-        $result = $this->setOutputFile(tempnam(sys_get_temp_dir(), uniqid(time())));
+        $self = $this->setOutputFile(tempnam(sys_get_temp_dir(), uniqid(time())));
         $this->_isTemporaryFile = true;
-        return $result;
+        return $self;
     }
 
     const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
@@ -748,7 +751,7 @@ class Download
         }
         // post fields
         $postFields = $this->buildPostFields();
-        if (!$postFields) {
+        if ($postFields && (is_string($postFields) || is_array($postFields))) {
             $options[CURLOPT_POSTFIELDS] = $postFields;
             $options[CURLOPT_POST] = true;
         } else {
@@ -756,7 +759,7 @@ class Download
         }
         // cookie
         $cookie = $this->buildCookie();
-        if (!$cookie) {
+        if ($cookie && (is_string($cookie) || is_array($cookie))) {
             $options[CURLOPT_COOKIE] = $cookie;
         }
         // referer
@@ -771,7 +774,7 @@ class Download
         }
         // http header
         $httpHeader = $this->buildHttpHeader();
-        if (!$httpHeader) {
+        if ($httpHeader && is_array($httpHeader)) {
             $options[CURLOPT_HTTPHEADER] = $httpHeader;
         }
         // max redirs
@@ -835,6 +838,25 @@ class Download
         } else {
             return $this->getOptions();
         }
+    }
+
+    public function dumpOptions()
+    {
+        $constants = get_defined_constants(true);
+        if (array_key_exists('curl', $constants)) {
+            $options = $this->getOptions();
+            $options2 = [];
+            foreach ($options as $optionKey => $optionValue) {
+                foreach ($constants['curl'] as $constantName => $constantValue) {
+                    if ($optionKey == $constantValue) {
+                        $options2[$constantName] = $optionValue;
+                        break;
+                    }
+                }
+            }
+            return $options2;
+        }
+        return false;
     }
 
     private $_retryCount = 0;
