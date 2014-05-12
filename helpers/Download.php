@@ -601,16 +601,22 @@ class Download
         return $this;
     }
 
-    protected function buildUrl()
+    public function getOptions()
     {
+        $options = is_array($this->_options) ? $this->_options : [];
+        $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP;
+        $options[CURLOPT_FOLLOWLOCATION] = true;
+        $options[CURLOPT_MAXREDIRS] = 5;
+        $options[CURLINFO_HEADER_OUT] = true;
+        // url
         $scheme = $this->getScheme();
         $host = $this->getHost();
         if ($scheme && is_string($scheme) && $host && is_string($host)) {
             $url = $scheme . '://' . $host;
-            $port = $this->getPort();
+            /*$port = $this->getPort();
             if ($port && is_int($port)) {
                 $url .= ':' . $port;
-            }
+            }*/
             $path = $this->getPath();
             if ($path && is_string($path)) {
                 $url .= $path;
@@ -624,23 +630,16 @@ class Download
                 $url .= '#' . $fragment;
             }
             return $url;
-        }
-        return false;
-    }
-
-    public function getOptions()
-    {
-        $options = is_array($this->_options) ? $this->_options : [];
-        $options[CURLINFO_HEADER_OUT] = true;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_MAXREDIRS] = 5;
-        // url
-        $url = $this->buildUrl();
-        if (!$url) {
+        } else {
             $url = $this->getUrl();
         }
         if ($url && is_string($url)) {
             $options[CURLOPT_URL] = $url;
+        }
+        // port
+        $port = $this->getPort();
+        if ($port && is_int($port)) {
+            $options[CURLOPT_PORT] = $port;
         }
         // user password
         $user = $this->getUser();
@@ -652,23 +651,31 @@ class Download
                 $options[CURLOPT_USERPWD] = $user;
             }
         }
+// proxy type
 $proxyType = $this->getProxyType();
+if ($proxyType && is_int($proxyType)) {
+$options[CURLOPT_PROXYTYPE] = $proxyType;
+}
+// proxy host
 $proxyHost = $this->getProxyHost();
+if ($proxyHost && is_string($proxyHost)) {
+$options[CURLOPT_PROXY] = $proxyHost;
+}
+// proxy port
 $proxyPort = $this->getProxyPort();
 if ($proxyPort && is_int($proxyPort)) {
 $options[CURLOPT_PROXYPORT] = $proxyPort;
 }
-
-        // proxy user password
-        $proxyUser = $this->getProxyUser();
-        if ($proxyUser && is_string($proxyUser)) {
-            $proxyPassword = $this->getProxyPassword();
-            if ($proxyPassword && is_string($proxyPassword)) {
-                $options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
-            } else {
-                $options[CURLOPT_PROXYUSERPWD] = $proxyUser;
-            }
-        }
+// proxy user password
+$proxyUser = $this->getProxyUser();
+if ($proxyUser && is_string($proxyUser)) {
+$proxyPassword = $this->getProxyPassword();
+if ($proxyPassword && is_string($proxyPassword)) {
+$options[CURLOPT_PROXYUSERPWD] = $proxyUser . ':' . $proxyPassword;
+} else {
+$options[CURLOPT_PROXYUSERPWD] = $proxyUser;
+}
+}
         // post fields
         $postFields = $this->getPostFields();
         $options[CURLOPT_POST] = !is_null($postFields);
@@ -676,20 +683,20 @@ $options[CURLOPT_PROXYPORT] = $proxyPort;
             if (is_string($postFields)) {
                 $options[CURLOPT_POSTFIELDS] = $postFields;
             } elseif (is_array($postFields)) {
-                $isMultiPartFormData = false;
+                $isFormDataMultipart = false;
                 $postFields2 = [];
                 foreach ($postFields as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $postFields2[] = $value;
                     } elseif (is_string($key) && is_scalar($value)) {
                         if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
-                            $isMultiPartFormData = true;
+                            $isFormDataMultipart = true;
                             break;
                         }
                         $postFields2[] = $key . '=' . urlencode($value);
                     }
                 }
-                $options[CURLOPT_POSTFIELDS] = $isMultiPartFormData ? $postFields : implode('&', $postFields2);
+                $options[CURLOPT_POSTFIELDS] = $isFormDataMultipart ? $postFields : implode('&', $postFields2);
             }
         }
         // cookie
@@ -865,7 +872,9 @@ $options[CURLOPT_PROXYPORT] = $proxyPort;
                 $retryCount = $this->getRetryCount();
                 $retryDelay = $this->getRetryDelay();
                 while (!$result && !$info['http_code'] && (++ $n <= $retryCount)) {
-                    sleep($retryDelay);
+                    if ($retryDelay) {
+                        sleep($retryDelay);
+                    }
                     $result = curl_exec($ch);
                     $info = curl_getinfo($ch);
                 }
