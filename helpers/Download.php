@@ -236,6 +236,33 @@ class Download
         }
     }
 
+    protected function buildUrl()
+    {
+        $scheme = $this->getScheme();
+        $host = $this->getHost();
+        if ($scheme && is_string($scheme) && $host && is_string($host)) {
+            $url = $scheme . '://' . $host;
+            /*$port = $this->getPort();
+            if ($port && is_int($port)) {
+                $url .= ':' . $port;
+            }*/
+            $path = $this->getPath();
+            if ($path && is_string($path)) {
+                $url .= $path;
+            }
+            $query = $this->getQuery();
+            if (is_string($query)) {
+                $url .= '?' . $query;
+            }
+            $fragment = $this->getFragment();
+            if (is_string($fragment)) {
+                $url .= '#' . $fragment;
+            }
+            return $url;
+        }
+        return false;
+    }
+
     private $_postFields = null;
 
     public function setPostFields($postFields)
@@ -258,6 +285,32 @@ class Download
         }
     }
 
+    protected function buildPostFields()
+    {
+        $postFields = $this->getPostFields();
+        if ($postFields) {
+            if (is_string($postFields)) {
+                return $postFields;
+            } elseif (is_array($postFields)) {
+                $isFormDataMultipart = false;
+                $postFields2 = [];
+                foreach ($postFields as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $postFields2[] = $value;
+                    } elseif (is_string($key) && is_scalar($value)) {
+                        if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
+                            $isFormDataMultipart = true;
+                            break;
+                        }
+                        $postFields2[] = $key . '=' . urlencode($value);
+                    }
+                }
+                return $isFormDataMultipart ? $postFields : implode('&', $postFields2);
+            }
+        }
+        return false;
+    }
+
     private $_cookie = null;
 
     public function setCookie($cookie)
@@ -278,6 +331,27 @@ class Download
         } else {
             return $this->getCookie();
         }
+    }
+
+    protected function buildCookie()
+    {
+        $cookie = $this->getCookie();
+        if ($cookie) {
+            if (is_string($cookie)) {
+                return $cookie;
+            } elseif (is_array($cookie)) {
+                $cookie2 = [];
+                foreach ($cookie as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $cookie2[] = $value;
+                    } elseif (is_string($key) && is_scalar($value)) {
+                        $cookie2[] = $key . '=' . urlencode($value);
+                    }
+                }
+                return implode('; ', $cookie2);
+            }
+        }
+        return false;
     }
 
     private $_referer = null;
@@ -346,7 +420,50 @@ class Download
         }
     }
 
-    private $_connectTimeout = 5;
+    protected function buildHttpHeader()
+    {
+        $httpHeader = $this->getHttpHeader();
+        if ($httpHeader) {
+            if (is_string($httpHeader)) {
+                return preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
+            } elseif (is_array($httpHeader)) {
+                $httpHeader2 = [];
+                foreach ($httpHeader as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $httpHeader2[] = $value;
+                    } elseif (is_string($key) && is_scalar($value)) {
+                        $httpHeader2[] = $key . ': ' . $value;
+                    }
+                }
+                return $httpHeader2;
+            }
+        }
+        return false;
+    }
+
+    private $_maxRedirs = null;
+
+    public function setMaxRedirs($maxRedirs)
+    {
+        $this->_maxRedirs = $maxRedirs;
+        return $this;
+    }
+
+    public function getMaxRedirs()
+    {
+        return $this->_maxRedirs;
+    }
+
+    public function maxRedirs($maxRedirs = null)
+    {
+        if (!is_null($maxRedirs)) {
+            return $this->setMaxRedirs($maxRedirs);
+        } else {
+            return $this->getMaxRedirs();
+        }
+    }
+
+    private $_connectTimeout = null;
 
     public function setConnectTimeout($connectTimeout)
     {
@@ -368,7 +485,7 @@ class Download
         }
     }
 
-    private $_timeout = 3600;
+    private $_timeout = null;
 
     public function setTimeout($timeout)
     {
@@ -605,31 +722,10 @@ class Download
     {
         $options = is_array($this->_options) ? $this->_options : [];
         $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_MAXREDIRS] = 5;
         $options[CURLINFO_HEADER_OUT] = true;
         // url
-        $scheme = $this->getScheme();
-        $host = $this->getHost();
-        if ($scheme && is_string($scheme) && $host && is_string($host)) {
-            $url = $scheme . '://' . $host;
-            /*$port = $this->getPort();
-            if ($port && is_int($port)) {
-                $url .= ':' . $port;
-            }*/
-            $path = $this->getPath();
-            if ($path && is_string($path)) {
-                $url .= $path;
-            }
-            $query = $this->getQuery();
-            if (is_string($query)) {
-                $url .= '?' . $query;
-            }
-            $fragment = $this->getFragment();
-            if (is_string($fragment)) {
-                $url .= '#' . $fragment;
-            }
-        } else {
+        $url = $this->buildUrl();
+        if (!$url) {
             $url = $this->getUrl();
         }
         if ($url && is_string($url)) {
@@ -651,44 +747,17 @@ class Download
             }
         }
         // post fields
-        $postFields = $this->getPostFields();
-        $options[CURLOPT_POST] = !is_null($postFields);
-        if ($postFields) {
-            if (is_string($postFields)) {
-                $options[CURLOPT_POSTFIELDS] = $postFields;
-            } elseif (is_array($postFields)) {
-                $isFormDataMultipart = false;
-                $postFields2 = [];
-                foreach ($postFields as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
-                        $postFields2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
-                        if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
-                            $isFormDataMultipart = true;
-                            break;
-                        }
-                        $postFields2[] = $key . '=' . urlencode($value);
-                    }
-                }
-                $options[CURLOPT_POSTFIELDS] = $isFormDataMultipart ? $postFields : implode('&', $postFields2);
-            }
+        $postFields = $this->buildPostFields();
+        if ($postFields !== false) {
+            $options[CURLOPT_POSTFIELDS] = $postFields;
+            $options[CURLOPT_POST] = true;
+        } else {
+            $options[CURLOPT_POST] = false;
         }
         // cookie
-        $cookie = $this->getCookie();
-        if ($cookie) {
-            if (is_string($cookie)) {
-                $options[CURLOPT_COOKIE] = $cookie;
-            } elseif (is_array($cookie)) {
-                $cookie2 = [];
-                foreach ($cookie as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
-                        $cookie2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
-                        $cookie2[] = $key . '=' . urlencode($value);
-                    }
-                }
-                $options[CURLOPT_COOKIE] = implode('; ', $cookie2);
-            }
+        $cookie = $this->buildCookie();
+        if ($cookie !== false) {
+            $options[CURLOPT_COOKIE] = $cookie;
         }
         // referer
         $referer = $this->getReferer();
@@ -701,21 +770,17 @@ class Download
             $options[CURLOPT_USERAGENT] = $userAgent;
         }
         // http header
-        $httpHeader = $this->getHttpHeader();
-        if ($httpHeader) {
-            if (is_string($httpHeader)) {
-                $options[CURLOPT_HTTPHEADER] = preg_split('~[\r\n]+~', $httpHeader, -1, PREG_SPLIT_NO_EMPTY);
-            } elseif (is_array($httpHeader)) {
-                $httpHeader2 = [];
-                foreach ($httpHeader as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
-                        $httpHeader2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
-                        $httpHeader2[] = $key . ': ' . $value;
-                    }
-                }
-                $options[CURLOPT_HTTPHEADER] = $httpHeader2;
-            }
+        $httpHeader = $this->buildHttpHeader();
+        if ($httpHeader !== false) {
+            $options[CURLOPT_HTTPHEADER] = $httpHeader;
+        }
+        // max redirs
+        $maxRedirs = $this->getMaxRedirs();
+        if ($maxRedirs && is_int($maxRedirs)) {
+            $options[CURLOPT_MAXREDIRS] = $maxRedirs;
+            $options[CURLOPT_FOLLOWLOCATION] = true;
+        } else {
+            $options[CURLOPT_FOLLOWLOCATION] = false;
         }
         // connect timeout
         $connectTimeout = $this->getConnectTimeout();
@@ -731,6 +796,7 @@ class Download
         $outputFile = $this->getOutputFile();
         if ($outputFile && (is_resource($outputFile) || is_string($outputFile))) {
             $options[CURLOPT_FILE] = $outputFile;
+            $options[CURLOPT_RETURNTRANSFER] = false;
         } else {
             $options[CURLOPT_RETURNTRANSFER] = true;
         }
