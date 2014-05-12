@@ -172,6 +172,27 @@ class Download
         }
     }
 
+    protected function buildQuery()
+    {
+        $query = $this->getQuery();
+        if ($query) {
+            if (is_string($query)) {
+                return $query;
+            } elseif (is_array($query)) {
+                $query2 = [];
+                foreach ($query as $key => $value) {
+                    if (is_int($key) && is_string($value)) {
+                        $query2[] = $value;
+                    } elseif (is_string($key) && is_scalar($value)) {
+                        $query2[] = $key . '=' . urlencode($value);
+                    }
+                }
+                return implode('&', $query2);
+            }
+        }
+        return false;
+    }
+
     private $_fragment = null;
 
     public function setFragment($fragment)
@@ -250,7 +271,7 @@ class Download
             if ($path && is_string($path)) {
                 $url .= $path;
             }
-            $query = $this->getQuery();
+            $query = $this->buildQuery();
             if (is_string($query)) {
                 $url .= '?' . $query;
             }
@@ -759,7 +780,7 @@ class Download
         }
         // cookie
         $cookie = $this->buildCookie();
-        if ($cookie && (is_string($cookie) || is_array($cookie))) {
+        if ($cookie && is_string($cookie)) {
             $options[CURLOPT_COOKIE] = $cookie;
         }
         // referer
