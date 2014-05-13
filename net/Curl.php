@@ -845,7 +845,7 @@ class Curl
         if ($httpHeader && is_array($httpHeader)) {
             $options[CURLOPT_HTTPHEADER] = $httpHeader;
         } else {
-            $options[CURLOPT_HTTPHEADER] = null;
+            $options[CURLOPT_HTTPHEADER] = [];
         }
         // max redirs
         $maxRedirs = $this->getMaxRedirs();
@@ -876,8 +876,8 @@ class Curl
             $options[CURLOPT_RETURNTRANSFER] = false;
             $options[CURLOPT_FILE] = $outputFile;
         } else {
+            $options[CURLOPT_FILE] = STDOUT;
             $options[CURLOPT_RETURNTRANSFER] = true;
-            $options[CURLOPT_FILE] = null;
         }
         // proxy type
         $proxyType = $this->getProxyType();
