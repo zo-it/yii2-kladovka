@@ -1106,7 +1106,9 @@ class Curl
         $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
 $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
-call_user_func($beforeExecute, $this, $retryCount);
+if (!call_user_func($beforeExecute, $this, $retryCount)) {
+return false;
+}
 }
         $options = $this->getOptions();
         $isOutputFileString = false;
@@ -1126,6 +1128,7 @@ call_user_func($beforeExecute, $this, $retryCount);
             $errno = curl_errno($ch);
             $error = curl_error($ch);
             $info = curl_getinfo($ch);
+$info['after_execute_result'] = true;
             if (($info['http_code'] == 200) && !$info['download_content_length']) {
                 $info['http_code'] = 204; // No Content
             }
@@ -1139,7 +1142,11 @@ call_user_func($beforeExecute, $this, $retryCount);
         }
 $afterExecute = $this->getAfterExecute();
 if ($afterExecute && is_callable($afterExecute)) {
-call_user_func($afterExecute, $this, $retryCount);
+if (!call_user_func($afterExecute, $this, $retryCount)) {
+$info['after_execute_result'] = false;
+$this->setInfo($info);
+return false;
+}
 }
         return $result;
     }
@@ -1192,11 +1199,11 @@ call_user_func($afterExecute, $this, $retryCount);
     {
         $result = $this->executeOnce();
         $info = $this->getInfo();
-        if (!$result && (!$info || !$info['http_code'])) {
+        if (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result'])) {
             $retryCount = 0;
             $maxRetries = $this->getMaxRetries();
             $retryDelay = $this->getRetryDelay();
-            while (!$result && (!$info || !$info['http_code']) && (++ $retryCount <= $maxRetries)) {
+            while (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result']) && (++ $retryCount <= $maxRetries)) {
                 if ($retryDelay) {
                     sleep($retryDelay);
                 }
