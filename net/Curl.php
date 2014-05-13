@@ -25,7 +25,7 @@ class Curl
                 foreach ($data as $key => $value) {
                     $methodName = 'set' . ucfirst($key);
                     if (is_string($key) && method_exists($this, $methodName)) {
-                        call_user_func([$this, $methodName], $value);
+                        $this->{$methodName}($value); // call_user_func([$this, $methodName], $value);
                     }
                 }
             }
