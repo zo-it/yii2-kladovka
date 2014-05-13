@@ -261,16 +261,18 @@ class Curl
     public function setUrl($url)
     {
         $this->_url = $url;
-        $parsedUrl = parse_url($url);
-        if ($parsedUrl && is_array($parsedUrl)) {
-            $this->setScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
-            $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
-            $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
-            $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
-            $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
-            $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
+        if ($url && is_string($url)) {
+            $url = parse_url($url);
+        }
+        if ($url && is_array($url)) {
+            $this->setScheme(array_key_exists('scheme', $url) ? $url['scheme'] : null);
+            $this->setUser(array_key_exists('user', $url) ? $url['user'] : null);
+            $this->setPassword(array_key_exists('pass', $url) ? $url['pass'] : null);
+            $this->setHost(array_key_exists('host', $url) ? $url['host'] : null);
+            $this->setPort(array_key_exists('port', $url) ? (int)$url['port'] : null);
+            $this->setPath(array_key_exists('path', $url) ? $url['path'] : null);
+            $this->setQuery(array_key_exists('query', $url) ? $url['query'] : null);
+            $this->setFragment(array_key_exists('fragment', $url) ? $url['fragment'] : null);
         } else {
             $this->setScheme(null);
             $this->setUser(null);
@@ -745,13 +747,15 @@ class Curl
     public function setProxyUrl($proxyUrl)
     {
         $this->_proxyUrl = $proxyUrl;
-        $parsedUrl = parse_url($proxyUrl);
-        if ($parsedUrl && is_array($parsedUrl)) {
-            if (array_key_exists('scheme', $parsedUrl)) {
-                $proxyScheme = strtolower($parsedUrl['scheme']);
-                if (strncmp($proxyScheme, 'http', 4) == 0) {
+        if ($proxyUrl && is_string($proxyUrl)) {
+            $proxyUrl = parse_url($proxyUrl);
+        }
+        if ($proxyUrl && is_array($proxyUrl)) {
+            if (array_key_exists('scheme', $proxyUrl)) {
+                $proxyScheme = strtolower(substr($proxyUrl['scheme'], 0, 4));
+                if ($proxyScheme == 'http') {
                     $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif (strncmp($proxyScheme, 'sock', 4) == 0) {
+                } elseif ($proxyScheme == 'sock') {
                     $this->setProxyType(self::PROXY_TYPE_SOCKS5);
                 } else {
                     $this->setProxyType(null);
@@ -759,10 +763,10 @@ class Curl
             } else {
                 $this->setProxyType(null);
             }
-            $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
-            $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
+            $this->setProxyUser(array_key_exists('user', $proxyUrl) ? $proxyUrl['user'] : null);
+            $this->setProxyPassword(array_key_exists('pass', $proxyUrl) ? $proxyUrl['pass'] : null);
+            $this->setProxyHost(array_key_exists('host', $proxyUrl) ? $proxyUrl['host'] : null);
+            $this->setProxyPort(array_key_exists('port', $proxyUrl) ? (int)$proxyUrl['port'] : null);
         } else {
             $this->setProxyType(null);
             $this->setProxyUser(null);
