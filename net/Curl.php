@@ -24,7 +24,7 @@ class Curl
             } elseif (is_array($data)) {
                 foreach ($data as $key => $value) {
                     $methodName = 'set' . ucfirst($key);
-                    if (is_string($key) && method_exists($this, $methodName)) {
+                    if (method_exists($this, $methodName)) {
                         $this->{$methodName}($value); // call_user_func([$this, $methodName], $value);
                     }
                 }
