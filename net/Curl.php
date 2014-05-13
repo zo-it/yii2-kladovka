@@ -23,9 +23,11 @@ class Curl
                 $this->setUrl($data);
             } elseif (is_array($data)) {
                 foreach ($data as $key => $value) {
-                    $methodName = 'set' . ucfirst($key);
-                    if (method_exists($this, $methodName)) {
-                        $this->{$methodName}($value); // call_user_func([$this, $methodName], $value);
+                    if (is_string($key)) {
+                        $methodName = 'set' . ucfirst($key);
+                        if (method_exists($this, $methodName)) {
+                            $this->{$methodName}($value);
+                        }
                     }
                 }
             }
@@ -261,16 +263,18 @@ class Curl
     public function setUrl($url)
     {
         $this->_url = $url;
-        $parsedUrl = parse_url($url);
-        if ($parsedUrl && is_array($parsedUrl)) {
-            $this->setScheme(array_key_exists('scheme', $parsedUrl) ? $parsedUrl['scheme'] : null);
-            $this->setUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
-            $this->setHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
-            $this->setPath(array_key_exists('path', $parsedUrl) ? $parsedUrl['path'] : null);
-            $this->setQuery(array_key_exists('query', $parsedUrl) ? $parsedUrl['query'] : null);
-            $this->setFragment(array_key_exists('fragment', $parsedUrl) ? $parsedUrl['fragment'] : null);
+        if ($url && is_string($url)) {
+            $url = parse_url($url);
+        }
+        if ($url && is_array($url)) {
+            $this->setScheme(array_key_exists('scheme', $url) ? $url['scheme'] : null);
+            $this->setUser(array_key_exists('user', $url) ? $url['user'] : null);
+            $this->setPassword(array_key_exists('pass', $url) ? $url['pass'] : null);
+            $this->setHost(array_key_exists('host', $url) ? $url['host'] : null);
+            $this->setPort(array_key_exists('port', $url) ? (int)$url['port'] : null);
+            $this->setPath(array_key_exists('path', $url) ? $url['path'] : null);
+            $this->setQuery(array_key_exists('query', $url) ? $url['query'] : null);
+            $this->setFragment(array_key_exists('fragment', $url) ? $url['fragment'] : null);
         } else {
             $this->setScheme(null);
             $this->setUser(null);
@@ -745,13 +749,15 @@ class Curl
     public function setProxyUrl($proxyUrl)
     {
         $this->_proxyUrl = $proxyUrl;
-        $parsedUrl = parse_url($proxyUrl);
-        if ($parsedUrl && is_array($parsedUrl)) {
-            if (array_key_exists('scheme', $parsedUrl)) {
-                $proxyScheme = strtolower($parsedUrl['scheme']);
-                if (strncmp($proxyScheme, 'http', 4) == 0) {
+        if ($proxyUrl && is_string($proxyUrl)) {
+            $proxyUrl = parse_url($proxyUrl);
+        }
+        if ($proxyUrl && is_array($proxyUrl)) {
+            if (array_key_exists('scheme', $proxyUrl)) {
+                $proxyScheme = strtolower(substr($proxyUrl['scheme'], 0, 4));
+                if ($proxyScheme == 'http') {
                     $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif (strncmp($proxyScheme, 'sock', 4) == 0) {
+                } elseif ($proxyScheme == 'sock') {
                     $this->setProxyType(self::PROXY_TYPE_SOCKS5);
                 } else {
                     $this->setProxyType(null);
@@ -759,10 +765,10 @@ class Curl
             } else {
                 $this->setProxyType(null);
             }
-            $this->setProxyUser(array_key_exists('user', $parsedUrl) ? $parsedUrl['user'] : null);
-            $this->setProxyPassword(array_key_exists('pass', $parsedUrl) ? $parsedUrl['pass'] : null);
-            $this->setProxyHost(array_key_exists('host', $parsedUrl) ? $parsedUrl['host'] : null);
-            $this->setProxyPort(array_key_exists('port', $parsedUrl) ? (int)$parsedUrl['port'] : null);
+            $this->setProxyUser(array_key_exists('user', $proxyUrl) ? $proxyUrl['user'] : null);
+            $this->setProxyPassword(array_key_exists('pass', $proxyUrl) ? $proxyUrl['pass'] : null);
+            $this->setProxyHost(array_key_exists('host', $proxyUrl) ? $proxyUrl['host'] : null);
+            $this->setProxyPort(array_key_exists('port', $proxyUrl) ? (int)$proxyUrl['port'] : null);
         } else {
             $this->setProxyType(null);
             $this->setProxyUser(null);
@@ -1019,7 +1025,11 @@ class Curl
 
     public function getResult()
     {
-        return $this->_result;
+        if (is_string($this->_result) || is_bool($this->_result)) {
+            return $this->_result;
+        } else {
+            throw new \Exception('Unable to return a result.');
+        }
     }
 
     public function result()
@@ -1037,7 +1047,11 @@ class Curl
 
     public function getErrno()
     {
-        return $this->_errno;
+        if (is_int($this->_errno)) {
+            return $this->_errno;
+        } else {
+            throw new \Exception('Unable to return an error number.');
+        }
     }
 
     public function errno()
@@ -1055,7 +1069,11 @@ class Curl
 
     public function getError()
     {
-        return $this->_error;
+        if (is_string($this->_error)) {
+            return $this->_error;
+        } else {
+            throw new \Exception('Unable to return an error message.');
+        }
     }
 
     public function error()
@@ -1071,39 +1089,27 @@ class Curl
         return $this;
     }
 
-    public function getInfo()
+    public function getInfo($key = null)
     {
-        return $this->_info;
+        if (is_array($this->_info)) {
+            if ($key && is_string($key)) {
+                return array_key_exists($key, $this->_info) ? $this->_info[$key] : null;
+            } else {
+                return $this->_info;
+            }
+        } else {
+            throw new \Exception('Unable to return an info.');
+        }
+    }
+
+    public function info($key = null)
+    {
+        return $this->getInfo($key);
     }
 
     public function getConnectTime()
     {
-        return is_array($this->_info) ? $this->_info['connect_time'] : null;
-    }
-
-    public function getTotalTime()
-    {
-        return is_array($this->_info) ? $this->_info['total_time'] : null;
-    }
-
-    public function getHttpCode()
-    {
-        return is_array($this->_info) ? $this->_info['http_code'] : null;
-    }
-
-    public function getContentType()
-    {
-        return is_array($this->_info) ? $this->_info['content_type'] : null;
-    }
-
-    public function getContentLength()
-    {
-        return is_array($this->_info) ? $this->_info['download_content_length'] : null;
-    }
-
-    public function info()
-    {
-        return $this->getInfo();
+        return $this->getInfo('connect_time');
     }
 
     public function connectTime()
@@ -1111,9 +1117,19 @@ class Curl
         return $this->getConnectTime();
     }
 
+    public function getTotalTime()
+    {
+        return $this->getInfo('total_time');
+    }
+
     public function totalTime()
     {
         return $this->getTotalTime();
+    }
+
+    public function getHttpCode()
+    {
+        return $this->getInfo('http_code');
     }
 
     public function httpCode()
@@ -1121,14 +1137,24 @@ class Curl
         return $this->getHttpCode();
     }
 
-    public function contentLength()
+    public function getContentType()
     {
-        return $this->getContentLength();
+        return $this->getInfo('content_type');
     }
 
     public function contentType()
     {
         return $this->getContentType();
+    }
+
+    public function getContentLength()
+    {
+        return $this->getInfo('download_content_length');
+    }
+
+    public function contentLength()
+    {
+        return $this->getContentLength();
     }
 
     protected function executeOnce($retryCount = 1)
