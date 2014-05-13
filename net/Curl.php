@@ -6,20 +6,29 @@ namespace ivanchkv\kladovka\net;
 class Curl
 {
 
-    public static function init($url = null)
+    public static function init($data = null)
     {
-        return new self($url);
+        return new self($data);
     }
 
-    public function __construct($url = null)
+    public function __construct($data = null)
     {
         $ch = curl_init();
         if (!$ch) {
             throw new \Exception('Unable to init cURL handle.');
         }
         $this->setCh($ch);
-        if (!is_null($url)) {
-            $this->setUrl($url);
+        if ($data) {
+            if (is_string($data)) {
+                $this->setUrl($data);
+            } elseif (is_array($data)) {
+                foreach ($data as $key => $value) {
+                    $methodName = 'set' . ucfirst($key);
+                    if (is_string($key) && method_exists($this, $methodName)) {
+                        call_user_func([$this, $methodName], $value);
+                    }
+                }
+            }
         }
     }
 
