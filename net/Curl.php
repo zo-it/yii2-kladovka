@@ -1000,6 +1000,42 @@ class Curl
         }
     }
 
+    private $_errno = null;
+
+    protected function setErrno($errno)
+    {
+        $this->_errno = $errno;
+        return $this;
+    }
+
+    public function getErrno()
+    {
+        return $this->_errno;
+    }
+
+    public function errno()
+    {
+        return $this->getErrno();
+    }
+
+    private $_error = null;
+
+    protected function setError($error)
+    {
+        $this->_error = $error;
+        return $this;
+    }
+
+    public function getError()
+    {
+        return $this->_error;
+    }
+
+    public function error()
+    {
+        return $this->getError();
+    }
+
     private $_info = null;
 
     protected function setInfo($info)
@@ -1040,7 +1076,7 @@ class Curl
 
     protected function executeOnce($retryCount = 1)
     {
-$this->setInfo(null);
+        $this->setErrno(null)->setError(null)->setInfo(null);
 $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
 call_user_func($beforeExecute, $this, $retryCount);
@@ -1060,11 +1096,13 @@ call_user_func($beforeExecute, $this, $retryCount);
         $setopt = curl_setopt_array($ch, $options);
         if ($setopt) {
             $result = curl_exec($ch);
+            $errno = curl_errno($ch);
+            $error = curl_error($ch);
             $info = curl_getinfo($ch);
             if (($info['http_code'] == 200) && !$info['download_content_length']) {
                 $info['http_code'] = 204; // No Content
             }
-            $this->setInfo($info);
+            $this->setErrno($errno)->setError($error)->setInfo($info);
         }
         if ($isOutputFileString && isset($fh) && is_resource($fh)) {
             fclose($fh);
