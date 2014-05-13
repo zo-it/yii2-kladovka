@@ -24,8 +24,8 @@ class Curl
             } elseif (is_array($data)) {
                 foreach ($data as $key => $value) {
                     $methodName = 'set' . ucfirst($key);
-                    if (is_string($key) && method_exists($this, $methodName)) {
-                        call_user_func([$this, $methodName], $value);
+                    if (method_exists($this, $methodName)) {
+                        $this->{$methodName}($value); // call_user_func([$this, $methodName], $value);
                     }
                 }
             }
@@ -1009,6 +1009,24 @@ class Curl
         }
     }
 
+    private $_result = null;
+
+    protected function setResult($result)
+    {
+        $this->_result = $result;
+        return $this;
+    }
+
+    public function getResult()
+    {
+        return $this->_result;
+    }
+
+    public function result()
+    {
+        return $this->getResult();
+    }
+
     private $_errno = null;
 
     protected function setErrno($errno)
@@ -1085,7 +1103,7 @@ class Curl
 
     protected function executeOnce($retryCount = 1)
     {
-        $this->setErrno(null)->setError(null)->setInfo(null);
+        $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
 $beforeExecute = $this->getBeforeExecute();
 if ($beforeExecute && is_callable($beforeExecute)) {
 call_user_func($beforeExecute, $this, $retryCount);
@@ -1111,7 +1129,7 @@ call_user_func($beforeExecute, $this, $retryCount);
             if (($info['http_code'] == 200) && !$info['download_content_length']) {
                 $info['http_code'] = 204; // No Content
             }
-            $this->setErrno($errno)->setError($error)->setInfo($info);
+            $this->setResult($result)->setErrno($errno)->setError($error)->setInfo($info);
         }
         if ($isOutputFileString && isset($fh) && is_resource($fh)) {
             fclose($fh);
