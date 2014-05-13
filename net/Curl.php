@@ -1155,9 +1155,9 @@ call_user_func($afterExecute, $this, $retryCount);
     public function retryDelay($retryDelay = null)
     {
         if (!is_null($retryDelay)) {
-            return $this->setRetryCount($retryDelay);
+            return $this->setRetryDelay($retryDelay);
         } else {
-            return $this->getRetryCount();
+            return $this->getRetryDelay();
         }
     }
 
