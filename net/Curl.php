@@ -816,8 +816,8 @@ class Curl
             $options[CURLOPT_POST] = true;
             $options[CURLOPT_POSTFIELDS] = $postFields;
         } else {
-            $options[CURLOPT_POST] = false;
             $options[CURLOPT_POSTFIELDS] = null;
+            $options[CURLOPT_POST] = false;
         }
         // cookie
         $cookie = $this->buildCookie();
@@ -853,8 +853,8 @@ class Curl
             $options[CURLOPT_FOLLOWLOCATION] = true;
             $options[CURLOPT_MAXREDIRS] = $maxRedirs;
         } else {
-            $options[CURLOPT_FOLLOWLOCATION] = false;
             $options[CURLOPT_MAXREDIRS] = null;
+            $options[CURLOPT_FOLLOWLOCATION] = false;
         }
         // connect timeout
         $connectTimeout = $this->getConnectTimeout();
