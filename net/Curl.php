@@ -429,6 +429,16 @@ class Curl
         }
     }
 
+    protected function buildReferer()
+    {
+        $scheme = $this->getScheme();
+        $host = $this->getHost();
+        if ($scheme && $host && is_string($scheme) && is_string($host)) {
+            return $scheme . '://' . $host;
+        }
+        return false;
+    }
+
     private $_userAgent = null;
 
     public function setUserAgent($userAgent)
@@ -828,6 +838,9 @@ class Curl
         }
         // referer
         $referer = $this->getReferer();
+        if (!$referer) {
+            $referer = $this->buildReferer();
+        }
         if ($referer && is_string($referer)) {
             $options[CURLOPT_REFERER] = $referer;
         } else {
