@@ -23,9 +23,11 @@ class Curl
                 $this->setUrl($data);
             } elseif (is_array($data)) {
                 foreach ($data as $key => $value) {
-                    $methodName = 'set' . ucfirst($key);
-                    if (method_exists($this, $methodName)) {
-                        $this->{$methodName}($value); // call_user_func([$this, $methodName], $value);
+                    if (is_string($key)) {
+                        $methodName = 'set' . ucfirst($key);
+                        if (method_exists($this, $methodName)) {
+                            $this->{$methodName}($value);
+                        }
                     }
                 }
             }
@@ -1023,6 +1025,9 @@ class Curl
 
     public function getResult()
     {
+        if (is_null($this->_result)) {
+            throw new \Exception('Unable to return a result.');
+        }
         return $this->_result;
     }
 
@@ -1041,6 +1046,9 @@ class Curl
 
     public function getErrno()
     {
+        if (is_null($this->_errno)) {
+            throw new \Exception('Unable to return an error number.');
+        }
         return $this->_errno;
     }
 
@@ -1059,6 +1067,9 @@ class Curl
 
     public function getError()
     {
+        if (is_null($this->_error)) {
+            throw new \Exception('Unable to return an error message.');
+        }
         return $this->_error;
     }
 
@@ -1075,39 +1086,26 @@ class Curl
         return $this;
     }
 
-    public function getInfo()
+    public function getInfo($key = null)
     {
-        return $this->_info;
+        if (is_null($this->_info)) {
+            throw new \Exception('Unable to return an info.');
+        }
+        if ($key && is_string($key)) {
+            return array_key_exists($key, $this->_info) ? $this->_info[$key] : null;
+        } else {
+            return $this->_info;
+        }
+    }
+
+    public function info($key = null)
+    {
+        return $this->getInfo($key);
     }
 
     public function getConnectTime()
     {
-        return is_array($this->_info) ? $this->_info['connect_time'] : null;
-    }
-
-    public function getTotalTime()
-    {
-        return is_array($this->_info) ? $this->_info['total_time'] : null;
-    }
-
-    public function getHttpCode()
-    {
-        return is_array($this->_info) ? $this->_info['http_code'] : null;
-    }
-
-    public function getContentType()
-    {
-        return is_array($this->_info) ? $this->_info['content_type'] : null;
-    }
-
-    public function getContentLength()
-    {
-        return is_array($this->_info) ? $this->_info['download_content_length'] : null;
-    }
-
-    public function info()
-    {
-        return $this->getInfo();
+        return $this->getInfo('connect_time');
     }
 
     public function connectTime()
@@ -1115,9 +1113,19 @@ class Curl
         return $this->getConnectTime();
     }
 
+    public function getTotalTime()
+    {
+        return $this->getInfo('total_time');
+    }
+
     public function totalTime()
     {
         return $this->getTotalTime();
+    }
+
+    public function getHttpCode()
+    {
+        return $this->getInfo('http_code');
     }
 
     public function httpCode()
@@ -1125,14 +1133,24 @@ class Curl
         return $this->getHttpCode();
     }
 
-    public function contentLength()
+    public function getContentType()
     {
-        return $this->getContentLength();
+        return $this->getInfo('content_type');
     }
 
     public function contentType()
     {
         return $this->getContentType();
+    }
+
+    public function getContentLength()
+    {
+        return $this->getInfo('download_content_length');
+    }
+
+    public function contentLength()
+    {
+        return $this->getContentLength();
     }
 
     protected function executeOnce($retryCount = 1)
