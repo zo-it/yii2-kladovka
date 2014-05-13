@@ -1025,10 +1025,11 @@ class Curl
 
     public function getResult()
     {
-        if (!is_string($this->_result) && !is_bool($this->_result)) {
+        if (is_string($this->_result) || is_bool($this->_result)) {
+            return $this->_result;
+        } else {
             throw new \Exception('Unable to return a result.');
         }
-        return $this->_result;
     }
 
     public function result()
@@ -1046,10 +1047,11 @@ class Curl
 
     public function getErrno()
     {
-        if (!is_int($this->_errno)) {
+        if (is_int($this->_errno)) {
+            return $this->_errno;
+        } else {
             throw new \Exception('Unable to return an error number.');
         }
-        return $this->_errno;
     }
 
     public function errno()
@@ -1067,10 +1069,11 @@ class Curl
 
     public function getError()
     {
-        if (!is_string($this->_error)) {
+        if (is_string($this->_error)) {
+            return $this->_error;
+        } else {
             throw new \Exception('Unable to return an error message.');
         }
-        return $this->_error;
     }
 
     public function error()
@@ -1088,13 +1091,14 @@ class Curl
 
     public function getInfo($key = null)
     {
-        if (!is_array($this->_info)) {
-            throw new \Exception('Unable to return an info.');
-        }
-        if ($key && is_string($key)) {
-            return array_key_exists($key, $this->_info) ? $this->_info[$key] : null;
+        if (is_array($this->_info)) {
+            if ($key && is_string($key)) {
+                return array_key_exists($key, $this->_info) ? $this->_info[$key] : null;
+            } else {
+                return $this->_info;
+            }
         } else {
-            return $this->_info;
+            throw new \Exception('Unable to return an info.');
         }
     }
 
