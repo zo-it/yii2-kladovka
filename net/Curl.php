@@ -1025,7 +1025,7 @@ class Curl
 
     public function getResult()
     {
-        if (is_null($this->_result)) {
+        if (!is_string($this->_result) && !is_bool($this->_result)) {
             throw new \Exception('Unable to return a result.');
         }
         return $this->_result;
@@ -1046,7 +1046,7 @@ class Curl
 
     public function getErrno()
     {
-        if (is_null($this->_errno)) {
+        if (!is_int($this->_errno)) {
             throw new \Exception('Unable to return an error number.');
         }
         return $this->_errno;
@@ -1067,7 +1067,7 @@ class Curl
 
     public function getError()
     {
-        if (is_null($this->_error)) {
+        if (!is_string($this->_error)) {
             throw new \Exception('Unable to return an error message.');
         }
         return $this->_error;
@@ -1088,7 +1088,7 @@ class Curl
 
     public function getInfo($key = null)
     {
-        if (is_null($this->_info)) {
+        if (!is_array($this->_info)) {
             throw new \Exception('Unable to return an info.');
         }
         if ($key && is_string($key)) {
