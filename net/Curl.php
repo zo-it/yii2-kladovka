@@ -1076,9 +1076,24 @@ class Curl
         return $this->_info;
     }
 
+    public function getConnectTime()
+    {
+        return is_array($this->_info) ? $this->_info['connect_time'] : null;
+    }
+
+    public function getTotalTime()
+    {
+        return is_array($this->_info) ? $this->_info['total_time'] : null;
+    }
+
     public function getHttpCode()
     {
         return is_array($this->_info) ? $this->_info['http_code'] : null;
+    }
+
+    public function getContentType()
+    {
+        return is_array($this->_info) ? $this->_info['content_type'] : null;
     }
 
     public function getContentLength()
@@ -1091,6 +1106,16 @@ class Curl
         return $this->getInfo();
     }
 
+    public function connectTime()
+    {
+        return $this->getConnectTime();
+    }
+
+    public function totalTime()
+    {
+        return $this->getTotalTime();
+    }
+
     public function httpCode()
     {
         return $this->getHttpCode();
@@ -1099,6 +1124,11 @@ class Curl
     public function contentLength()
     {
         return $this->getContentLength();
+    }
+
+    public function contentType()
+    {
+        return $this->getContentType();
     }
 
     protected function executeOnce($retryCount = 1)
