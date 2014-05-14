@@ -605,6 +605,9 @@ class Curl
 
     public function getFile()
     {
+        if ($this->_isTempFile && $this->_file && is_resource($this->_file) && !$this->_filename) {
+            fseek($this->_file, 0);
+        }
         return $this->_file;
     }
 
