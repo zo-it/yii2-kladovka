@@ -598,7 +598,8 @@ class Curl
 
     public function setFile($file)
     {
-        $this->clearFile()->clearFilename();
+        $this->clearFile();
+        $this->clearFilename();
         $this->_file = $file;
         return $this;
     }
@@ -642,7 +643,8 @@ class Curl
 
     public function setFilename($filename)
     {
-        $this->clearFile()->clearFilename();
+        $this->clearFile();
+        $this->clearFilename();
         $this->_filename = $filename;
         if ($filename && is_string($filename)) {
             $file = fopen($filename, 'w');
@@ -1202,7 +1204,7 @@ class Curl
         return $this->getContentLength();
     }
 
-    protected function executeOnce($retryCount = 1)
+    public function executeOnce($retryCount = 0)
     {
         $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
 $beforeExecute = $this->getBeforeExecute();
@@ -1237,7 +1239,7 @@ return false;
         return $result;
     }
 
-    private $_maxRetries = 0;
+    private $_maxRetries = null;
 
     public function setMaxRetries($maxRetries)
     {
@@ -1259,7 +1261,7 @@ return false;
         }
     }
 
-    private $_retryDelay = 0;
+    private $_retryDelay = null;
 
     public function setRetryDelay($retryDelay)
     {
@@ -1283,26 +1285,26 @@ return false;
 
     public function execute()
     {
-        $result = $this->executeOnce();
+        $retryCount = 0;
+        $result = $this->executeOnce($retryCount);
         $info = $this->getInfo();
-        if (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result'])) {
-            $retryCount = 0;
-            $maxRetries = $this->getMaxRetries();
+        $maxRetries = $this->getMaxRetries();
+        while (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result']) && $maxRetries && is_int($maxRetries) && (++ $retryCount <= $maxRetries)) {
             $retryDelay = $this->getRetryDelay();
-            while (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result']) && (++ $retryCount <= $maxRetries)) {
-                if ($retryDelay) {
-                    sleep($retryDelay);
-                }
-                $result = $this->executeOnce($retryCount);
-                $info = $this->getInfo();
+            if ($retryDelay && is_int($retryDelay)) {
+                sleep($retryDelay);
             }
+            $result = $this->executeOnce($retryCount);
+            $info = $this->getInfo();
+            $maxRetries = $this->getMaxRetries();
         }
         return $result;
     }
 
     public function __destruct()
     {
-        $this->clearFile()->clearFilename();
+        $this->clearFile();
+        $this->clearFilename();
         curl_close($this->getCh());
     }
 }
