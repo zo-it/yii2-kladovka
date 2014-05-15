@@ -13,11 +13,11 @@ class Curl
 
     public function __construct($data = null)
     {
-        $ch = curl_init();
-        if (!$ch) {
+        $handle = curl_init();
+        if (!$handle) {
             throw new \Exception('Unable to init cURL handle.');
         }
-        $this->setCh($ch);
+        $this->setHandle($handle);
         if ($data) {
             if (is_string($data)) {
                 $this->setUrl($data);
@@ -36,29 +36,29 @@ class Curl
 
     public function __clone()
     {
-        $ch = curl_copy_handle($this->getCh());
-        if (!$ch) {
+        $handle = curl_copy_handle($this->getHandle());
+        if (!$handle) {
             throw new \Exception('Unable to init cURL handle.');
         }
-        $this->setCh($ch);
+        $this->setHandle($handle);
     }
 
-    private $_ch = null;
+    private $_handle = null;
 
-    protected function setCh($ch)
+    protected function setHandle($handle)
     {
-        $this->_ch = $ch;
+        $this->_handle = $handle;
         return $this;
     }
 
-    public function getCh()
+    public function getHandle()
     {
-        return $this->_ch;
+        return $this->_handle;
     }
 
-    public function ch()
+    public function handle()
     {
-        return $this->getCh();
+        return $this->getHandle();
     }
 
     private $_scheme = null;
@@ -1197,13 +1197,13 @@ if (!call_user_func($beforeExecute, $this, $retryCount)) {
 return false;
 }
 }
-        $ch = $this->getCh();
+        $handle = $this->getHandle();
         $options = $this->getOptions();
-        if (curl_setopt_array($ch, $options)) {
-            $result = curl_exec($ch);
-            $errno = curl_errno($ch);
-            $error = curl_error($ch);
-            $info = curl_getinfo($ch);
+        if (curl_setopt_array($handle, $options)) {
+            $result = curl_exec($handle);
+            $errno = curl_errno($handle);
+            $error = curl_error($handle);
+            $info = curl_getinfo($handle);
 $info['after_execute_result'] = true;
             if (($info['http_code'] == 200) && !$info['download_content_length']) {
                 $info['http_code'] = 204; // No Content
@@ -1289,6 +1289,6 @@ return false;
     {
         $this->clearFile();
         $this->clearFilename();
-        curl_close($this->getCh());
+        curl_close($this->getHandle());
     }
 }
