@@ -308,10 +308,6 @@ class Curl
         $host = $this->getHost();
         if ($scheme && $host && is_string($scheme) && is_string($host)) {
             $url = $scheme . '://' . $host;
-            /*$port = $this->getPort();
-            if ($port && is_int($port)) {
-                $url .= ':' . $port;
-            }*/
             $path = $this->getPath();
             if ($path && is_string($path)) {
                 $url .= $path;
@@ -358,20 +354,20 @@ class Curl
             if (is_string($postFields)) {
                 return $postFields;
             } elseif (is_array($postFields)) {
-                $isFormDataMultipart = false;
+                $multipartFormData = false;
                 $postFields2 = [];
                 foreach ($postFields as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $postFields2[] = $value;
                     } elseif (is_string($key) && is_scalar($value)) {
                         if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
-                            $isFormDataMultipart = true;
+                            $multipartFormData = true;
                             break;
                         }
                         $postFields2[] = $key . '=' . urlencode($value);
                     }
                 }
-                return $isFormDataMultipart ? $postFields : implode('&', $postFields2);
+                return $multipartFormData ? $postFields : implode('&', $postFields2);
             }
         }
         return false;
@@ -606,9 +602,6 @@ class Curl
 
     public function getFile()
     {
-        /*if ($this->_isTempFile && $this->_file && is_resource($this->_file) && !$this->_filename) {
-            fseek($this->_file, 0);
-        }*/
         return $this->_file;
     }
 
@@ -801,10 +794,9 @@ class Curl
         }
         if ($proxyUrl && is_array($proxyUrl)) {
             if (array_key_exists('scheme', $proxyUrl)) {
-                $proxyScheme = strtolower(substr($proxyUrl['scheme'], 0, 4));
-                if ($proxyScheme == 'http') {
+                if (strncasecmp($proxyUrl['scheme'], 'http', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif ($proxyScheme == 'sock') {
+                } elseif (strncasecmp($proxyUrl['scheme'], 'sock', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_SOCKS5);
                 } else {
                     $this->setProxyType(null);
