@@ -1001,17 +1001,12 @@ class Curl
 
     public function dumpOptions()
     {
-        $namedOptions = [];
+        $options = [];
         $constants = get_defined_constants(true)['curl'];
         foreach ($this->buildOptions() as $key => $value) {
-            $name = array_search($key, $constants);
-            if ($name && is_string($name)) {
-                $namedOptions[$name] = $value;
-            } else {
-                $namedOptions[$key] = $value;
-            }
+            $options[array_search($key, $constants)] = $value;
         }
-        return $namedOptions;
+        return $options;
     }
 
     private $_beforeExecute = null;
