@@ -842,7 +842,24 @@ class Curl
 
     public function getOptions()
     {
-        $options = is_array($this->_options) ? $this->_options : [];
+        return $this->_options;
+    }
+
+    public function options($options = null)
+    {
+        if (!is_null($options)) {
+            return $this->setOptions($options);
+        } else {
+            return $this->getOptions();
+        }
+    }
+
+    protected function buildOptions()
+    {
+        $options = $this->getOptions();
+        if (!is_array($options)) {
+            $options = [];
+        }
         $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP;
         $options[CURLINFO_HEADER_OUT] = true;
         // url
@@ -982,32 +999,19 @@ class Curl
         return $options;
     }
 
-    public function options($options = null)
-    {
-        if (!is_null($options)) {
-            return $this->setOptions($options);
-        } else {
-            return $this->getOptions();
-        }
-    }
-
     public function dumpOptions()
     {
-        $constants = get_defined_constants(true);
-        if (array_key_exists('curl', $constants)) {
-            $options = $this->getOptions();
-            $options2 = [];
-            foreach ($options as $key => $value) {
-                foreach ($constants['curl'] as $constantName => $constantValue) {
-                    if ($key == $constantValue) {
-                        $options2[$constantName] = $value;
-                        break;
-                    }
-                }
+        $namedOptions = [];
+        $constants = get_defined_constants(true)['curl'];
+        foreach ($this->buildOptions() as $key => $value) {
+            $name = array_search($key, $constants);
+            if ($name && is_string($name)) {
+                $namedOptions[$name] = $value;
+            } else {
+                $namedOptions[$key] = $value;
             }
-            return $options2;
         }
-        return false;
+        return $namedOptions;
     }
 
     private $_beforeExecute = null;
@@ -1190,8 +1194,7 @@ return false;
 }
 }
         $handle = $this->getHandle();
-        $options = $this->getOptions();
-        if (curl_setopt_array($handle, $options)) {
+        if (curl_setopt_array($handle, $this->buildOptions())) {
             $result = curl_exec($handle);
             $errno = curl_errno($handle);
             $error = curl_error($handle);
