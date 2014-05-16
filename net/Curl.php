@@ -36,6 +36,16 @@ class Curl
 
     public function __clone()
     {
+        if ($this->getIsTempFile()) {
+            $this->setFile(null);
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                }
+            }
+        }
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
             throw new \Exception('Unable to init cURL handle.');
@@ -579,23 +589,76 @@ class Curl
         }
     }
 
-    private $_file = null;
-    private $_isTempFile = false;
+    private $_isTempFilename = null;
 
-    public function clearFile()
+    public function setIsTempFilename($isTempFilename)
     {
-        if ($this->_isTempFile && $this->_file && is_resource($this->_file)) {
-            fclose($this->_file);
-        }
-        $this->_file = null;
-        $this->_isTempFile = false;
+        $this->_isTempFilename = $isTempFilename;
         return $this;
     }
 
+    public function getIsTempFilename()
+    {
+        return $this->_isTempFilename;
+    }
+
+    public function isTempFilename($isTempFilename = null)
+    {
+        if (!is_null($isTempFilename)) {
+            return $this->setIsTempFilename($isTempFilename);
+        } else {
+            return $this->getIsTempFilename();
+        }
+    }
+
+    private $_filename = null;
+
+    public function setFilename($filename)
+    {
+        $this->_filename = $filename;
+        return $this;
+    }
+
+    public function getFilename()
+    {
+        return $this->_filename;
+    }
+
+    public function filename($filename = null)
+    {
+        if (!is_null($filename)) {
+            return $this->setFilename($filename);
+        } else {
+            return $this->getFilename();
+        }
+    }
+
+    private $_isTempFile = null;
+
+    public function setIsTempFile($isTempFile)
+    {
+        $this->_isTempFile = $isTempFile;
+        return $this;
+    }
+
+    public function getIsTempFile()
+    {
+        return $this->_isTempFile;
+    }
+
+    public function isTempFile($isTempFile = null)
+    {
+        if (!is_null($isTempFile)) {
+            return $this->setIsTempFile($isTempFile);
+        } else {
+            return $this->getIsTempFile();
+        }
+    }
+
+    private $_file = null;
+
     public function setFile($file)
     {
-        $this->clearFile();
-        $this->clearFilename();
         $this->_file = $file;
         return $this;
     }
@@ -614,61 +677,53 @@ class Curl
         }
     }
 
-    public function tempFile()
+    protected function openFile()
     {
-        $this->setFile(tmpfile());
-        $this->_isTempFile = true;
-        return $this;
-    }
-
-    private $_filename = null;
-    private $_isTempFilename = false;
-
-    public function clearFilename()
-    {
-        if ($this->_isTempFilename && $this->_filename && is_string($this->_filename) && file_exists($this->_filename)) {
-            unlink($this->_filename);
+        $this->closeFile();
+        if ($this->getIsTempFilename()) {
+            $dir = sys_get_temp_dir();
+            $filename = tempnam($dir, uniqid(time()));
+            if (!$filename) {
+                throw new \Exception('Unable to create temporary file in "' . $dir . '".');
+            }
+            $this->setFilename($filename);
+        } else {
+            $filename = $this->getFilename();
         }
-        $this->_filename = null;
-        $this->_isTempFilename = false;
-        return $this;
-    }
-
-    public function setFilename($filename)
-    {
-        $this->clearFile();
-        $this->clearFilename();
-        $this->_filename = $filename;
         if ($filename && is_string($filename)) {
             $file = fopen($filename, 'w');
             if (!$file) {
                 throw new \Exception('Unable to open file "' . $filename . '".');
             }
+            $this->setFile($file)->setIsTempFile(true);
+        } elseif ($this->getIsTempFile()) {
+            $file = tmpfile();
             $this->setFile($file);
-            $this->_isTempFile = true;
-        }
-        return $this;
-    }
-
-    public function getFilename()
-    {
-        return $this->_filename;
-    }
-
-    public function filename($filename = null)
-    {
-        if (!is_null($filename)) {
-            return $this->setFilename($filename);
         } else {
-            return $this->getFilename();
+            $file = $this->getFile();
         }
+        return $file;
     }
 
-    public function tempFilename()
+    protected function closeFile()
     {
-        $this->setFilename(tempnam(sys_get_temp_dir(), uniqid(time())));
-        $this->_isTempFilename = true;
-        return $this;
+        if ($this->getIsTempFile()) {
+            $file = $this->getFile();
+            $this->setFile(null);
+            if ($file && is_resource($file)) {
+                fclose($file);
+            }
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                    if (file_exists($filename)) {
+                        unlink($filename);
+                    }
+                }
+            }
+        }
     }
 
     const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
@@ -955,7 +1010,7 @@ class Curl
             $options[CURLOPT_TIMEOUT] = null;
         }
         // file
-        $file = $this->getFile();
+        $file = $this->openFile();
         if ($file && is_resource($file)) {
             $options[CURLOPT_RETURNTRANSFER] = false;
             $options[CURLOPT_FILE] = $file;
@@ -1277,8 +1332,7 @@ return false;
 
     public function __destruct()
     {
-        $this->clearFile();
-        $this->clearFilename();
+        $this->closeFile();
         curl_close($this->getHandle());
     }
 }
