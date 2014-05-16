@@ -695,7 +695,8 @@ class Curl
             if (!$file) {
                 throw new \Exception('Unable to open file "' . $filename . '".');
             }
-            $this->setFile($file)->setIsTempFile(true);
+            $this->setFile($file);
+            $this->setIsTempFile(true);
         } elseif ($this->getIsTempFile()) {
             $file = tmpfile();
             $this->setFile($file);
