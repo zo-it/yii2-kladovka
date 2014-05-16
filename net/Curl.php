@@ -36,6 +36,16 @@ class Curl
 
     public function __clone()
     {
+        if ($this->getIsTempFile()) {
+            $this->setFile(null);
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                }
+            }
+        }
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
             throw new \Exception('Unable to init cURL handle.');
@@ -308,10 +318,6 @@ class Curl
         $host = $this->getHost();
         if ($scheme && $host && is_string($scheme) && is_string($host)) {
             $url = $scheme . '://' . $host;
-            /*$port = $this->getPort();
-            if ($port && is_int($port)) {
-                $url .= ':' . $port;
-            }*/
             $path = $this->getPath();
             if ($path && is_string($path)) {
                 $url .= $path;
@@ -358,20 +364,20 @@ class Curl
             if (is_string($postFields)) {
                 return $postFields;
             } elseif (is_array($postFields)) {
-                $isFormDataMultipart = false;
+                $multipartFormData = false;
                 $postFields2 = [];
                 foreach ($postFields as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $postFields2[] = $value;
                     } elseif (is_string($key) && is_scalar($value)) {
                         if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
-                            $isFormDataMultipart = true;
+                            $multipartFormData = true;
                             break;
                         }
                         $postFields2[] = $key . '=' . urlencode($value);
                     }
                 }
-                return $isFormDataMultipart ? $postFields : implode('&', $postFields2);
+                return $multipartFormData ? $postFields : implode('&', $postFields2);
             }
         }
         return false;
@@ -583,77 +589,33 @@ class Curl
         }
     }
 
-    private $_file = null;
-    private $_isTempFile = false;
+    private $_isTempFilename = null;
 
-    public function clearFile()
+    public function setIsTempFilename($isTempFilename)
     {
-        if ($this->_isTempFile && $this->_file && is_resource($this->_file)) {
-            fclose($this->_file);
-        }
-        $this->_file = null;
-        $this->_isTempFile = false;
+        $this->_isTempFilename = $isTempFilename;
         return $this;
     }
 
-    public function setFile($file)
+    public function getIsTempFilename()
     {
-        $this->clearFile();
-        $this->clearFilename();
-        $this->_file = $file;
-        return $this;
+        return $this->_isTempFilename;
     }
 
-    public function getFile()
+    public function isTempFilename($isTempFilename = null)
     {
-        /*if ($this->_isTempFile && $this->_file && is_resource($this->_file) && !$this->_filename) {
-            fseek($this->_file, 0);
-        }*/
-        return $this->_file;
-    }
-
-    public function file($file = null)
-    {
-        if (!is_null($file)) {
-            return $this->setFile($file);
+        if (!is_null($isTempFilename)) {
+            return $this->setIsTempFilename($isTempFilename);
         } else {
-            return $this->getFile();
+            return $this->getIsTempFilename();
         }
-    }
-
-    public function tempFile()
-    {
-        $this->setFile(tmpfile());
-        $this->_isTempFile = true;
-        return $this;
     }
 
     private $_filename = null;
-    private $_isTempFilename = false;
-
-    public function clearFilename()
-    {
-        if ($this->_isTempFilename && $this->_filename && is_string($this->_filename) && file_exists($this->_filename)) {
-            unlink($this->_filename);
-        }
-        $this->_filename = null;
-        $this->_isTempFilename = false;
-        return $this;
-    }
 
     public function setFilename($filename)
     {
-        $this->clearFile();
-        $this->clearFilename();
         $this->_filename = $filename;
-        if ($filename && is_string($filename)) {
-            $file = fopen($filename, 'w');
-            if (!$file) {
-                throw new \Exception('Unable to open file "' . $filename . '".');
-            }
-            $this->setFile($file);
-            $this->_isTempFile = true;
-        }
         return $this;
     }
 
@@ -671,11 +633,97 @@ class Curl
         }
     }
 
-    public function tempFilename()
+    private $_isTempFile = null;
+
+    public function setIsTempFile($isTempFile)
     {
-        $this->setFilename(tempnam(sys_get_temp_dir(), uniqid(time())));
-        $this->_isTempFilename = true;
+        $this->_isTempFile = $isTempFile;
         return $this;
+    }
+
+    public function getIsTempFile()
+    {
+        return $this->_isTempFile;
+    }
+
+    public function isTempFile($isTempFile = null)
+    {
+        if (!is_null($isTempFile)) {
+            return $this->setIsTempFile($isTempFile);
+        } else {
+            return $this->getIsTempFile();
+        }
+    }
+
+    private $_file = null;
+
+    public function setFile($file)
+    {
+        $this->_file = $file;
+        return $this;
+    }
+
+    public function getFile()
+    {
+        return $this->_file;
+    }
+
+    public function file($file = null)
+    {
+        if (!is_null($file)) {
+            return $this->setFile($file);
+        } else {
+            return $this->getFile();
+        }
+    }
+
+    protected function openFile()
+    {
+        $this->closeFile();
+        if ($this->getIsTempFilename()) {
+            $dir = sys_get_temp_dir();
+            $filename = tempnam($dir, uniqid(time()));
+            if (!$filename) {
+                throw new \Exception('Unable to create temporary file in "' . $dir . '".');
+            }
+            $this->setFilename($filename);
+        } else {
+            $filename = $this->getFilename();
+        }
+        if ($filename && is_string($filename)) {
+            $file = fopen($filename, 'w');
+            if (!$file) {
+                throw new \Exception('Unable to open file "' . $filename . '".');
+            }
+            $this->setFile($file)->setIsTempFile(true);
+        } elseif ($this->getIsTempFile()) {
+            $file = tmpfile();
+            $this->setFile($file);
+        } else {
+            $file = $this->getFile();
+        }
+        return $file;
+    }
+
+    protected function closeFile()
+    {
+        if ($this->getIsTempFile()) {
+            $file = $this->getFile();
+            $this->setFile(null);
+            if ($file && is_resource($file)) {
+                fclose($file);
+            }
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                    if (file_exists($filename)) {
+                        unlink($filename);
+                    }
+                }
+            }
+        }
     }
 
     const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
@@ -801,10 +849,9 @@ class Curl
         }
         if ($proxyUrl && is_array($proxyUrl)) {
             if (array_key_exists('scheme', $proxyUrl)) {
-                $proxyScheme = strtolower(substr($proxyUrl['scheme'], 0, 4));
-                if ($proxyScheme == 'http') {
+                if (strncasecmp($proxyUrl['scheme'], 'http', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_HTTP);
-                } elseif ($proxyScheme == 'sock') {
+                } elseif (strncasecmp($proxyUrl['scheme'], 'sock', 4) == 0) {
                     $this->setProxyType(self::PROXY_TYPE_SOCKS5);
                 } else {
                     $this->setProxyType(null);
@@ -850,7 +897,24 @@ class Curl
 
     public function getOptions()
     {
-        $options = is_array($this->_options) ? $this->_options : [];
+        return $this->_options;
+    }
+
+    public function options($options = null)
+    {
+        if (!is_null($options)) {
+            return $this->setOptions($options);
+        } else {
+            return $this->getOptions();
+        }
+    }
+
+    protected function buildOptions()
+    {
+        $options = $this->getOptions();
+        if (!is_array($options)) {
+            $options = [];
+        }
         $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP;
         $options[CURLINFO_HEADER_OUT] = true;
         // url
@@ -946,7 +1010,7 @@ class Curl
             $options[CURLOPT_TIMEOUT] = null;
         }
         // file
-        $file = $this->getFile();
+        $file = $this->openFile();
         if ($file && is_resource($file)) {
             $options[CURLOPT_RETURNTRANSFER] = false;
             $options[CURLOPT_FILE] = $file;
@@ -990,32 +1054,14 @@ class Curl
         return $options;
     }
 
-    public function options($options = null)
-    {
-        if (!is_null($options)) {
-            return $this->setOptions($options);
-        } else {
-            return $this->getOptions();
-        }
-    }
-
     public function dumpOptions()
     {
-        $constants = get_defined_constants(true);
-        if (array_key_exists('curl', $constants)) {
-            $options = $this->getOptions();
-            $options2 = [];
-            foreach ($options as $key => $value) {
-                foreach ($constants['curl'] as $constantName => $constantValue) {
-                    if ($key == $constantValue) {
-                        $options2[$constantName] = $value;
-                        break;
-                    }
-                }
-            }
-            return $options2;
+        $options = [];
+        $constants = get_defined_constants(true)['curl'];
+        foreach ($this->buildOptions() as $key => $value) {
+            $options[array_search($key, $constants)] = $value;
         }
-        return false;
+        return $options;
     }
 
     private $_beforeExecute = null;
@@ -1198,8 +1244,7 @@ return false;
 }
 }
         $handle = $this->getHandle();
-        $options = $this->getOptions();
-        if (curl_setopt_array($handle, $options)) {
+        if (curl_setopt_array($handle, $this->buildOptions())) {
             $result = curl_exec($handle);
             $errno = curl_errno($handle);
             $error = curl_error($handle);
@@ -1287,8 +1332,7 @@ return false;
 
     public function __destruct()
     {
-        $this->clearFile();
-        $this->clearFilename();
+        $this->closeFile();
         curl_close($this->getHandle());
     }
 }
