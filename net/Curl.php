@@ -48,9 +48,15 @@ class Curl
         }
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
-            throw new \Exception('Unable to init cURL handle.');
+            throw new \Exception('Unable to copy cURL handle.');
         }
         $this->setHandle($handle);
+    }
+
+    public function __destruct()
+    {
+        $this->closeFile();
+        curl_close($this->getHandle());
     }
 
     private $_handle = null;
@@ -695,8 +701,8 @@ class Curl
             if (!$file) {
                 throw new \Exception('Unable to open file "' . $filename . '".');
             }
-            $this->setFile($file);
             $this->setIsTempFile(true);
+            $this->setFile($file);
         } elseif ($this->getIsTempFile()) {
             $file = tmpfile();
             $this->setFile($file);
@@ -1358,11 +1364,5 @@ class Curl
             $maxRetries = $this->getMaxRetries();
         }
         return $result;
-    }
-
-    public function __destruct()
-    {
-        $this->closeFile();
-        curl_close($this->getHandle());
     }
 }
