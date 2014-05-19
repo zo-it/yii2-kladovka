@@ -1065,50 +1065,6 @@ class Curl
         return $options;
     }
 
-    private $_beforeExecute = null;
-
-    public function setBeforeExecute($beforeExecute)
-    {
-        $this->_beforeExecute = $beforeExecute;
-        return $this;
-    }
-
-    public function getBeforeExecute()
-    {
-        return $this->_beforeExecute;
-    }
-
-    public function beforeExecute($beforeExecute = null)
-    {
-        if (!is_null($beforeExecute)) {
-            return $this->setBeforeExecute($beforeExecute);
-        } else {
-            return $this->getBeforeExecute();
-        }
-    }
-
-    private $_afterExecute = null;
-
-    public function setAfterExecute($afterExecute)
-    {
-        $this->_afterExecute = $afterExecute;
-        return $this;
-    }
-
-    public function getAfterExecute()
-    {
-        return $this->_afterExecute;
-    }
-
-    public function afterExecute($afterExecute = null)
-    {
-        if (!is_null($afterExecute)) {
-            return $this->setAfterExecute($afterExecute);
-        } else {
-            return $this->getAfterExecute();
-        }
-    }
-
     private $_result = null;
 
     protected function setResult($result)
@@ -1235,6 +1191,28 @@ class Curl
         return $this->getContentLength();
     }
 
+    private $_beforeExecute = null;
+
+    public function setBeforeExecute($beforeExecute)
+    {
+        $this->_beforeExecute = $beforeExecute;
+        return $this;
+    }
+
+    public function getBeforeExecute()
+    {
+        return $this->_beforeExecute;
+    }
+
+    public function beforeExecute($beforeExecute = null)
+    {
+        if (!is_null($beforeExecute)) {
+            return $this->setBeforeExecute($beforeExecute);
+        } else {
+            return $this->getBeforeExecute();
+        }
+    }
+
     protected function invokeBeforeExecute()
     {
         $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
@@ -1246,6 +1224,28 @@ class Curl
         }
         curl_setopt_array($this->getHandle(), $this->buildOptions());
         return true;
+    }
+
+    private $_afterExecute = null;
+
+    public function setAfterExecute($afterExecute)
+    {
+        $this->_afterExecute = $afterExecute;
+        return $this;
+    }
+
+    public function getAfterExecute()
+    {
+        return $this->_afterExecute;
+    }
+
+    public function afterExecute($afterExecute = null)
+    {
+        if (!is_null($afterExecute)) {
+            return $this->setAfterExecute($afterExecute);
+        } else {
+            return $this->getAfterExecute();
+        }
     }
 
     protected function invokeAfterExecute()
