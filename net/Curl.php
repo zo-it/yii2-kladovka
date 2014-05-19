@@ -48,9 +48,15 @@ class Curl
         }
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
-            throw new \Exception('Unable to init cURL handle.');
+            throw new \Exception('Unable to copy cURL handle.');
         }
         $this->setHandle($handle);
+    }
+
+    public function __destruct()
+    {
+        $this->closeFile();
+        curl_close($this->getHandle());
     }
 
     private $_handle = null;
@@ -695,7 +701,8 @@ class Curl
             if (!$file) {
                 throw new \Exception('Unable to open file "' . $filename . '".');
             }
-            $this->setFile($file)->setIsTempFile(true);
+            $this->setIsTempFile(true);
+            $this->setFile($file);
         } elseif ($this->getIsTempFile()) {
             $file = tmpfile();
             $this->setFile($file);
@@ -1056,56 +1063,12 @@ class Curl
 
     public function dumpOptions()
     {
-        $options = [];
         $constants = get_defined_constants(true)['curl'];
+        $options = [];
         foreach ($this->buildOptions() as $key => $value) {
             $options[array_search($key, $constants)] = $value;
         }
         return $options;
-    }
-
-    private $_beforeExecute = null;
-
-    public function setBeforeExecute($beforeExecute)
-    {
-        $this->_beforeExecute = $beforeExecute;
-        return $this;
-    }
-
-    public function getBeforeExecute()
-    {
-        return $this->_beforeExecute;
-    }
-
-    public function beforeExecute($beforeExecute = null)
-    {
-        if (!is_null($beforeExecute)) {
-            return $this->setBeforeExecute($beforeExecute);
-        } else {
-            return $this->getBeforeExecute();
-        }
-    }
-
-    private $_afterExecute = null;
-
-    public function setAfterExecute($afterExecute)
-    {
-        $this->_afterExecute = $afterExecute;
-        return $this;
-    }
-
-    public function getAfterExecute()
-    {
-        return $this->_afterExecute;
-    }
-
-    public function afterExecute($afterExecute = null)
-    {
-        if (!is_null($afterExecute)) {
-            return $this->setAfterExecute($afterExecute);
-        } else {
-            return $this->getAfterExecute();
-        }
     }
 
     private $_result = null;
@@ -1234,38 +1197,111 @@ class Curl
         return $this->getContentLength();
     }
 
-    public function executeOnce($retryCount = 0)
+    private $_beforeExecute = null;
+
+    public function setBeforeExecute($beforeExecute)
+    {
+        $this->_beforeExecute = $beforeExecute;
+        return $this;
+    }
+
+    public function getBeforeExecute()
+    {
+        return $this->_beforeExecute;
+    }
+
+    public function beforeExecute($beforeExecute = null)
+    {
+        if (!is_null($beforeExecute)) {
+            return $this->setBeforeExecute($beforeExecute);
+        } else {
+            return $this->getBeforeExecute();
+        }
+    }
+
+    protected function invokeBeforeExecute()
     {
         $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
-$beforeExecute = $this->getBeforeExecute();
-if ($beforeExecute && is_callable($beforeExecute)) {
-if (!call_user_func($beforeExecute, $this, $retryCount)) {
-return false;
-}
-}
-        $handle = $this->getHandle();
-        if (curl_setopt_array($handle, $this->buildOptions())) {
-            $result = curl_exec($handle);
-            $errno = curl_errno($handle);
-            $error = curl_error($handle);
-            $info = curl_getinfo($handle);
-$info['after_execute_result'] = true;
-            if (($info['http_code'] == 200) && !$info['download_content_length']) {
-                $info['http_code'] = 204; // No Content
+        $beforeExecute = $this->getBeforeExecute();
+        if ($beforeExecute && is_callable($beforeExecute)) {
+            if (!call_user_func($beforeExecute, $this)) {
+                return false;
             }
-            $this->setResult($result)->setErrno($errno)->setError($error)->setInfo($info);
-        } else {
-            throw new \Exception('curl_setopt_array');
         }
-$afterExecute = $this->getAfterExecute();
-if ($afterExecute && is_callable($afterExecute)) {
-if (!call_user_func($afterExecute, $this, $retryCount)) {
-$info['after_execute_result'] = false;
-$this->setInfo($info);
-return false;
-}
-}
-        return $result;
+        curl_setopt_array($this->getHandle(), $this->buildOptions());
+        return true;
+    }
+
+    private $_afterExecute = null;
+
+    public function setAfterExecute($afterExecute)
+    {
+        $this->_afterExecute = $afterExecute;
+        return $this;
+    }
+
+    public function getAfterExecute()
+    {
+        return $this->_afterExecute;
+    }
+
+    public function afterExecute($afterExecute = null)
+    {
+        if (!is_null($afterExecute)) {
+            return $this->setAfterExecute($afterExecute);
+        } else {
+            return $this->getAfterExecute();
+        }
+    }
+
+    protected function invokeAfterExecute()
+    {
+        $this->closeFile();
+        $handle = $this->getHandle();
+        $result = curl_multi_getcontent($handle);
+        $errno = curl_errno($handle);
+        $error = curl_error($handle);
+        $info = curl_getinfo($handle);
+        if ($info && is_array($info) && ($info['http_code'] == 200) && !$info['download_content_length']) {
+            $info['http_code'] = 204; // No Content
+        }
+        $this->setResult($result)->setErrno($errno)->setError($error)->setInfo($info);
+        $afterExecute = $this->getAfterExecute();
+        if ($afterExecute && is_callable($afterExecute)) {
+            if (!call_user_func($afterExecute, $this, $result)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function executeOnce()
+    {
+        if ($this->invokeBeforeExecute()) {
+            $result = curl_exec($this->getHandle());
+            if ($this->invokeAfterExecute()) {
+                return $result;
+            }
+        }
+        return false;
+    }
+
+    private $_retryCount = null;
+
+    protected function setRetryCount($retryCount)
+    {
+        $this->_retryCount = $retryCount;
+        return $this;
+    }
+
+    public function getRetryCount()
+    {
+        return $this->_retryCount;
+    }
+
+    public function retryCount()
+    {
+        return $this->getRetryCount();
     }
 
     private $_maxRetries = null;
@@ -1315,24 +1351,18 @@ return false;
     public function execute()
     {
         $retryCount = 0;
-        $result = $this->executeOnce($retryCount);
-        $info = $this->getInfo();
+        $this->setRetryCount($retryCount);
+        $result = $this->executeOnce();
         $maxRetries = $this->getMaxRetries();
-        while (!$result && (!$info || !$info['http_code'] || !$info['after_execute_result']) && $maxRetries && is_int($maxRetries) && (++ $retryCount <= $maxRetries)) {
+        while (!$result && !$this->getHttpCode() && $maxRetries && is_int($maxRetries) && (++ $retryCount <= $maxRetries)) {
             $retryDelay = $this->getRetryDelay();
             if ($retryDelay && is_int($retryDelay)) {
                 sleep($retryDelay);
             }
-            $result = $this->executeOnce($retryCount);
-            $info = $this->getInfo();
+            $this->setRetryCount($retryCount);
+            $result = $this->executeOnce();
             $maxRetries = $this->getMaxRetries();
         }
         return $result;
-    }
-
-    public function __destruct()
-    {
-        $this->closeFile();
-        curl_close($this->getHandle());
     }
 }
