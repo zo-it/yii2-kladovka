@@ -1061,7 +1061,7 @@ class Curl
         return $options;
     }
 
-    public function dumpOptions()
+    public function getOptionsDump()
     {
         $constants = get_defined_constants(true)['curl'];
         $options = [];
@@ -1069,6 +1069,11 @@ class Curl
             $options[array_search($key, $constants)] = $value;
         }
         return $options;
+    }
+
+    public function optionsDump()
+    {
+        return $this->getOptionsDump();
     }
 
     private $_result = null;
