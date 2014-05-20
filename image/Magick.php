@@ -230,12 +230,18 @@ class Magick
     public function setCropThumbnail($cropThumbnail)
     {
         $this->_cropThumbnail = $cropThumbnail;
-        if ($cropThumbnail && is_string($cropThumbnail)) {
+        if ($cropThumbnail && (is_string($cropThumbnail) || is_array($cropThumbnail))) {
             $this->setSize($cropThumbnail);
             $this->setThumbnail(true);
             $this->setUnsharp(true);
             $this->setGravity('north');
             $this->setCrop(true);
+        } else {
+            $this->setSize(null);
+            $this->setThumbnail(null);
+            $this->setUnsharp(null);
+            $this->setGravity(null);
+            $this->setCrop(null);
         }
         return $this;
     }
@@ -304,19 +310,23 @@ class Magick
         if (!is_array($args)) {
             $args = [];
         }
+        // input filename
         $inputFilename = $this->getInputFilename();
         if ($inputFilename && is_string($inputFilename)) {
             $args[] = $inputFilename;
         }
+        // size
         $size = $this->buildSize();
         if (!$size) {
             $size = $this->getSize();
         }
         if ($size && is_string($size)) {
+            // thumbnail
             $thumbnail = $this->getThumbnail();
             if ($thumbnail && is_bool($thumbnail)) {
                 $args['thumbnail'] = $size . '^';
             }
+            // unsharp
             $unsharp = $this->getUnsharp();
             if ($unsharp) {
                 if (is_bool($unsharp)) {
@@ -325,6 +335,7 @@ class Magick
                     $args['unsharp'] = $unsharp;
                 }
             }
+            // gravity
             $gravity = $this->getGravity();
             if ($gravity) {
                 if (is_bool($gravity)) {
@@ -333,15 +344,25 @@ class Magick
                     $args['gravity'] = $gravity;
                 }
             }
+            // crop
             $crop = $this->getCrop();
             if ($crop && is_bool($crop)) {
                 $args['crop'] = $size . '+0+0';
             }
         }
+        // output filename
         $outputFilename = $this->getOutputFilename();
         if ($outputFilename && is_string($outputFilename)) {
             $args[] = $outputFilename;
         }
-        return $args;
+        $args2 = [];
+        foreach ($args as $key => $value) {
+            if (is_int($key) && is_string($value)) {
+                $args2[] = $value;
+            } elseif (is_string($key) && is_scalar($value)) {
+                $args2[] = '-' . $key . ' ' . escapeshellarg($value);
+            }
+        }
+        return implode(' ', $args2);
     }
 }
