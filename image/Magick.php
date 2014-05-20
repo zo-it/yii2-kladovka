@@ -100,8 +100,12 @@ class Magick
     public function setSize($size)
     {
         $this->_size = $size;
-        if ($size && is_string($size)) {
-            $size = explode('x', $size, 2);
+        if ($size) {
+            if (is_int($size)) {
+                $size = [$size, $size];
+            } elseif (is_string($size)) {
+                $size = explode('x', $size, 2);
+            }
         }
         if ($size && is_array($size)) {
             $this->setWidth(array_key_exists(0, $size) ? (int)$size[0] : (array_key_exists('width', $size) ? (int)$size['width'] : null));
@@ -230,7 +234,7 @@ class Magick
     public function setCropThumbnail($cropThumbnail)
     {
         $this->_cropThumbnail = $cropThumbnail;
-        if ($cropThumbnail && (is_string($cropThumbnail) || is_array($cropThumbnail))) {
+        if ($cropThumbnail && (is_int($cropThumbnail) || is_string($cropThumbnail) || is_array($cropThumbnail))) {
             $this->setSize($cropThumbnail);
             $this->setThumbnail(true);
             $this->setUnsharp(true);
