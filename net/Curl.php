@@ -1246,9 +1246,9 @@ class Curl
                 return false;
             }
         }
-if (!curl_setopt_array($this->getHandle(), $this->buildOptions())) {
-
-}
+        if (!curl_setopt_array($this->getHandle(), $this->buildOptions())) {
+            throw new \Exception('Unable to set cURL options.');
+        }
         return true;
     }
 
