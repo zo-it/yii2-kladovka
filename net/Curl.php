@@ -1134,9 +1134,9 @@ class Curl
 
     protected function setInfo($info)
     {
-if ($info && is_array($info) && array_key_exists('http_code', $info) && ($info['http_code'] == 200) && array_key_exists('download_content_length', $info) && !$info['download_content_length']) {
-$info['http_code'] = 204; // No Content
-}
+        if ($info && is_array($info) && array_key_exists('http_code', $info) && array_key_exists('download_content_length', $info) && ($info['http_code'] == 200) && !$info['download_content_length']) {
+            $info['http_code'] = 204; // No Content
+        }
         $this->_info = $info;
         return $this;
     }
@@ -1275,7 +1275,7 @@ $info['http_code'] = 204; // No Content
         $this->setInfo(curl_getinfo($handle));
         $afterExecute = $this->getAfterExecute();
         if ($afterExecute && is_callable($afterExecute)) {
-            if (!call_user_func($afterExecute, $this, $result, $this->getHttpCode())) {
+            if (!call_user_func($afterExecute, $this, $this->getResult(), $this->getHttpCode())) {
                 return false;
             }
         }
