@@ -34,6 +34,12 @@ class Curl
         }
     }
 
+    public function __destruct()
+    {
+        $this->closeFile();
+        curl_close($this->getHandle());
+    }
+
     public function __clone()
     {
         $this->clearFile();
@@ -42,12 +48,6 @@ class Curl
             throw new \Exception('Unable to copy cURL handle.');
         }
         $this->setHandle($handle);
-    }
-
-    public function __destruct()
-    {
-        $this->closeFile();
-        curl_close($this->getHandle());
     }
 
     private $_handle = null;
