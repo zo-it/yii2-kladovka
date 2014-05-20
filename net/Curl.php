@@ -1129,6 +1129,9 @@ class Curl
 
     protected function setInfo($info)
     {
+if ($info && is_array($info) && array_key_exists('http_code', $info) && ($info['http_code'] == 200) && array_key_exists('download_content_length', $info) && !$info['download_content_length']) {
+$info['http_code'] = 204; // No Content
+}
         $this->_info = $info;
         return $this;
     }
@@ -1221,7 +1224,10 @@ class Curl
 
     protected function invokeBeforeExecute()
     {
-        $this->setResult(null)->setErrno(null)->setError(null)->setInfo(null);
+        $this->setResult(null);
+        $this->setErrno(null);
+        $this->setError(null);
+        $this->setInfo(null);
         $beforeExecute = $this->getBeforeExecute();
         if ($beforeExecute && is_callable($beforeExecute)) {
             if (!call_user_func($beforeExecute, $this)) {
@@ -1258,17 +1264,13 @@ class Curl
     {
         $this->closeFile();
         $handle = $this->getHandle();
-        $result = curl_multi_getcontent($handle);
-        $errno = curl_errno($handle);
-        $error = curl_error($handle);
-        $info = curl_getinfo($handle);
-        if ($info && is_array($info) && ($info['http_code'] == 200) && !$info['download_content_length']) {
-            $info['http_code'] = 204; // No Content
-        }
-        $this->setResult($result)->setErrno($errno)->setError($error)->setInfo($info);
+        $this->setResult(curl_multi_getcontent($handle));
+        $this->setErrno(curl_errno($handle));
+        $this->setError(curl_error($handle));
+        $this->setInfo(curl_getinfo($handle));
         $afterExecute = $this->getAfterExecute();
         if ($afterExecute && is_callable($afterExecute)) {
-            if (!call_user_func($afterExecute, $this, $result)) {
+            if (!call_user_func($afterExecute, $this, $result, $this->getHttpCode())) {
                 return false;
             }
         }
