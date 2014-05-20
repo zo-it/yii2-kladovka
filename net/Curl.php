@@ -36,16 +36,7 @@ class Curl
 
     public function __clone()
     {
-        if ($this->getIsTempFile()) {
-            $this->setFile(null);
-            $filename = $this->getFilename();
-            if ($filename && is_string($filename)) {
-                $this->setIsTempFile(false);
-                if ($this->getIsTempFilename()) {
-                    $this->setFilename(null);
-                }
-            }
-        }
+        $this->clearFile();
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
             throw new \Exception('Unable to copy cURL handle.');
@@ -731,6 +722,22 @@ class Curl
                 }
             }
         }
+        return $this;
+    }
+
+    protected function clearFile()
+    {
+        if ($this->getIsTempFile()) {
+            $this->setFile(null);
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                }
+            }
+        }
+        return $this;
     }
 
     const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
@@ -1144,7 +1151,7 @@ class Curl
     public function getInfo($key = null)
     {
         if ($key && is_string($key)) {
-            return (is_array($this->_info) && array_key_exists($key, $this->_info)) ? $this->_info[$key] : null;
+            return ($this->_info && is_array($this->_info) && array_key_exists($key, $this->_info)) ? $this->_info[$key] : null;
         } else {
             return $this->_info;
         }
@@ -1239,7 +1246,9 @@ class Curl
                 return false;
             }
         }
-        curl_setopt_array($this->getHandle(), $this->buildOptions());
+        if (!curl_setopt_array($this->getHandle(), $this->buildOptions())) {
+            throw new \Exception('Unable to set cURL options.');
+        }
         return true;
     }
 
