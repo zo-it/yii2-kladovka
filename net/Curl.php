@@ -740,6 +740,28 @@ class Curl
         return $this;
     }
 
+    private $_proxy = null;
+
+    public function setProxy($proxy)
+    {
+        $this->_proxy = $proxy;
+        return $this;
+    }
+
+    public function getProxy()
+    {
+        return $this->_proxy;
+    }
+
+    public function proxy($proxy = null)
+    {
+        if (!is_null($proxy)) {
+            return $this->setProxy($proxy);
+        } else {
+            return $this->getProxy();
+        }
+    }
+
     const PROXY_TYPE_HTTP = CURLPROXY_HTTP;
     const PROXY_TYPE_SOCKS5 = CURLPROXY_SOCKS5;
 
@@ -1031,6 +1053,11 @@ class Curl
         } else {
             $options[CURLOPT_FILE] = STDOUT;
             $options[CURLOPT_RETURNTRANSFER] = true;
+        }
+        // proxy
+        $proxy = $this->getProxy();
+        if ($proxy && is_object($proxy) && method_exists($proxy, 'getUrl')) {
+            $this->setProxyUrl($proxy->getUrl());
         }
         // proxy type
         $proxyType = $this->getProxyType();

@@ -146,6 +146,9 @@ class Magick
     public function setThumbnail($thumbnail)
     {
         $this->_thumbnail = $thumbnail;
+if ($thumbnail && !is_bool($thumbnail)) {
+$this->setSize($thumbnail);
+}
         return $this;
     }
 
@@ -212,6 +215,9 @@ class Magick
     public function setCrop($crop)
     {
         $this->_crop = $crop;
+if ($crop && !is_bool($crop)) {
+$this->setSize($crop);
+}
         return $this;
     }
 
