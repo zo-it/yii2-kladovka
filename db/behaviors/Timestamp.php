@@ -58,6 +58,8 @@ class Timestamp extends \yii\base\Behavior
                         }
                     } elseif ($owner->getIsNewRecord()) {
                         $owner->{$this->_createAttribute} = date($this->_dateTimeFormat);
+                    } else {
+                        $owner->{$this->_createAttribute} = date($this->_dateTimeFormat, 0);
                     }
                 }
             }
@@ -71,14 +73,22 @@ class Timestamp extends \yii\base\Behavior
             if ($this->_updateAttribute && is_string($this->_updateAttribute)) {
                 if ($owner->hasAttribute($this->_updateAttribute)) {
                     if ($owner->{$this->_updateAttribute} && is_string($owner->{$this->_updateAttribute})) {
-                        $owner->{$this->_updateAttribute} = strtotime($owner->{$this->_updateAttribute});
+                        if ($owner->{$this->_updateAttribute} == '0000-00-00 00:00:00') {
+                            $owner->{$this->_updateAttribute} = 0;
+                        } else {
+                            $owner->{$this->_updateAttribute} = strtotime($owner->{$this->_updateAttribute});
+                        }
                     }
                 }
             }
             if ($this->_createAttribute && is_string($this->_createAttribute)) {
                 if ($owner->hasAttribute($this->_createAttribute)) {
                     if ($owner->{$this->_createAttribute} && is_string($owner->{$this->_createAttribute})) {
-                        $owner->{$this->_createAttribute} = strtotime($owner->{$this->_createAttribute});
+                        if ($owner->{$this->_createAttribute} == '0000-00-00 00:00:00') {
+                            $owner->{$this->_createAttribute} = 0;
+                        } else {
+                            $owner->{$this->_createAttribute} = strtotime($owner->{$this->_createAttribute});
+                        }
                     }
                 }
             }
