@@ -66,6 +66,12 @@ class Timestamp extends \yii\base\Behavior
                     if ($owner->{$this->_createAttribute}) {
                         if (is_int($owner->{$this->_createAttribute})) {
                             $owner->{$this->_createAttribute} = date($format, $owner->{$this->_createAttribute});
+                        } elseif (is_string($owner->{$this->_createAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_createAttribute}, $match)) {
+                            if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                            } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                            }
                         }
                     } elseif ($owner->getIsNewRecord()) {
                         $owner->{$this->_createAttribute} = date($format);
