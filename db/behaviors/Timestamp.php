@@ -39,17 +39,17 @@ class Timestamp extends \yii\base\Behavior
     public function events()
     {
         return [
-            ActiveRecord::EVENT_BEFORE_VALIDATE => 'normalizeBeforeSave',
-            /*ActiveRecord::EVENT_BEFORE_INSERT => 'normalizeBeforeSave',
-            ActiveRecord::EVENT_BEFORE_UPDATE => 'normalizeBeforeSave',
-            ActiveRecord::EVENT_AFTER_VALIDATE => 'normalizeAfterFind',*/
-            ActiveRecord::EVENT_AFTER_INSERT => 'normalizeAfterFind',
-            ActiveRecord::EVENT_AFTER_UPDATE => 'normalizeAfterFind',
-            ActiveRecord::EVENT_AFTER_FIND => 'normalizeAfterFind'
+            ActiveRecord::EVENT_BEFORE_VALIDATE => 'beforeSave',
+            /*ActiveRecord::EVENT_BEFORE_INSERT => 'beforeSave',
+            ActiveRecord::EVENT_BEFORE_UPDATE => 'beforeSave',
+            ActiveRecord::EVENT_AFTER_VALIDATE => 'afterFind',*/
+            ActiveRecord::EVENT_AFTER_INSERT => 'afterFind',
+            ActiveRecord::EVENT_AFTER_UPDATE => 'afterFind',
+            ActiveRecord::EVENT_AFTER_FIND => 'afterFind'
         ];
     }
 
-    public function normalizeBeforeSave($event)
+    public function beforeSave($event)
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
@@ -77,7 +77,7 @@ class Timestamp extends \yii\base\Behavior
         }
     }
 
-    public function normalizeAfterFind($event)
+    public function afterFind($event)
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
