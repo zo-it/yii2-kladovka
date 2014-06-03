@@ -36,26 +36,31 @@ class Datetime extends \yii\base\Behavior
         $this->_attributes = $attributes;
     }
 
-    public function getAttributes()
+    protected function buildAttributes()
     {
-$owner = $this->owner;
-if ($owner instanceof ActiveRecord) {
-$attributes = [];
-foreach ($this->_attributeNames as $attributeName) {
-if (is_string($attributeName)) {
-if ($owner->hasAttribute($attributeName)) {
-$attributes[$attributeName] = [];
-}
-}
-}
-foreach ($this->_attributes as $attributeName => $config) {
-if (is_string($attributeName) && is_array($config)) {
-if ($owner->hasAttribute($attributeName)) {
-$attributes[$attributeName] = [];
-}
-}
-}
-}
+        $defaultConfig = [
+            'dateFormat' => $this->_dateFormat,
+            'dateTimeFormat' => $this->_dateTimeFormat
+        ];
+        $attributes = [];
+        $owner = $this->owner;
+        if ($owner instanceof ActiveRecord) {
+            foreach ($this->_attributeNames as $attributeName) {
+                if ($attributeName && is_string($attributeName)) {
+                    if ($owner->hasAttribute($attributeName)) {
+                        $attributes[$attributeName] = $defaultConfig;
+                    }
+                }
+            }
+            foreach ($this->_attributes as $attributeName => $config) {
+                if ($attributeName && is_string($attributeName) && is_array($config)) {
+                    if ($owner->hasAttribute($attributeName)) {
+                        $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                    }
+                }
+            }
+        }
+        return $attributes;
     }
 
     public function events()
@@ -75,13 +80,23 @@ $attributes[$attributeName] = [];
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->getAttributes() as $attributeName => $config) {
+            $tableSchema = $owner->getTableSchema();
+            foreach ($this->buildAttributes() as $attributeName => $config) {
                 if ($attributeName && is_string($attributeName)) {
-if ($owner->hasAttribute($attributeName)) {
-if ($owner->{$attributeName} && is_int($owner->{$attributeName})) {
-$owner->{$attributeName} = date($this->_dateTimeFormat, $owner->{$attributeName});
-}
-}
+                    if ($owner->hasAttribute($attributeName)) {
+                        $format = ($tableSchema->getColumn($attributeName)->dbType == 'date') ? $config['dateFormat'] : $config['dateTimeFormat'];
+                        if ($owner->{$attributeName}) {
+                            if (is_int($owner->{$attributeName})) {
+                                $owner->{$attributeName} = date($format, $owner->{$attributeName});
+                            } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {
+                                if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                                    $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                                } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                                    $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -91,7 +106,7 @@ $owner->{$attributeName} = date($this->_dateTimeFormat, $owner->{$attributeName}
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->getAttributes() as $attributeName => $config) {
+            foreach ($this->buildAttributes() as $attributeName => $config) {
                 if ($attributeName && is_string($attributeName)) {
                     if ($owner->hasAttribute($attributeName)) {
                         if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
