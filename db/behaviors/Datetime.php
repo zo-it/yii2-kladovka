@@ -53,9 +53,17 @@ class Datetime extends \yii\base\Behavior
                 }
             }
             foreach ($this->_attributes as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName) && is_array($config)) {
-                    if ($owner->hasAttribute($attributeName)) {
-                        $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                if ($attributeName && is_string($attributeName)) {
+                    if ($config && is_string($config)) {
+                        $config = [
+                            'dateFormat' => $config,
+                            'dateTimeFormat' => $config
+                        ];
+                    }
+                    if (is_array($config)) {
+                        if ($owner->hasAttribute($attributeName)) {
+                            $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                        }
                     }
                 }
             }
@@ -82,8 +90,8 @@ class Datetime extends \yii\base\Behavior
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
             foreach ($this->buildAttributes() as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName)) {
-                    if ($owner->hasAttribute($attributeName)) {
+                //if ($attributeName && is_string($attributeName)) {
+                    //if ($owner->hasAttribute($attributeName)) {
                         $format = ($tableSchema->getColumn($attributeName)->dbType == 'date') ? $config['dateFormat'] : $config['dateTimeFormat'];
                         if ($owner->{$attributeName}) {
                             if (is_int($owner->{$attributeName})) {
@@ -96,8 +104,8 @@ class Datetime extends \yii\base\Behavior
                                 }
                             }
                         }
-                    }
-                }
+                    //}
+                //}
             }
         }
     }
@@ -107,8 +115,8 @@ class Datetime extends \yii\base\Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             foreach ($this->buildAttributes() as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName)) {
-                    if ($owner->hasAttribute($attributeName)) {
+                //if ($attributeName && is_string($attributeName)) {
+                    //if ($owner->hasAttribute($attributeName)) {
                         if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
                             if (($owner->{$attributeName} == '0000-00-00') || ($owner->{$attributeName} == '0000-00-00 00:00:00')) {
                                 $owner->{$attributeName} = 0;
@@ -116,8 +124,8 @@ class Datetime extends \yii\base\Behavior
                                 $owner->{$attributeName} = strtotime($owner->{$attributeName});
                             }
                         }
-                    }
-                }
+                    //}
+                //}
             }
         }
     }
