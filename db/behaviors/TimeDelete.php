@@ -93,11 +93,10 @@ class TimeDelete extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            $tableSchema = $owner->getTableSchema();
             if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
                 if ($owner->hasAttribute($this->_deleteAttribute)) {
-                    $format = ($tableSchema->getColumn($this->_deleteAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
                     if ($owner->{$this->_deleteAttribute}) {
+                        $format = ($owner->getTableSchema()->getColumn($this->_deleteAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
                         if (is_int($owner->{$this->_deleteAttribute})) {
                             $owner->{$this->_deleteAttribute} = date($format, $owner->{$this->_deleteAttribute});
                         } elseif (is_string($owner->{$this->_deleteAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_deleteAttribute}, $match)) {
