@@ -88,12 +88,11 @@ class Datetime extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            $tableSchema = $owner->getTableSchema();
             foreach ($this->buildAttributes() as $attributeName => $config) {
                 //if ($attributeName && is_string($attributeName)) {
                     //if ($owner->hasAttribute($attributeName)) {
-                        $format = ($tableSchema->getColumn($attributeName)->dbType == 'date') ? $config['dateFormat'] : $config['dateTimeFormat'];
                         if ($owner->{$attributeName}) {
+                            $format = ($owner->getTableSchema()->getColumn($attributeName)->dbType == 'date') ? $config['dateFormat'] : $config['dateTimeFormat'];
                             if (is_int($owner->{$attributeName})) {
                                 $owner->{$attributeName} = date($format, $owner->{$attributeName});
                             } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {

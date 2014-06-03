@@ -78,7 +78,7 @@ class TimeDelete extends \yii\base\Behavior
             if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
                 if ($owner->hasAttribute($this->_deleteAttribute)) {
                     if ($this->beforeDeleteOwner()) {
-                        $owner->{$this->_deleteAttribute} = time();
+                        $owner->{$this->_deleteAttribute} = true;
                         $result = $owner->save($runValidation, $attributeNames);
                         $this->afterDeleteOwner();
                         return $result;
@@ -97,7 +97,9 @@ class TimeDelete extends \yii\base\Behavior
                 if ($owner->hasAttribute($this->_deleteAttribute)) {
                     if ($owner->{$this->_deleteAttribute}) {
                         $format = ($owner->getTableSchema()->getColumn($this->_deleteAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
-                        if (is_int($owner->{$this->_deleteAttribute})) {
+                        if (is_bool($owner->{$this->_deleteAttribute})) {
+                            $owner->{$this->_deleteAttribute} = date($format);
+                        } elseif (is_int($owner->{$this->_deleteAttribute})) {
                             $owner->{$this->_deleteAttribute} = date($format, $owner->{$this->_deleteAttribute});
                         } elseif (is_string($owner->{$this->_deleteAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_deleteAttribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
@@ -105,8 +107,6 @@ class TimeDelete extends \yii\base\Behavior
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
                                 $owner->{$this->_deleteAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
                             }
-                        } elseif (is_bool($owner->{$this->_deleteAttribute})) {
-                            $owner->{$this->_createAttribute} = date($format);
                         }
                     }
                 }
