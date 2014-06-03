@@ -23,7 +23,7 @@ class Curl
                 $this->setUrl($data);
             } elseif (is_array($data)) {
                 foreach ($data as $key => $value) {
-                    if (is_string($key)) {
+                    if ($key && is_string($key)) {
                         $methodName = 'set' . ucfirst($key);
                         if (method_exists($this, $methodName)) {
                             $this->{$methodName}($value);
@@ -233,7 +233,7 @@ class Curl
                 foreach ($query as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $query2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
+                    } elseif ($key && is_string($key) && is_scalar($value)) {
                         $query2[] = $key . '=' . urlencode($value);
                     }
                 }
@@ -366,7 +366,7 @@ class Curl
                 foreach ($postFields as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $postFields2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
+                    } elseif ($key && is_string($key) && is_scalar($value)) {
                         if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
                             $multipartFormData = true;
                             break;
@@ -413,7 +413,7 @@ class Curl
                 foreach ($cookie as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $cookie2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
+                    } elseif ($key && is_string($key) && is_scalar($value)) {
                         $cookie2[] = $key . '=' . urlencode($value);
                     }
                 }
@@ -510,7 +510,7 @@ class Curl
                 foreach ($httpHeader as $key => $value) {
                     if (is_int($key) && is_string($value)) {
                         $httpHeader2[] = $value;
-                    } elseif (is_string($key) && is_scalar($value)) {
+                    } elseif ($key && is_string($key) && is_scalar($value)) {
                         $httpHeader2[] = $key . ': ' . $value;
                     }
                 }
