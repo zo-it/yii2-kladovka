@@ -62,11 +62,12 @@ $attributes[$attributeName] = [];
     {
         return [
             ActiveRecord::EVENT_BEFORE_VALIDATE => 'normalizeBeforeSave',
-            ActiveRecord::EVENT_AFTER_VALIDATE => 'normalizeAfterFind',
-            ActiveRecord::EVENT_BEFORE_INSERT => 'normalizeBeforeSave',
-            ActiveRecord::EVENT_AFTER_INSERT => 'normalizeAfterFind',
+            /*ActiveRecord::EVENT_BEFORE_INSERT => 'normalizeBeforeSave',
             ActiveRecord::EVENT_BEFORE_UPDATE => 'normalizeBeforeSave',
-            ActiveRecord::EVENT_AFTER_UPDATE => 'normalizeAfterFind'
+            ActiveRecord::EVENT_AFTER_VALIDATE => 'normalizeAfterFind',*/
+            ActiveRecord::EVENT_AFTER_INSERT => 'normalizeAfterFind',
+            ActiveRecord::EVENT_AFTER_UPDATE => 'normalizeAfterFind',
+            ActiveRecord::EVENT_AFTER_FIND => 'normalizeAfterFind'
         ];
     }
 
