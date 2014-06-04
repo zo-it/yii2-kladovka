@@ -8,18 +8,11 @@ use yii\db\ActiveRecord;
 class Timestamp extends \yii\base\Behavior
 {
 
-    private $_updateAttribute = 'modified';
+    private $_timestampAttribute = 'timestamp';
 
-    public function setUpdateAttribute($updateAttribute)
+    public function setTimestampAttribute($timestampAttribute)
     {
-        $this->_updateAttribute = $updateAttribute;
-    }
-
-    private $_createAttribute = 'created';
-
-    public function setCreateAttribute($createAttribute)
-    {
-        $this->_createAttribute = $createAttribute;
+        $this->_timestampAttribute = $timestampAttribute;
     }
 
     private $_dateFormat = 'Y-m-d';
@@ -53,31 +46,10 @@ class Timestamp extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            $tableSchema = $owner->getTableSchema();
-            if ($this->_updateAttribute && is_string($this->_updateAttribute)) {
-                if ($owner->hasAttribute($this->_updateAttribute)) {
-                    $format = ($tableSchema->getColumn($this->_updateAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
-                    $owner->{$this->_updateAttribute} = date($format);
-                }
-            }
-            if ($this->_createAttribute && is_string($this->_createAttribute)) {
-                if ($owner->hasAttribute($this->_createAttribute)) {
-                    $format = ($tableSchema->getColumn($this->_updateAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
-                    if ($owner->{$this->_createAttribute}) {
-                        if (is_int($owner->{$this->_createAttribute})) {
-                            $owner->{$this->_createAttribute} = date($format, $owner->{$this->_createAttribute});
-                        } elseif (is_string($owner->{$this->_createAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_createAttribute}, $match)) {
-                            if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
-                            } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
-                            }
-                        }
-                    } elseif ($owner->getIsNewRecord()) {
-                        $owner->{$this->_createAttribute} = date($format);
-                    } else {
-                        $owner->{$this->_createAttribute} = date($format, 0);
-                    }
+            if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
+                if ($owner->hasAttribute($this->_timestampAttribute)) {
+                    $format = ($owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
+                    $owner->{$this->_timestampAttribute} = date($format);
                 }
             }
         }
@@ -87,24 +59,13 @@ class Timestamp extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_updateAttribute && is_string($this->_updateAttribute)) {
-                if ($owner->hasAttribute($this->_updateAttribute)) {
-                    if ($owner->{$this->_updateAttribute} && is_string($owner->{$this->_updateAttribute})) {
-                        if (($owner->{$this->_updateAttribute} == '0000-00-00') || ($owner->{$this->_updateAttribute} == '0000-00-00 00:00:00')) {
-                            $owner->{$this->_updateAttribute} = 0;
+            if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
+                if ($owner->hasAttribute($this->_timestampAttribute)) {
+                    if ($owner->{$this->_timestampAttribute} && is_string($owner->{$this->_timestampAttribute})) {
+                        if (($owner->{$this->_timestampAttribute} == '0000-00-00') || ($owner->{$this->_timestampAttribute} == '0000-00-00 00:00:00')) {
+                            $owner->{$this->_timestampAttribute} = 0;
                         } else {
-                            $owner->{$this->_updateAttribute} = strtotime($owner->{$this->_updateAttribute});
-                        }
-                    }
-                }
-            }
-            if ($this->_createAttribute && is_string($this->_createAttribute)) {
-                if ($owner->hasAttribute($this->_createAttribute)) {
-                    if ($owner->{$this->_createAttribute} && is_string($owner->{$this->_createAttribute})) {
-                        if (($owner->{$this->_createAttribute} == '0000-00-00') || ($owner->{$this->_createAttribute} == '0000-00-00 00:00:00')) {
-                            $owner->{$this->_createAttribute} = 0;
-                        } else {
-                            $owner->{$this->_createAttribute} = strtotime($owner->{$this->_createAttribute});
+                            $owner->{$this->_timestampAttribute} = strtotime($owner->{$this->_timestampAttribute});
                         }
                     }
                 }
