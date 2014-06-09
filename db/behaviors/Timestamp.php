@@ -29,6 +29,13 @@ class Timestamp extends \yii\base\Behavior
         $this->_dateTimeFormat = $dateTimeFormat;
     }
 
+    private $_timeFormat = 'H:i:s';
+
+    public function setTimeFormat($timeFormat)
+    {
+        $this->_timeFormat = $timeFormat;
+    }
+
     public function events()
     {
         return [
@@ -48,7 +55,8 @@ class Timestamp extends \yii\base\Behavior
         if ($owner instanceof ActiveRecord) {
             if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
                 if ($owner->hasAttribute($this->_timestampAttribute)) {
-                    $format = ($owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
+                    $dbType = $owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType;
+                    $format = ($dbType == 'date') ? $this->_dateFormat : (($dbType == 'time') ? $this->_timeFormat : $this->_dateTimeFormat);
                     $owner->{$this->_timestampAttribute} = date($format);
                 }
             }
@@ -62,7 +70,7 @@ class Timestamp extends \yii\base\Behavior
             if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
                 if ($owner->hasAttribute($this->_timestampAttribute)) {
                     if ($owner->{$this->_timestampAttribute} && is_string($owner->{$this->_timestampAttribute})) {
-                        if (($owner->{$this->_timestampAttribute} == '0000-00-00') || ($owner->{$this->_timestampAttribute} == '0000-00-00 00:00:00')) {
+                        if (($owner->{$this->_timestampAttribute} == '0000-00-00') || ($owner->{$this->_timestampAttribute} == '0000-00-00 00:00:00') || ($owner->{$this->_timestampAttribute} == '00:00:00')) {
                             $owner->{$this->_timestampAttribute} = 0;
                         } else {
                             $owner->{$this->_timestampAttribute} = strtotime($owner->{$this->_timestampAttribute});
