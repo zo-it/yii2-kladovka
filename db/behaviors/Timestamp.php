@@ -56,7 +56,7 @@ class Timestamp extends \yii\base\Behavior
             if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
                 if ($owner->hasAttribute($this->_timestampAttribute)) {
                     $dbType = $owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType;
-                    $format = ($dbType == 'date') ? $this->_dateFormat : (($dbType == 'time') ? $this->_timeFormat : $this->_dateTimeFormat);
+                    $format = ($dbType == 'date') ? $this->_dateFormat : (($dbType == 'datetime') ? $this->_dateTimeFormat : $this->_dateTimeFormat);
                     $owner->{$this->_timestampAttribute} = date($format);
                 }
             }
