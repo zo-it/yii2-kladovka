@@ -703,6 +703,21 @@ class Curl
         return $file;
     }
 
+    protected function clearFile()
+    {
+        if ($this->getIsTempFile()) {
+            $this->setFile(null);
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                }
+            }
+        }
+        return $this;
+    }
+
     protected function closeFile()
     {
         if ($this->getIsTempFile()) {
@@ -719,21 +734,6 @@ class Curl
                     if (file_exists($filename)) {
                         unlink($filename);
                     }
-                }
-            }
-        }
-        return $this;
-    }
-
-    protected function clearFile()
-    {
-        if ($this->getIsTempFile()) {
-            $this->setFile(null);
-            $filename = $this->getFilename();
-            if ($filename && is_string($filename)) {
-                $this->setIsTempFile(false);
-                if ($this->getIsTempFilename()) {
-                    $this->setFilename(null);
                 }
             }
         }
