@@ -6,23 +6,23 @@ namespace ivanchkv\kladovka\net;
 class Curl
 {
 
-    public static function init($data = null)
+    public static function init($config = null)
     {
-        return new self($data);
+        return new self($config);
     }
 
-    public function __construct($data = null)
+    public function __construct($config = null)
     {
         $handle = curl_init();
         if (!$handle) {
             throw new \Exception('Unable to init cURL handle.');
         }
         $this->setHandle($handle);
-        if ($data) {
-            if (is_string($data)) {
-                $this->setUrl($data);
-            } elseif (is_array($data)) {
-                foreach ($data as $key => $value) {
+        if ($config) {
+            if (is_string($config)) {
+                $this->setUrl($config);
+            } elseif (is_array($config)) {
+                foreach ($config as $key => $value) {
                     if ($key && is_string($key)) {
                         $methodName = 'set' . ucfirst($key);
                         if (method_exists($this, $methodName)) {
@@ -34,12 +34,6 @@ class Curl
         }
     }
 
-    public function __destruct()
-    {
-        $this->closeFile();
-        curl_close($this->getHandle());
-    }
-
     public function __clone()
     {
         $this->clearFile();
@@ -48,6 +42,12 @@ class Curl
             throw new \Exception('Unable to copy cURL handle.');
         }
         $this->setHandle($handle);
+    }
+
+    public function __destruct()
+    {
+        $this->closeFile();
+        curl_close($this->getHandle());
     }
 
     private $_handle = null;
@@ -703,6 +703,21 @@ class Curl
         return $file;
     }
 
+    protected function clearFile()
+    {
+        if ($this->getIsTempFile()) {
+            $this->setFile(null);
+            $filename = $this->getFilename();
+            if ($filename && is_string($filename)) {
+                $this->setIsTempFile(false);
+                if ($this->getIsTempFilename()) {
+                    $this->setFilename(null);
+                }
+            }
+        }
+        return $this;
+    }
+
     protected function closeFile()
     {
         if ($this->getIsTempFile()) {
@@ -719,21 +734,6 @@ class Curl
                     if (file_exists($filename)) {
                         unlink($filename);
                     }
-                }
-            }
-        }
-        return $this;
-    }
-
-    protected function clearFile()
-    {
-        if ($this->getIsTempFile()) {
-            $this->setFile(null);
-            $filename = $this->getFilename();
-            if ($filename && is_string($filename)) {
-                $this->setIsTempFile(false);
-                if ($this->getIsTempFilename()) {
-                    $this->setFilename(null);
                 }
             }
         }

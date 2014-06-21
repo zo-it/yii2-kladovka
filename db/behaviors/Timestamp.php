@@ -22,18 +22,18 @@ class Timestamp extends \yii\base\Behavior
         $this->_dateFormat = $dateFormat;
     }
 
-    private $_dateTimeFormat = 'Y-m-d H:i:s';
-
-    public function setDateTimeFormat($dateTimeFormat)
-    {
-        $this->_dateTimeFormat = $dateTimeFormat;
-    }
-
     private $_timeFormat = 'H:i:s';
 
     public function setTimeFormat($timeFormat)
     {
         $this->_timeFormat = $timeFormat;
+    }
+
+    private $_dateTimeFormat = 'Y-m-d H:i:s';
+
+    public function setDateTimeFormat($dateTimeFormat)
+    {
+        $this->_dateTimeFormat = $dateTimeFormat;
     }
 
     public function events()
@@ -55,8 +55,11 @@ class Timestamp extends \yii\base\Behavior
         if ($owner instanceof ActiveRecord) {
             if ($this->_timestampAttribute && is_string($this->_timestampAttribute)) {
                 if ($owner->hasAttribute($this->_timestampAttribute)) {
-                    $dbType = $owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType;
-                    $format = ($dbType == 'date') ? $this->_dateFormat : (($dbType == 'time') ? $this->_timeFormat : $this->_dateTimeFormat);
+                    switch ($owner->getTableSchema()->getColumn($this->_timestampAttribute)->dbType) {
+                        case 'date': $format = $this->_dateFormat; break;
+                        case 'time': $format = $this->_timeFormat; break;
+                        default: $format = $this->_dateTimeFormat;
+                    }
                     $owner->{$this->_timestampAttribute} = date($format);
                 }
             }
