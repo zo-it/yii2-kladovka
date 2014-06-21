@@ -96,7 +96,10 @@ class TimeDelete extends \yii\base\Behavior
             if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
                 if ($owner->hasAttribute($this->_deleteAttribute)) {
                     if ($owner->{$this->_deleteAttribute}) {
-                        $format = ($owner->getTableSchema()->getColumn($this->_deleteAttribute)->dbType == 'date') ? $this->_dateFormat : $this->_dateTimeFormat;
+                        switch ($owner->getTableSchema()->getColumn($this->_deleteAttribute)->dbType) {
+                            case 'date': $format = $this->_dateFormat; break;
+                            default: $format = $this->_dateTimeFormat;
+                        }
                         if (is_bool($owner->{$this->_deleteAttribute})) {
                             $owner->{$this->_deleteAttribute} = date($format);
                         } elseif (is_int($owner->{$this->_deleteAttribute})) {

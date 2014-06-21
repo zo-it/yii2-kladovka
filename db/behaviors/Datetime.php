@@ -92,7 +92,10 @@ class Datetime extends \yii\base\Behavior
                 //if ($attributeName && is_string($attributeName)) {
                     //if ($owner->hasAttribute($attributeName)) {
                         if ($owner->{$attributeName}) {
-                            $format = ($owner->getTableSchema()->getColumn($attributeName)->dbType == 'date') ? $config['dateFormat'] : $config['dateTimeFormat'];
+                            switch ($owner->getTableSchema()->getColumn($attributeName)->dbType) {
+                                case 'date': $format = $config['dateFormat']; break;
+                                default: $format = $config['dateTimeFormat'];
+                            }
                             if (is_int($owner->{$attributeName})) {
                                 $owner->{$attributeName} = date($format, $owner->{$attributeName});
                             } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {
