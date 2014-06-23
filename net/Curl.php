@@ -231,7 +231,7 @@ class Curl
             } elseif (is_array($query)) {
                 $query2 = [];
                 foreach ($query as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
+                    if (is_int($key) && $value && is_string($value)) {
                         $query2[] = $value;
                     } elseif ($key && is_string($key) && is_scalar($value)) {
                         $query2[] = $key . '=' . urlencode($value);
@@ -313,7 +313,7 @@ class Curl
     {
         $scheme = $this->getScheme();
         $host = $this->getHost();
-        if ($scheme && $host && is_string($scheme) && is_string($host)) {
+        if ($scheme && is_string($scheme) && $host && is_string($host)) {
             $url = $scheme . '://' . $host;
             $path = $this->getPath();
             if ($path && is_string($path)) {
@@ -364,7 +364,7 @@ class Curl
                 $multipartFormData = false;
                 $postFields2 = [];
                 foreach ($postFields as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
+                    if (is_int($key) && $value && is_string($value)) {
                         $postFields2[] = $value;
                     } elseif ($key && is_string($key) && is_scalar($value)) {
                         if (is_string($value) && (strlen($value) > 1) && (substr($value, 0, 1) == '@') && file_exists(substr($value, 1))) {
@@ -411,7 +411,7 @@ class Curl
             } elseif (is_array($cookie)) {
                 $cookie2 = [];
                 foreach ($cookie as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
+                    if (is_int($key) && $value && is_string($value)) {
                         $cookie2[] = $value;
                     } elseif ($key && is_string($key) && is_scalar($value)) {
                         $cookie2[] = $key . '=' . urlencode($value);
@@ -449,7 +449,7 @@ class Curl
     {
         $scheme = $this->getScheme();
         $host = $this->getHost();
-        if ($scheme && $host && is_string($scheme) && is_string($host)) {
+        if ($scheme && is_string($scheme) && $host && is_string($host)) {
             return $scheme . '://' . $host;
         }
         return false;
@@ -508,7 +508,7 @@ class Curl
             } elseif (is_array($httpHeader)) {
                 $httpHeader2 = [];
                 foreach ($httpHeader as $key => $value) {
-                    if (is_int($key) && is_string($value)) {
+                    if (is_int($key) && $value && is_string($value)) {
                         $httpHeader2[] = $value;
                     } elseif ($key && is_string($key) && is_scalar($value)) {
                         $httpHeader2[] = $key . ': ' . $value;
@@ -1097,8 +1097,8 @@ class Curl
 
     public function getOptionsDump()
     {
-        $constants = get_defined_constants(true)['curl'];
         $options = [];
+        $constants = get_defined_constants(true)['curl'];
         foreach ($this->buildOptions() as $key => $value) {
             $options[array_search($key, $constants)] = $value;
         }
