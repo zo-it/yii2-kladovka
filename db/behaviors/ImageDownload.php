@@ -4,7 +4,8 @@ namespace ivanchkv\kladovka\db\behaviors;
 
 use Yii,
     yii\db\ActiveRecord,
-    ivanchkv\kladovka\net\Curl;
+    ivanchkv\kladovka\net\Curl,
+    ivanchkv\kladovka\image\Magick;
 
 
 class ImageDownload extends \yii\base\Behavior
@@ -27,14 +28,14 @@ class ImageDownload extends \yii\base\Behavior
         }
     }
 
-    private $_downloadDir = '@app/uploads';
+    private $_downloadDir = '@app/web/uploads';
 
     public function setDownloadDir($downloadDir)
     {
         $this->_downloadDir = $downloadDir;
     }
 
-    private $_downloadUrl = '';
+    private $_downloadUrl = '@web/uploads';
 
     public function setDownloadUrl($downloadUrl)
     {
@@ -112,13 +113,18 @@ $fileExtension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? 
 $fileBasename = $primaryKey . '.' . $fileExtension;
 
 foreach ($destAttributes as $destAttributeName => $rules) {
-//
+$rules['inputFilename'] = $inputFilename;
+
 $fileDirname = Yii::getAlias($this->_downloadDir) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $fileBasename[0];
 if (!file_exists($fileDirname)) {
 mkdir($fileDirname, 0770, true);
 }
 $outputFilename = $fileDirname . DIRECTORY_SEPARATOR . $fileBasename;
-var_dump($outputFilename);
+$rules['outputFilename'] = $outputFilename;
+if (Magick::init($rules)->execute()) {
+$owner->{$destAttributeName} = $fileBasename;
+$newAttributes[$destAttributeName] = $owner->{$destAttributeName};
+}
 //
 }
 
