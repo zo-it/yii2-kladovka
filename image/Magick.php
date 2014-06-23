@@ -152,6 +152,31 @@ class Magick
         return false;
     }
 
+    private $_resize = null;
+
+    public function setResize($resize)
+    {
+        $this->_resize = $resize;
+        if ($resize && (is_int($resize) || is_string($resize) || is_array($resize))) {
+            $this->setSize($resize);
+        }
+        return $this;
+    }
+
+    public function getResize()
+    {
+        return $this->_resize;
+    }
+
+    public function resize($resize = null)
+    {
+        if (!is_null($resize)) {
+            return $this->setResize($resize);
+        } else {
+            return $this->getResize();
+        }
+    }
+
     private $_thumbnail = null;
 
     public function setThumbnail($thumbnail)
@@ -345,6 +370,11 @@ class Magick
             $size = $this->getSize();
         }
         if ($size && is_string($size)) {
+            // resize
+            $resize = $this->getResize();
+            if ($resize/* && is_bool($resize)*/) {
+                $args['resize'] = $size . '^';
+            }
             // thumbnail
             $thumbnail = $this->getThumbnail();
             if ($thumbnail/* && is_bool($thumbnail)*/) {
