@@ -6,19 +6,19 @@ namespace ivanchkv\kladovka\image;
 class Magick
 {
 
-    public static function init($data = null)
+    public static function init($config = null)
     {
-        return new self($data);
+        return new self($config);
     }
 
-    public function __construct($data = null)
+    public function __construct($config = null)
     {
-        if ($data) {
-            if (is_string($data)) {
-                $this->setInputFilename($data);
-            } elseif (is_array($data)) {
-                foreach ($data as $key => $value) {
-                    if (is_string($key)) {
+        if ($config) {
+            if (is_string($config)) {
+                $this->setInputFilename($config);
+            } elseif (is_array($config)) {
+                foreach ($config as $key => $value) {
+                    if ($key && is_string($key)) {
                         $methodName = 'set' . ucfirst($key);
                         if (method_exists($this, $methodName)) {
                             $this->{$methodName}($value);
@@ -108,8 +108,19 @@ class Magick
             }
         }
         if ($size && is_array($size)) {
-            $this->setWidth(array_key_exists(0, $size) ? (int)$size[0] : (array_key_exists('width', $size) ? (int)$size['width'] : null));
-            $this->setHeight(array_key_exists(1, $size) ? (int)$size[1] : (array_key_exists('height', $size) ? (int)$size['height'] : null));
+            if (array_key_exists(0, $size) && array_key_exists(1, $size)) {
+                $this->setWidth((int)$size[0]);
+                $this->setHeight((int)$size[1]);
+            } elseif (array_key_exists('w', $size) && array_key_exists('h', $size)) {
+                $this->setWidth((int)$size['w']);
+                $this->setHeight((int)$size['h']);
+            } elseif (array_key_exists('width', $size) && array_key_exists('height', $size)) {
+                $this->setWidth((int)$size['width']);
+                $this->setHeight((int)$size['height']);
+            } else {
+                $this->setWidth(null);
+                $this->setHeight(null);
+            }
         } else {
             $this->setWidth(null);
             $this->setHeight(null);
@@ -146,9 +157,9 @@ class Magick
     public function setThumbnail($thumbnail)
     {
         $this->_thumbnail = $thumbnail;
-if ($thumbnail && !is_bool($thumbnail)) {
-$this->setSize($thumbnail);
-}
+        if ($thumbnail && (is_int($thumbnail) || is_string($thumbnail) || is_array($thumbnail))) {
+            $this->setSize($thumbnail);
+        }
         return $this;
     }
 
@@ -215,9 +226,9 @@ $this->setSize($thumbnail);
     public function setCrop($crop)
     {
         $this->_crop = $crop;
-if ($crop && !is_bool($crop)) {
-$this->setSize($crop);
-}
+        if ($crop && (is_int($crop) || is_string($crop) || is_array($crop))) {
+            $this->setSize($crop);
+        }
         return $this;
     }
 
@@ -323,7 +334,10 @@ $this->setSize($crop);
         // input filename
         $inputFilename = $this->getInputFilename();
         if ($inputFilename && is_string($inputFilename)) {
-            $args[] = $inputFilename;
+            if (!file_exists($inputFilename)) {
+                throw new \Exception('Input file "' . $inputFilename . '" does not exist.');
+            }
+            $args['inputFilename'] = $inputFilename;
         }
         // size
         $size = $this->buildSize();
@@ -333,7 +347,7 @@ $this->setSize($crop);
         if ($size && is_string($size)) {
             // thumbnail
             $thumbnail = $this->getThumbnail();
-            if ($thumbnail && is_bool($thumbnail)) {
+            if ($thumbnail/* && is_bool($thumbnail)*/) {
                 $args['thumbnail'] = $size . '^';
             }
             // unsharp
@@ -356,23 +370,57 @@ $this->setSize($crop);
             }
             // crop
             $crop = $this->getCrop();
-            if ($crop && is_bool($crop)) {
+            if ($crop/* && is_bool($crop)*/) {
                 $args['crop'] = $size . '+0+0';
             }
         }
         // output filename
         $outputFilename = $this->getOutputFilename();
         if ($outputFilename && is_string($outputFilename)) {
-            $args[] = $outputFilename;
+            if (file_exists($outputFilename)) {
+                unlink($outputFilename);
+            }
+            $args['outputFilename'] = $outputFilename;
         }
         $args2 = [];
         foreach ($args as $key => $value) {
             if (is_int($key) && is_string($value)) {
-                $args2[] = $value;
-            } elseif (is_string($key) && is_scalar($value)) {
-                $args2[] = '-' . $key . ' ' . escapeshellarg($value);
+                $args2[] = escapeshellarg($value);
+            } elseif ($key && is_string($key) && is_scalar($value)) {
+                if (($key == 'inputFilename') || ($key == 'outputFilename')) {
+                    $args2[] = escapeshellarg($value);
+                } else {
+                    $args2[] = '-' . $key . ' ' . escapeshellarg($value);
+                }
             }
         }
         return implode(' ', $args2);
+    }
+
+    private $_returnCode = null;
+
+    protected function setReturnCode($returnCode)
+    {
+        $this->_returnCode = $returnCode;
+        return $this;
+    }
+
+    public function getReturnCode()
+    {
+        return $this->_returnCode;
+    }
+
+    public function returnCode()
+    {
+        return $this->getReturnCode();
+    }
+
+    public function execute()
+    {
+        $this->setReturnCode(null);
+        $command = 'convert ' . $this->buildArgs() . ' > /dev/null';
+        passthru($command, $returnCode);
+        $this->setReturnCode($returnCode);
+        return ($returnCode == 0);
     }
 }
