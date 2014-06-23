@@ -2,12 +2,44 @@
 
 namespace ivanchkv\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord,
+use Yii,
+    yii\db\ActiveRecord,
     ivanchkv\kladovka\net\Curl;
 
 
 class ImageDownload extends \yii\base\Behavior
 {
+
+    public function init()
+    {
+        if (array_key_exists(__CLASS__, Yii::$app->params)) {
+            $config = Yii::$app->params[__CLASS__];
+            if ($config && is_array($config)) {
+                foreach ($config as $key => $value) {
+                    if ($key && is_string($key)) {
+                        $methodName = 'set' . ucfirst($key);
+                        if (method_exists($this, $methodName)) {
+                            $this->{$methodName}($value);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private $_downloadDir = '@app/uploads';
+
+    public function setDownloadDir($downloadDir)
+    {
+        $this->_downloadDir = $downloadDir;
+    }
+
+    private $_downloadUrl = '';
+
+    public function setDownloadUrl($downloadUrl)
+    {
+        $this->_downloadUrl = $downloadUrl;
+    }
 
     private $_rules = [];
 
@@ -59,6 +91,10 @@ class ImageDownload extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+$primaryKey = $owner->getPrimaryKey();
+if (is_array($primaryKey)) {
+$primaryKey = vsprintf(implode('-%s_', array_keys($primaryKey)) . '-%s', array_values($primaryKey));
+}
             foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
                 if ($owner->{$sourceAttributeName} && is_string($owner->{$sourceAttributeName}) && preg_match('~^(https?\://[^\s]+)(?:\s(\d+))?$~i', $owner->{$sourceAttributeName}, $match)) {
 $url = $match[1];
@@ -66,13 +102,27 @@ $curl = Curl::init($url)->setIsTempFilename(true);
 $curl->execute();
 $owner->{$sourceAttributeName} = $url . ' ' . $curl->getHttpCode();
 $newAttributes[$sourceAttributeName] = $owner->{$sourceAttributeName};
-$filename = $curl->getFilename();
-if (file_exists($filename)) {
+$inputFilename = $curl->getFilename();
+if (file_exists($inputFilename)) {
+$contentType = mime_content_type($inputFilename);
+$contentTypeFileExtensionMap = [
+'image/jpeg' => 'jpg'
+];
+$fileExtension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
+$fileBasename = $primaryKey . '.' . $fileExtension;
+
 foreach ($destAttributes as $destAttributeName => $rules) {
 //
-var_dump($destAttributeName);
+$fileDirname = Yii::getAlias($this->_downloadDir) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $fileBasename[0];
+if (!file_exists($fileDirname)) {
+mkdir($fileDirname, 0770, true);
+}
+$outputFilename = $fileDirname . DIRECTORY_SEPARATOR . $fileBasename;
+var_dump($outputFilename);
 //
 }
+
+
 }
                 }
             }
