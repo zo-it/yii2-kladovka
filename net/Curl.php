@@ -1303,7 +1303,6 @@ class Curl
 
     protected function invokeAfterExecute()
     {
-        $this->closeFile();
         $handle = $this->getHandle();
         $this->setResult(curl_multi_getcontent($handle));
         $this->setErrno(curl_errno($handle));
@@ -1315,6 +1314,7 @@ class Curl
                 return false;
             }
         }
+        //$this->closeFile();
         return true;
     }
 
