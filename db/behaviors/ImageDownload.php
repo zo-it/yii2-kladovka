@@ -103,15 +103,22 @@ class ImageDownload extends \yii\base\Behavior
                                 if ($owner->hasAttribute($destAttributeName)) {
                                     $destAttributes2[$destAttributeName] = $config;
                                 }
-                            } elseif ($key && is_string($key) && $value && is_array($value)) {
+                            } elseif ($key && is_string($key) && $value/* && (is_string($value) || is_array($value))*/) {
                                 $destAttributeName = $key;
-                                if (array_key_exists('convertConfig', $value)) {
-                                    $config = array_merge($defaultConfig, array_intersect_key($value, $defaultConfig));
-                                } else {
-                                    $config = array_merge($defaultConfig, ['convertConfig' => $value]);
+                                if (is_string($value)) {
+                                    $value = [
+                                        'resize' => $value
+                                    ];
                                 }
-                                if ($owner->hasAttribute($destAttributeName)) {
-                                    $destAttributes2[$destAttributeName] = $config;
+                                if (is_array($value)) {
+                                    if (array_key_exists('convertConfig', $value)) {
+                                        $config = array_merge($defaultConfig, array_intersect_key($value, $defaultConfig));
+                                    } else {
+                                        $config = array_merge($defaultConfig, ['convertConfig' => $value]);
+                                    }
+                                    if ($owner->hasAttribute($destAttributeName)) {
+                                        $destAttributes2[$destAttributeName] = $config;
+                                    }
                                 }
                             }
                         }
