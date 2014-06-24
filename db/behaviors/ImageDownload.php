@@ -30,6 +30,13 @@ class ImageDownload extends \yii\base\Behavior
         }
     }
 
+    private $_mkdirMode = 0770;
+
+    public function setMkdirMode($mkdirMode)
+    {
+        $this->_mkdirMode = $mkdirMode;
+    }
+
     private $_rules = [];
 
     public function setRules(array $rules)
@@ -115,7 +122,7 @@ class ImageDownload extends \yii\base\Behavior
         return $attributes;
     }
 
-    public function getAttributeConfig($attributeName)
+    protected function getAttributeConfig($attributeName)
     {
         foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
             foreach ($destAttributes as $destAttributeName => $config) {
@@ -131,44 +138,39 @@ class ImageDownload extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-$primaryKey = $owner->getPrimaryKey();
-if (is_array($primaryKey)) {
-$primaryKey = vsprintf(implode('-%s_', array_keys($primaryKey)) . '-%s', array_values($primaryKey));
-}
+            $primaryKey = $owner->getPrimaryKey();
+            if (is_array($primaryKey)) {
+                $primaryKey = vsprintf(implode('-%s_', array_keys($primaryKey)) . '-%s', array_values($primaryKey));
+            }
             foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
                 if ($owner->{$sourceAttributeName} && is_string($owner->{$sourceAttributeName}) && preg_match('~^(https?\://[^\s]+)(?:\s(\d+))?$~i', $owner->{$sourceAttributeName}, $match)) {
-$url = $match[1];
-$curl = Curl::init($url)->setIsTempFilename(true);
-$curl->execute();
-$owner->{$sourceAttributeName} = $url . ' ' . $curl->getHttpCode();
-$newAttributes[$sourceAttributeName] = $owner->{$sourceAttributeName};
-$inputFilename = $curl->getFilename();
-if (file_exists($inputFilename)) {
-$contentType = mime_content_type($inputFilename);
-$contentTypeFileExtensionMap = [
-'image/jpeg' => 'jpg'
-];
-$extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
-$basename = $primaryKey . '.' . $extension;
-
-foreach ($destAttributes as $destAttributeName => $config) {
-$config['rules']['inputFilename'] = $inputFilename;
-
-$dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0]);
-if (!file_exists($dirname)) {
-mkdir($dirname, 0770, true);
-}
-$outputFilename = $dirname . DIRECTORY_SEPARATOR . $basename;
-$config['rules']['outputFilename'] = $outputFilename;
-if (Magick::init($config['rules'])->execute()) {
-$owner->{$destAttributeName} = $basename;
-$newAttributes[$destAttributeName] = $owner->{$destAttributeName};
-}
-//
-}
-
-
-}
+                    $url = $match[1];
+                    $curl = Curl::init($url)->setIsTempFilename(true);
+                    $curl->execute();
+                    $owner->{$sourceAttributeName} = $url . ' ' . $curl->getHttpCode();
+                    $newAttributes[$sourceAttributeName] = $owner->{$sourceAttributeName};
+                    $inputFilename = $curl->getFilename();
+                    if (file_exists($inputFilename)) {
+                        $contentType = mime_content_type($inputFilename);
+                        $contentTypeFileExtensionMap = [
+                            'image/jpeg' => 'jpg'
+                        ];
+                        $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
+                        $basename = $primaryKey . '.' . $extension;
+                        foreach ($destAttributes as $destAttributeName => $config) {
+                            $config['rules']['inputFilename'] = $inputFilename;
+                            $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0]);
+                            if (!file_exists($dirname)) {
+                                mkdir($dirname, $this->_mkdirMode, true);
+                            }
+                            $outputFilename = $dirname . DIRECTORY_SEPARATOR . $basename;
+                            $config['rules']['outputFilename'] = $outputFilename;
+                            if (Magick::init($config['rules'])->execute()) {
+                                $owner->{$destAttributeName} = $basename;
+                                $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -179,10 +181,12 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
             $basename = $this->owner->{$attributeName};
-            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
-            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
-            if (file_exists($filename)) {
-                return $filename;
+            if ($basename && is_string($basename)) {
+                $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+                $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+                if (file_exists($filename)) {
+                    return $filename;
+                }
             }
         }
         return false;
@@ -193,12 +197,14 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
             $basename = $this->owner->{$attributeName};
-            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
-            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
-            if (file_exists($filename)) {
-                return Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
-            } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
-                return Url::to($attributeConfig['defaultImageUrl']);
+            if ($basename && is_string($basename)) {
+                $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+                $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+                if (file_exists($filename)) {
+                    return Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
+                } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
+                    return Url::to($attributeConfig['defaultImageUrl']);
+                }
             }
         }
         return false;
@@ -209,14 +215,16 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
             $basename = $this->owner->{$attributeName};
-            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
-            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
-            if (file_exists($filename)) {
-                $url = Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
-                return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
-            } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
-                $url = Url::to($attributeConfig['defaultImageUrl']);
-                return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
+            if ($basename && is_string($basename)) {
+                $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+                $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+                if (file_exists($filename)) {
+                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
+                    return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
+                } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
+                    $url = Url::to($attributeConfig['defaultImageUrl']);
+                    return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
+                }
             }
         }
         return false;
