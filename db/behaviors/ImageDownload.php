@@ -37,11 +37,11 @@ class ImageDownload extends \yii\base\Behavior
         $this->_downloadDir = $downloadDir;
     }
 
-    private $_mkdirMode = 0770;
+    private $_dirMode = 0770;
 
-    public function setMkdirMode($mkdirMode)
+    public function setDirMode($dirMode)
     {
-        $this->_mkdirMode = $mkdirMode;
+        $this->_dirMode = $dirMode;
     }
 
     private $_convertConfig = [];
@@ -83,7 +83,7 @@ class ImageDownload extends \yii\base\Behavior
     {
         $defaultConfig = [
             'downloadDir' => $this->_downloadDir,
-            'mkdirMode' => $this->_mkdirMode,
+            'dirMode' => $this->_dirMode,
             'convertConfig' => $this->_convertConfig,
             'downloadUrl' => $this->_downloadUrl,
             'defaultImageUrl' => $this->_defaultImageUrl,
@@ -146,7 +146,10 @@ class ImageDownload extends \yii\base\Behavior
             foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
                 if ($owner->{$sourceAttributeName} && is_string($owner->{$sourceAttributeName}) && preg_match('~^(https?\://[^\s]+)(?:\s(\d+))?$~i', $owner->{$sourceAttributeName}, $match)) {
                     $url = $match[1];
-                    $curl = Curl::init($url)->setIsTempFilename(true);
+                    $curl = Curl::init([
+                        'url' => $url,
+                        'isTempFilename' => true
+                    ]);
                     $curl->execute();
                     $owner->{$sourceAttributeName} = $url . ' ' . $curl->getHttpCode();
                     $newAttributes[$sourceAttributeName] = $owner->{$sourceAttributeName};
@@ -154,15 +157,17 @@ class ImageDownload extends \yii\base\Behavior
                     if (file_exists($inputFilename)) {
                         $contentType = mime_content_type($inputFilename);
                         $contentTypeFileExtensionMap = [
-                            'image/jpeg' => 'jpg'
+                            'image/jpeg' => 'jpg',
+                            'image/png' => 'png',
+                            'image/gif' => 'gif'
                         ];
-                        $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
+                        $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'jpg';
                         $basename = $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
                             $config['convertConfig']['inputFilename'] = $inputFilename;
                             $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0]);
                             if (!file_exists($dirname)) {
-                                mkdir($dirname, $config['mkdirMode'], true);
+                                mkdir($dirname, $config['dirMode'], true);
                             }
                             $outputFilename = $dirname . DIRECTORY_SEPARATOR . $basename;
                             $config['convertConfig']['outputFilename'] = $outputFilename;
