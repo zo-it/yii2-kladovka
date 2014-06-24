@@ -7,7 +7,7 @@ use Yii,
     yii\helpers\Url,
     yii\helpers\Html,
     ivanchkv\kladovka\net\Curl,
-    ivanchkv\kladovka\image\Magick;
+    ivanchkv\kladovka\image\magick\Convert;
 
 
 class ImageDownload extends \yii\base\Behavior
@@ -30,6 +30,13 @@ class ImageDownload extends \yii\base\Behavior
         }
     }
 
+    private $_downloadDir = '@app/web/uploads';
+
+    public function setDownloadDir($downloadDir)
+    {
+        $this->_downloadDir = $downloadDir;
+    }
+
     private $_mkdirMode = 0770;
 
     public function setMkdirMode($mkdirMode)
@@ -37,18 +44,11 @@ class ImageDownload extends \yii\base\Behavior
         $this->_mkdirMode = $mkdirMode;
     }
 
-    private $_rules = [];
+    private $_convertConfig = [];
 
-    public function setRules(array $rules)
+    public function setConvertConfig(array $convertConfig)
     {
-        $this->_rules = $rules;
-    }
-
-    private $_downloadDir = '@app/web/uploads';
-
-    public function setDownloadDir($downloadDir)
-    {
-        $this->_downloadDir = $downloadDir;
+        $this->_convertConfig = $convertConfig;
     }
 
     private $_downloadUrl = '@web/uploads';
@@ -82,8 +82,9 @@ class ImageDownload extends \yii\base\Behavior
     protected function buildAttributes()
     {
         $defaultConfig = [
-            'rules' => $this->_rules,
             'downloadDir' => $this->_downloadDir,
+            'mkdirMode' => $this->_mkdirMode,
+            'convertConfig' => $this->_convertConfig,
             'downloadUrl' => $this->_downloadUrl,
             'defaultImageUrl' => $this->_defaultImageUrl,
             'htmlOptions' => $this->_htmlOptions
@@ -104,10 +105,10 @@ class ImageDownload extends \yii\base\Behavior
                                 }
                             } elseif ($key && is_string($key) && $value && is_array($value)) {
                                 $destAttributeName = $key;
-                                if (array_key_exists('rules', $value)) {
+                                if (array_key_exists('convertConfig', $value)) {
                                     $config = array_merge($defaultConfig, array_intersect_key($value, $defaultConfig));
                                 } else {
-                                    $config = array_merge($defaultConfig, ['rules' => $value]);
+                                    $config = array_merge($defaultConfig, ['convertConfig' => $value]);
                                 }
                                 if ($owner->hasAttribute($destAttributeName)) {
                                     $destAttributes2[$destAttributeName] = $config;
@@ -158,14 +159,14 @@ class ImageDownload extends \yii\base\Behavior
                         $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
                         $basename = $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
-                            $config['rules']['inputFilename'] = $inputFilename;
+                            $config['convertConfig']['inputFilename'] = $inputFilename;
                             $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0]);
                             if (!file_exists($dirname)) {
-                                mkdir($dirname, $this->_mkdirMode, true);
+                                mkdir($dirname, $config['mkdirMode'], true);
                             }
                             $outputFilename = $dirname . DIRECTORY_SEPARATOR . $basename;
-                            $config['rules']['outputFilename'] = $outputFilename;
-                            if (Magick::init($config['rules'])->execute()) {
+                            $config['convertConfig']['outputFilename'] = $outputFilename;
+                            if (Convert::init($config['convertConfig'])->execute()) {
                                 $owner->{$destAttributeName} = $basename;
                                 $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
                             }

@@ -1,9 +1,9 @@
 <?php
 
-namespace ivanchkv\kladovka\image;
+namespace ivanchkv\kladovka\image\magick;
 
 
-class Magick
+class Convert
 {
 
     public static function init($config = null)
