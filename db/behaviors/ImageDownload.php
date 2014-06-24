@@ -5,6 +5,7 @@ namespace ivanchkv\kladovka\db\behaviors;
 use Yii,
     yii\db\ActiveRecord,
     yii\helpers\Url,
+    yii\helpers\Html,
     ivanchkv\kladovka\net\Curl,
     ivanchkv\kladovka\image\Magick;
 
@@ -168,10 +169,10 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
 
     public function getFilename($attributeName)
     {
-        $config = $this->getAttributeConfig($attributeName);
-        if ($config && is_array($config)) {
+        $attributeConfig = $this->getAttributeConfig($attributeName);
+        if ($attributeConfig && is_array($attributeConfig)) {
             $basename = $this->owner->{$attributeName};
-            $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
             $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
             if (file_exists($filename)) {
                 return $filename;
@@ -182,16 +183,25 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
 
     public function getUrl($attributeName)
     {
-        $config = $this->getAttributeConfig($attributeName);
-        if ($config && is_array($config)) {
+        $attributeConfig = $this->getAttributeConfig($attributeName);
+        if ($attributeConfig && is_array($attributeConfig)) {
             $basename = $this->owner->{$attributeName};
-            $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
             $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
             if (file_exists($filename)) {
-                return Url::to($config['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
-            } elseif ($config['defaultImageUrl']) {
-                return Url::to($config['defaultImageUrl']);
+                return Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
+            } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
+                return Url::to($attributeConfig['defaultImageUrl']);
             }
+        }
+        return false;
+    }
+
+    public function getImgTag($attributeName, $options = [])
+    {
+        $url = $this->getUrl($attributeName);
+        if ($url && is_string($url)) {
+            return Html::img($url, $options);
         }
         return false;
     }
