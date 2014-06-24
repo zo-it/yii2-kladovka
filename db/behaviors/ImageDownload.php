@@ -58,34 +58,56 @@ class ImageDownload extends \yii\base\Behavior
 
     protected function buildAttributes()
     {
+        $defaultConfig = [
+            'downloadDir' => $this->_downloadDir,
+            'downloadUrl' => $this->_downloadUrl,
+            'rules' => $this->_rules
+        ];
         $attributes = [];
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->_attributes as $sourceAttributeName => $config) {
-                if ($sourceAttributeName && is_string($sourceAttributeName) && $config && is_array($config)) {
+            foreach ($this->_attributes as $sourceAttributeName => $destAttributes) {
+                if ($sourceAttributeName && is_string($sourceAttributeName) && $destAttributes && is_array($destAttributes)) {
                     if ($owner->hasAttribute($sourceAttributeName)) {
-                        $config2 = [];
-                        foreach ($config as $key => $value) {
+                        $destAttributes2 = [];
+                        foreach ($destAttributes as $key => $value) {
                             if (is_int($key) && $value && is_string($value)) {
                                 $destAttributeName = $value;
-                                $rules = $this->_rules;
+                                $config = $defaultConfig;
                                 if ($owner->hasAttribute($destAttributeName)) {
-                                    $config2[$destAttributeName] = $rules;
+                                    $destAttributes2[$destAttributeName] = $config;
                                 }
                             } elseif ($key && is_string($key) && $value && is_array($value)) {
                                 $destAttributeName = $key;
-                                $rules = $value;
+                                if (array_key_exists('rules', $value)) {
+                                    $config = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                                } else {
+                                    $config = $defaultConfig;
+                                    $config['rules'] = $value;
+                                }
                                 if ($owner->hasAttribute($destAttributeName)) {
-                                    $config2[$destAttributeName] = $rules;
+                                    $destAttributes2[$destAttributeName] = $config;
                                 }
                             }
                         }
-                        $attributes[$sourceAttributeName] = $config2;
+                        $attributes[$sourceAttributeName] = $destAttributes2;
                     }
                 }
             }
         }
         return $attributes;
+    }
+
+    protected function getAttributeConfig($attributeName)
+    {
+        foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
+            foreach ($destAttributes as $destAttributeName => $config) {
+                if ($destAttributeName == $attributeName) {
+                    return $config;
+                }
+            }
+        }
+        return false;
     }
 
     protected function processImageDownload(array &$newAttributes = [])
@@ -109,20 +131,20 @@ $contentType = mime_content_type($inputFilename);
 $contentTypeFileExtensionMap = [
 'image/jpeg' => 'jpg'
 ];
-$fileExtension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
-$fileBasename = $primaryKey . '.' . $fileExtension;
+$extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'ext';
+$basename = $primaryKey . '.' . $extension;
 
-foreach ($destAttributes as $destAttributeName => $rules) {
-$rules['inputFilename'] = $inputFilename;
+foreach ($destAttributes as $destAttributeName => $config) {
+$config['rules']['inputFilename'] = $inputFilename;
 
-$fileDirname = Yii::getAlias($this->_downloadDir) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $fileBasename[0];
-if (!file_exists($fileDirname)) {
-mkdir($fileDirname, 0770, true);
+$dirname = Yii::getAlias($this->_downloadDir) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0];
+if (!file_exists($dirname)) {
+mkdir($dirname, 0770, true);
 }
-$outputFilename = $fileDirname . DIRECTORY_SEPARATOR . $fileBasename;
-$rules['outputFilename'] = $outputFilename;
-if (Magick::init($rules)->execute()) {
-$owner->{$destAttributeName} = $fileBasename;
+$outputFilename = $dirname . DIRECTORY_SEPARATOR . $basename;
+$config['rules']['outputFilename'] = $outputFilename;
+if (Magick::init($config['rules'])->execute()) {
+$owner->{$destAttributeName} = $basename;
 $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
 }
 //
@@ -134,6 +156,21 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
             }
         }
     }
+
+public function getFilename($attributeName)
+{
+$config = $this->getAttributeConfig($attributeName);
+if ($config && is_array($config)) {
+$owner = $this->owner;
+$basename = $owner->{$attributeName};
+$dirname = Yii::getAlias($config['downloadDir']) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0];
+$filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+if (file_exists($filename)) {
+return $filename;
+}
+}
+return false;
+}
 
     public function events()
     {
