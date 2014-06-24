@@ -224,12 +224,10 @@ class ImageDownload extends \yii\base\Behavior
                 $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
                     $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
-                    if ($this->_modifyAttribute && is_string($this->_modifyAttribute)) {
-                        if ($owner->hasAttribute($this->_modifyAttribute)) {
-                            if ($owner->{$this->_modifyAttribute} && is_int($owner->{$this->_modifyAttribute})) {
-                                $url .= '?' . $owner->{$this->_modifyAttribute};
-                            }
-                        }
+                    // file.jpg?modified
+                    $modifyAttribute = $attributeConfig['modifyAttribute'];
+                    if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
+                        $url .= '?' . $owner->{$modifyAttribute};
                     }
                     return $url;
                 } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
@@ -250,6 +248,11 @@ class ImageDownload extends \yii\base\Behavior
                 $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
                     $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                    // file.jpg?modified
+                    $modifyAttribute = $attributeConfig['modifyAttribute'];
+                    if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
+                        $url .= '?' . $owner->{$modifyAttribute};
+                    }
                     return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
                 } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
                     $url = Url::to($attributeConfig['defaultImageUrl']);
