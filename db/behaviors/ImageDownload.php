@@ -58,6 +58,13 @@ class ImageDownload extends \yii\base\Behavior
         $this->_defaultImageUrl = $defaultImageUrl;
     }
 
+    private $_htmlOptions = [];
+
+    public function setHtmlOptions(array $htmlOptions)
+    {
+        $this->_htmlOptions = $htmlOptions;
+    }
+
     private $_attributes = [];
 
     public function setAttributes(array $attributes)
@@ -71,7 +78,8 @@ class ImageDownload extends \yii\base\Behavior
             'rules' => $this->_rules,
             'downloadDir' => $this->_downloadDir,
             'downloadUrl' => $this->_downloadUrl,
-            'defaultImageUrl' => $this->_defaultImageUrl
+            'defaultImageUrl' => $this->_defaultImageUrl,
+            'htmlOptions' => $this->_htmlOptions
         ];
         $attributes = [];
         $owner = $this->owner;
@@ -90,10 +98,9 @@ class ImageDownload extends \yii\base\Behavior
                             } elseif ($key && is_string($key) && $value && is_array($value)) {
                                 $destAttributeName = $key;
                                 if (array_key_exists('rules', $value)) {
-                                    $config = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                                    $config = array_merge($defaultConfig, array_intersect_key($value, $defaultConfig));
                                 } else {
-                                    $config = $defaultConfig;
-                                    $config['rules'] = $value;
+                                    $config = array_merge($defaultConfig, ['rules' => $value]);
                                 }
                                 if ($owner->hasAttribute($destAttributeName)) {
                                     $destAttributes2[$destAttributeName] = $config;
@@ -197,11 +204,20 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
         return false;
     }
 
-    public function getImgTag($attributeName, $options = [])
+    public function getHtml($attributeName, array $htmlOptions = [])
     {
-        $url = $this->getUrl($attributeName);
-        if ($url && is_string($url)) {
-            return Html::img($url, $options);
+        $attributeConfig = $this->getAttributeConfig($attributeName);
+        if ($attributeConfig && is_array($attributeConfig)) {
+            $basename = $this->owner->{$attributeName};
+            $dirname = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+            if (file_exists($filename)) {
+                $url = Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
+                return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
+            } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
+                $url = Url::to($attributeConfig['defaultImageUrl']);
+                return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
+            }
         }
         return false;
     }
