@@ -53,17 +53,15 @@ class Datetime extends \yii\base\Behavior
                 }
             }
             foreach ($this->_attributes as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName)) {
-                    if ($config && is_string($config)) {
+                if ($attributeName && is_string($attributeName) && $config && (is_string($config) || is_array($config))) {
+                    if (is_string($config)) {
                         $config = [
                             'dateFormat' => $config,
                             'dateTimeFormat' => $config
                         ];
                     }
-                    if (is_array($config)) {
-                        if ($owner->hasAttribute($attributeName)) {
-                            $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
-                        }
+                    if ($owner->hasAttribute($attributeName)) {
+                        $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
                     }
                 }
             }
