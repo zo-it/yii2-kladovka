@@ -58,6 +58,13 @@ class ImageDownload extends \yii\base\Behavior
         $this->_downloadUrl = $downloadUrl;
     }
 
+    private $_modifyAttribute = 'modified';
+
+    public function setModifyAttribute($modifyAttribute)
+    {
+        $this->_modifyAttribute = $modifyAttribute;
+    }
+
     private $_defaultImageUrl = false;
 
     public function setDefaultImageUrl($defaultImageUrl)
@@ -86,6 +93,7 @@ class ImageDownload extends \yii\base\Behavior
             'dirMode' => $this->_dirMode,
             'convertConfig' => $this->_convertConfig,
             'downloadUrl' => $this->_downloadUrl,
+            'modifyAttribute' => $this->_modifyAttribute,
             'defaultImageUrl' => $this->_defaultImageUrl,
             'htmlOptions' => $this->_htmlOptions
         ];
@@ -173,7 +181,7 @@ class ImageDownload extends \yii\base\Behavior
                         $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'jpg';
                         $basename = $basenamePrefix . $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
-                            $outputFilename = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
+                            $outputFilename = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
                             $dir = dirname($outputFilename);
                             if (!file_exists($dir)) {
                                 mkdir($dir, $config['dirMode'], true);
@@ -194,9 +202,10 @@ class ImageDownload extends \yii\base\Behavior
     {
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
-            $basename = $this->owner->{$attributeName};
+            $owner = $this->owner;
+            $basename = $owner->{$attributeName};
             if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
+                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
                     return $filename;
                 }
@@ -209,11 +218,20 @@ class ImageDownload extends \yii\base\Behavior
     {
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
-            $basename = $this->owner->{$attributeName};
+            $owner = $this->owner;
+            $basename = $owner->{$attributeName};
             if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
+                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
-                    return Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                    if ($this->_modifyAttribute && is_string($this->_modifyAttribute)) {
+                        if ($owner->hasAttribute($this->_modifyAttribute)) {
+                            if ($owner->{$this->_modifyAttribute} && is_int($owner->{$this->_modifyAttribute})) {
+                                $url .= '?' . $owner->{$this->_modifyAttribute};
+                            }
+                        }
+                    }
+                    return $url;
                 } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
                     return Url::to($attributeConfig['defaultImageUrl']);
                 }
@@ -226,11 +244,12 @@ class ImageDownload extends \yii\base\Behavior
     {
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
-            $basename = $this->owner->{$attributeName};
+            $owner = $this->owner;
+            $basename = $owner->{$attributeName};
             if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
+                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
-                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename);
+                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
                     return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
                 } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
                     $url = Url::to($attributeConfig['defaultImageUrl']);
@@ -244,17 +263,12 @@ class ImageDownload extends \yii\base\Behavior
     public function events()
     {
         return [
-ActiveRecord::EVENT_BEFORE_VALIDATE => 'beforeSave',
-/*ActiveRecord::EVENT_BEFORE_INSERT => 'beforeSave',
-ActiveRecord::EVENT_BEFORE_UPDATE => 'beforeSave',
-ActiveRecord::EVENT_AFTER_VALIDATE => 'afterFind',*/
-//ActiveRecord::EVENT_AFTER_INSERT => 'afterFind',
-//ActiveRecord::EVENT_AFTER_UPDATE => 'afterFind',
-//ActiveRecord::EVENT_AFTER_FIND => 'afterFind'
+            ActiveRecord::EVENT_BEFORE_UPDATE => 'beforeUpdate',
+            ActiveRecord::EVENT_AFTER_INSERT => 'afterInsert'
         ];
     }
 
-    public function beforeSave($event)
+    public function beforeUpdate($event)
     {
         $owner = $this->owner;
         if (($owner instanceof ActiveRecord) && $owner->getPrimaryKey()) {
@@ -262,12 +276,15 @@ $this->processImageDownload();
         }
     }
 
-    public function afterFind($event)
+    public function afterInsert($event)
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
 $newAttributes = [];
 $this->processImageDownload($newAttributes);
+if ($newAttributes) {
+//$owner->updateAll($newAttributes, $condition = '', $params = [])
+}
         }
     }
 }
