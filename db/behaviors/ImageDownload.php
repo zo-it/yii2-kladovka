@@ -4,6 +4,7 @@ namespace ivanchkv\kladovka\db\behaviors;
 
 use Yii,
     yii\db\ActiveRecord,
+    yii\helpers\Url,
     ivanchkv\kladovka\net\Curl,
     ivanchkv\kladovka\image\Magick;
 
@@ -28,6 +29,13 @@ class ImageDownload extends \yii\base\Behavior
         }
     }
 
+    private $_rules = [];
+
+    public function setRules(array $rules)
+    {
+        $this->_rules = $rules;
+    }
+
     private $_downloadDir = '@app/web/uploads';
 
     public function setDownloadDir($downloadDir)
@@ -42,11 +50,11 @@ class ImageDownload extends \yii\base\Behavior
         $this->_downloadUrl = $downloadUrl;
     }
 
-    private $_rules = [];
+    private $_defaultImageUrl = false;
 
-    public function setRules(array $rules)
+    public function setDefaultImageUrl($defaultImageUrl)
     {
-        $this->_rules = $rules;
+        $this->_defaultImageUrl = $defaultImageUrl;
     }
 
     private $_attributes = [];
@@ -59,9 +67,10 @@ class ImageDownload extends \yii\base\Behavior
     protected function buildAttributes()
     {
         $defaultConfig = [
+            'rules' => $this->_rules,
             'downloadDir' => $this->_downloadDir,
             'downloadUrl' => $this->_downloadUrl,
-            'rules' => $this->_rules
+            'defaultImageUrl' => $this->_defaultImageUrl
         ];
         $attributes = [];
         $owner = $this->owner;
@@ -98,7 +107,7 @@ class ImageDownload extends \yii\base\Behavior
         return $attributes;
     }
 
-    protected function getAttributeConfig($attributeName)
+    public function getAttributeConfig($attributeName)
     {
         foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
             foreach ($destAttributes as $destAttributeName => $config) {
@@ -137,7 +146,7 @@ $basename = $primaryKey . '.' . $extension;
 foreach ($destAttributes as $destAttributeName => $config) {
 $config['rules']['inputFilename'] = $inputFilename;
 
-$dirname = Yii::getAlias($this->_downloadDir) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0];
+$dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner->tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename[0]);
 if (!file_exists($dirname)) {
 mkdir($dirname, 0770, true);
 }
@@ -157,20 +166,35 @@ $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
         }
     }
 
-public function getFilename($attributeName)
-{
-$config = $this->getAttributeConfig($attributeName);
-if ($config && is_array($config)) {
-$owner = $this->owner;
-$basename = $owner->{$attributeName};
-$dirname = Yii::getAlias($config['downloadDir']) . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0];
-$filename = $dirname . DIRECTORY_SEPARATOR . $basename;
-if (file_exists($filename)) {
-return $filename;
-}
-}
-return false;
-}
+    public function getFilename($attributeName)
+    {
+        $config = $this->getAttributeConfig($attributeName);
+        if ($config && is_array($config)) {
+            $basename = $this->owner->{$attributeName};
+            $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+            if (file_exists($filename)) {
+                return $filename;
+            }
+        }
+        return false;
+    }
+
+    public function getUrl($attributeName)
+    {
+        $config = $this->getAttributeConfig($attributeName);
+        if ($config && is_array($config)) {
+            $basename = $this->owner->{$attributeName};
+            $dirname = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $this->owner->tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename[0]);
+            $filename = $dirname . DIRECTORY_SEPARATOR . $basename;
+            if (file_exists($filename)) {
+                return Url::to($config['downloadUrl'] . '/' . $this->owner->tableName() . '/' . $attributeName . '/' . $basename[0] . '/' . $basename);
+            } elseif ($config['defaultImageUrl']) {
+                return Url::to($config['defaultImageUrl']);
+            }
+        }
+        return false;
+    }
 
     public function events()
     {
