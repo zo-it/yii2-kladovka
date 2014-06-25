@@ -1397,7 +1397,7 @@ class Curl
         $this->setRetryCount($retryCount);
         $result = $this->executeOnce();
         $maxRetries = $this->getMaxRetries();
-        while (!$result && !$this->getHttpCode() && $maxRetries && is_int($maxRetries) && (++ $retryCount <= $maxRetries)) {
+        while (($result === false) && $maxRetries && is_int($maxRetries) && (++ $retryCount <= $maxRetries)) {
             $retryDelay = $this->getRetryDelay();
             if ($retryDelay && is_int($retryDelay)) {
                 sleep($retryDelay);
