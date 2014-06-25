@@ -1,9 +1,9 @@
 <?php
 
-namespace ivanchkv\kladovka\image;
+namespace ivanchkv\kladovka\image\magick;
 
 
-class Magick
+class Convert
 {
 
     public static function init($config = null)
@@ -146,7 +146,7 @@ class Magick
     {
         $width = $this->getWidth();
         $height = $this->getHeight();
-        if ($width && $height && is_int($width) && is_int($height)) {
+        if ($width && is_int($width) && $height && is_int($height)) {
             return $width . 'x' . $height;
         }
         return false;
@@ -414,7 +414,7 @@ class Magick
         }
         $args2 = [];
         foreach ($args as $key => $value) {
-            if (is_int($key) && is_string($value)) {
+            if (is_int($key) && $value && is_string($value)) {
                 $args2[] = escapeshellarg($value);
             } elseif ($key && is_string($key) && is_scalar($value)) {
                 if (($key == 'inputFilename') || ($key == 'outputFilename')) {

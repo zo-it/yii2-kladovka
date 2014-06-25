@@ -53,8 +53,8 @@ class Datetime extends \yii\base\Behavior
                 }
             }
             foreach ($this->_attributes as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName)) {
-                    if ($config && is_string($config)) {
+                if ($attributeName && is_string($attributeName) && $config/* && (is_string($config) || is_array($config))*/) {
+                    if (is_string($config)) {
                         $config = [
                             'dateFormat' => $config,
                             'dateTimeFormat' => $config
@@ -89,25 +89,21 @@ class Datetime extends \yii\base\Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             foreach ($this->buildAttributes() as $attributeName => $config) {
-                //if ($attributeName && is_string($attributeName)) {
-                    //if ($owner->hasAttribute($attributeName)) {
-                        if ($owner->{$attributeName}) {
-                            switch ($owner->getTableSchema()->getColumn($attributeName)->dbType) {
-                                case 'date': $format = $config['dateFormat']; break;
-                                default: $format = $config['dateTimeFormat'];
-                            }
-                            if (is_int($owner->{$attributeName})) {
-                                $owner->{$attributeName} = date($format, $owner->{$attributeName});
-                            } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {
-                                if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                                    $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
-                                } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                                    $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
-                                }
-                            }
+                if ($owner->{$attributeName}) {
+                    switch ($owner->getTableSchema()->getColumn($attributeName)->dbType) {
+                        case 'date': $format = $config['dateFormat']; break;
+                        default: $format = $config['dateTimeFormat'];
+                    }
+                    if (is_int($owner->{$attributeName})) {
+                        $owner->{$attributeName} = date($format, $owner->{$attributeName});
+                    } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {
+                        if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                            $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                        } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                            $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
                         }
-                    //}
-                //}
+                    }
+                }
             }
         }
     }
@@ -117,17 +113,13 @@ class Datetime extends \yii\base\Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             foreach ($this->buildAttributes() as $attributeName => $config) {
-                //if ($attributeName && is_string($attributeName)) {
-                    //if ($owner->hasAttribute($attributeName)) {
-                        if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
-                            if (($owner->{$attributeName} == '0000-00-00') || ($owner->{$attributeName} == '0000-00-00 00:00:00')) {
-                                $owner->{$attributeName} = 0;
-                            } else {
-                                $owner->{$attributeName} = strtotime($owner->{$attributeName});
-                            }
-                        }
-                    //}
-                //}
+                if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
+                    if (($owner->{$attributeName} == '0000-00-00') || ($owner->{$attributeName} == '0000-00-00 00:00:00')) {
+                        $owner->{$attributeName} = 0;
+                    } else {
+                        $owner->{$attributeName} = strtotime($owner->{$attributeName});
+                    }
+                }
             }
         }
     }
