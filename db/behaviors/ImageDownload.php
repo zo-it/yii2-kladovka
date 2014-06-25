@@ -218,20 +218,21 @@ class ImageDownload extends \yii\base\Behavior
     {
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
-            $owner = $this->owner;
-            $basename = $owner->{$attributeName};
-            if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
-                if (file_exists($filename)) {
-                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
-                    // file.jpg?modified
-                    $modifyAttribute = $attributeConfig['modifyAttribute'];
-                    if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
-                        $url .= '?' . $owner->{$modifyAttribute};
-                    }
-                    return $url;
-                } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
-                    return Url::to($attributeConfig['defaultImageUrl']);
+            $filename = $this->getFilename($attributeName);
+            if ($filename && is_string($filename)) {
+                $owner = $this->owner;
+                $basename = $owner->{$attributeName};
+                $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                // file.jpg?modified
+                $modifyAttribute = $attributeConfig['modifyAttribute'];
+                if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
+                    $url .= '?' . $owner->{$modifyAttribute};
+                }
+                return $url;
+            } else {
+                $defaultImageUrl = $attributeConfig['defaultImageUrl'];
+                if ($defaultImageUrl && is_string($defaultImageUrl)) {
+                    return Url::to($defaultImageUrl);
                 }
             }
         }
@@ -242,22 +243,9 @@ class ImageDownload extends \yii\base\Behavior
     {
         $attributeConfig = $this->getAttributeConfig($attributeName);
         if ($attributeConfig && is_array($attributeConfig)) {
-            $owner = $this->owner;
-            $basename = $owner->{$attributeName};
-            if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
-                if (file_exists($filename)) {
-                    $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
-                    // file.jpg?modified
-                    $modifyAttribute = $attributeConfig['modifyAttribute'];
-                    if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
-                        $url .= '?' . $owner->{$modifyAttribute};
-                    }
-                    return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
-                } elseif ($attributeConfig['defaultImageUrl'] && is_string($attributeConfig['defaultImageUrl'])) {
-                    $url = Url::to($attributeConfig['defaultImageUrl']);
-                    return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
-                }
+            $url = $this->getUrl($attributeName);
+            if ($url && is_string($url)) {
+                return Html::img($url, array_merge($attributeConfig['htmlOptions'], $htmlOptions));
             }
         }
         return false;
