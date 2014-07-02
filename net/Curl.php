@@ -36,7 +36,7 @@ class Curl
 
     public function __clone()
     {
-        $this->clearFile();
+        $this->clearFileIfTemp();
         $handle = curl_copy_handle($this->getHandle());
         if (!$handle) {
             throw new \Exception('Unable to copy cURL handle.');
@@ -46,7 +46,7 @@ class Curl
 
     public function __destruct()
     {
-        $this->closeFile();
+        $this->closeFileIfTemp();
         curl_close($this->getHandle());
     }
 
@@ -676,7 +676,7 @@ class Curl
 
     protected function openFile()
     {
-        $this->closeFile();
+        $this->closeFileIfTemp();
         if ($this->getIsTempFilename()) {
             $dir = sys_get_temp_dir();
             $filename = tempnam($dir, uniqid(time()));
@@ -703,7 +703,7 @@ class Curl
         return $file;
     }
 
-    protected function clearFile()
+    protected function clearFileIfTemp()
     {
         if ($this->getIsTempFile()) {
             $this->setFile(null);
@@ -718,7 +718,7 @@ class Curl
         return $this;
     }
 
-    protected function closeFile()
+    protected function closeFileIfTemp()
     {
         if ($this->getIsTempFile()) {
             $file = $this->getFile();
@@ -735,6 +735,17 @@ class Curl
                         unlink($filename);
                     }
                 }
+            }
+        }
+        return $this;
+    }
+
+    protected function rewindFileIfTemp()
+    {
+        if ($this->getIsTempFile()) {
+            $file = $this->getFile();
+            if ($file && is_resource($file)) {
+                rewind($file);
             }
         }
         return $this;
@@ -1303,6 +1314,7 @@ class Curl
 
     protected function invokeAfterExecute()
     {
+        $this->rewindFileIfTemp();
         $handle = $this->getHandle();
         $this->setResult(curl_multi_getcontent($handle));
         $this->setErrno(curl_errno($handle));
@@ -1314,7 +1326,6 @@ class Curl
                 return false;
             }
         }
-        //$this->closeFile();
         return true;
     }
 
