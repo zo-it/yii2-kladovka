@@ -1,13 +1,13 @@
 <?php
 
-namespace ivanchkv\kladovka\db\behaviors;
+namespace yii\kladovka\db\behaviors;
 
 use Yii,
     yii\db\ActiveRecord,
     yii\helpers\Url,
     yii\helpers\Html,
-    ivanchkv\kladovka\net\Curl,
-    ivanchkv\kladovka\image\magick\Convert;
+    yii\kladovka\net\Curl,
+    yii\kladovka\image\magick\Convert;
 
 
 class ImageDownload extends \yii\base\Behavior

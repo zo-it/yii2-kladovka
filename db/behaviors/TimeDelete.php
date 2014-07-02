@@ -1,6 +1,6 @@
 <?php
 
-namespace ivanchkv\kladovka\db\behaviors;
+namespace yii\kladovka\db\behaviors;
 
 use yii\db\ActiveRecord,
     yii\base\ModelEvent;
