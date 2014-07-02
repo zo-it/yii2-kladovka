@@ -1,6 +1,6 @@
 <?php
 
-namespace ivanchkv\kladovka\net;
+namespace yii\kladovka\net;
 
 
 class Curl

@@ -1,6 +1,6 @@
 <?php
 
-namespace ivanchkv\kladovka\image\magick;
+namespace yii\kladovka\image\magick;
 
 
 class Convert
