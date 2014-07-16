@@ -157,10 +157,8 @@ class ImageDownload extends \yii\base\Behavior
             $primaryKey = $owner->getPrimaryKey();
             if (is_array($primaryKey)) {
                 $primaryKey = vsprintf(implode('-%s_', array_keys($primaryKey)) . '-%s', array_values($primaryKey));
-                $basenamePrefix = substr(sprintf('%u', crc32($primaryKey)), 0, 2);
-            } else {
-                $basenamePrefix = substr($primaryKey, 0, 2);
             }
+            $basenamePrefix = substr(sprintf('%u', crc32($primaryKey)), 0, 2);
             if (strlen($basenamePrefix) == 1) {
                 $basenamePrefix .= $basenamePrefix;
             }
