@@ -157,11 +157,15 @@ class ImageDownload extends \yii\base\Behavior
             $primaryKey = $owner->getPrimaryKey();
             if (is_array($primaryKey)) {
                 $primaryKey = vsprintf(implode('-%s_', array_keys($primaryKey)) . '-%s', array_values($primaryKey));
+                $basenamePrefix = substr(sprintf('%u', crc32($primaryKey)), 0, 2);
+            } else {
+                $basenamePrefix = substr($primaryKey, 0, 2);
             }
-            $primaryKeyCrc32 = sprintf('%u', crc32($primaryKey));
-            $basenamePrefix = substr($primaryKeyCrc32, 0, 2) . DIRECTORY_SEPARATOR;
+            if (strlen($basenamePrefix) == 1) {
+                $basenamePrefix .= $basenamePrefix;
+            }
             foreach ($this->buildAttributes() as $sourceAttributeName => $destAttributes) {
-                if ($owner->{$sourceAttributeName} && is_string($owner->{$sourceAttributeName}) && preg_match('~^(https?\://[^\s]+)(?:\s(\d+))?$~i', $owner->{$sourceAttributeName}, $match)) {
+                if ($owner->{$sourceAttributeName} && is_string($owner->{$sourceAttributeName}) && preg_match('~^(https?\://[^\s]+)\s(\d+)$~i', $owner->{$sourceAttributeName}, $match) && ($match[2] != 200)) {
                     $url = $match[1];
                     $curl = Curl::init([
                         'url' => $url,
@@ -179,7 +183,7 @@ class ImageDownload extends \yii\base\Behavior
                             'image/gif' => 'gif'
                         ];
                         $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'jpg';
-                        $basename = $basenamePrefix . $primaryKey . '.' . $extension;
+                        $basename = $basenamePrefix . DIRECTORY_SEPARATOR . $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
                             $outputFilename = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
                             $dir = dirname($outputFilename);
@@ -263,7 +267,7 @@ class ImageDownload extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if (($owner instanceof ActiveRecord) && $owner->getPrimaryKey()) {
-$this->processImageDownload();
+            $this->processImageDownload();
         }
     }
 
@@ -271,11 +275,11 @@ $this->processImageDownload();
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-$newAttributes = [];
-$this->processImageDownload($newAttributes);
-if ($newAttributes) {
-//$owner->updateAll($newAttributes, $condition = '', $params = [])
-}
+            $newAttributes = [];
+            $this->processImageDownload($newAttributes);
+            if ($newAttributes) {
+                $owner->update(false, array_keys($newAttributes));
+            }
         }
     }
 }
