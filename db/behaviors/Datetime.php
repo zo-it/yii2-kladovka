@@ -80,14 +80,14 @@ class Datetime extends Behavior
             }
             foreach ($this->getAttributes() as $attributeName => $attributeConfig) {
                 if ($attributeName && is_string($attributeName) && $attributeConfig/* && (is_string($attributeConfig) || is_array($attributeConfig))*/) {
-                    if (is_string($attributeConfig)) {
-                        $attributeConfig = [
-                            'dateFormat' => $attributeConfig,
-                            'dateTimeFormat' => $attributeConfig
-                        ];
-                    }
-                    if (is_array($attributeConfig)) {
-                        if ($owner->hasAttribute($attributeName)) {
+                    if ($owner->hasAttribute($attributeName)) {
+                        if (is_string($attributeConfig)) {
+                            $attributeConfig = [
+                                'dateFormat' => $attributeConfig,
+                                'dateTimeFormat' => $attributeConfig
+                            ];
+                        }
+                        if (is_array($attributeConfig)) {
                             $attributes[$attributeName] = array_merge($attributeDefaultConfig, array_intersect_key($attributeConfig, $attributeDefaultConfig));
                         }
                     }
