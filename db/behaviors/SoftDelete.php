@@ -16,11 +16,21 @@ class SoftDelete extends \yii\base\Behavior
         $this->_deleteAttribute = $deleteAttribute;
     }
 
+    public function getDeleteAttribute()
+    {
+        return $this->_deleteAttribute;
+    }
+
     private $_deleteValue = 1;
 
     public function setDeleteValue($deleteValue)
     {
         $this->_deleteValue = $deleteValue;
+    }
+
+    public function getDeleteValue()
+    {
+        return $this->_deleteValue;
     }
 
     public function events()

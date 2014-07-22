@@ -15,11 +15,21 @@ class Datetime extends \yii\base\Behavior
         $this->_attributeNames = $attributeNames;
     }
 
+    public function getAttributeNames()
+    {
+        return $this->_attributeNames;
+    }
+
     private $_dateFormat = 'Y-m-d';
 
     public function setDateFormat($dateFormat)
     {
         $this->_dateFormat = $dateFormat;
+    }
+
+    public function getDateFormat()
+    {
+        return $this->_dateFormat;
     }
 
     private $_dateTimeFormat = 'Y-m-d H:i:s';
@@ -29,11 +39,21 @@ class Datetime extends \yii\base\Behavior
         $this->_dateTimeFormat = $dateTimeFormat;
     }
 
+    public function getDateTimeFormat()
+    {
+        return $this->_dateTimeFormat;
+    }
+
     private $_attributes = [];
 
     public function setAttributes(array $attributes)
     {
         $this->_attributes = $attributes;
+    }
+
+    public function getAttributes()
+    {
+        return $this->_attributes;
     }
 
     protected function buildAttributes()

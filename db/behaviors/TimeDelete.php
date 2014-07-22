@@ -16,6 +16,11 @@ class TimeDelete extends \yii\base\Behavior
         $this->_deleteAttribute = $deleteAttribute;
     }
 
+    public function getDeleteAttribute()
+    {
+        return $this->_deleteAttribute;
+    }
+
     private $_dateFormat = 'Y-m-d';
 
     public function setDateFormat($dateFormat)
@@ -23,11 +28,21 @@ class TimeDelete extends \yii\base\Behavior
         $this->_dateFormat = $dateFormat;
     }
 
+    public function getDateFormat()
+    {
+        return $this->_dateFormat;
+    }
+
     private $_dateTimeFormat = 'Y-m-d H:i:s';
 
     public function setDateTimeFormat($dateTimeFormat)
     {
         $this->_dateTimeFormat = $dateTimeFormat;
+    }
+
+    public function getDateTimeFormat()
+    {
+        return $this->_dateTimeFormat;
     }
 
     public function events()
