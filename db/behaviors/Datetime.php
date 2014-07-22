@@ -69,7 +69,7 @@ class Datetime extends Behavior
     {
         $attributes = [];
         $owner = $this->owner;
-        if ($owner instanceof ActiveRecord) {
+        //if ($owner instanceof ActiveRecord) {
             $attributeDefaultConfig = $this->getAttributeDefaultConfig();
             foreach ($this->getAttributeNames() as $attributeName) {
                 if ($attributeName && is_string($attributeName)) {
@@ -93,7 +93,7 @@ class Datetime extends Behavior
                     }
                 }
             }
-        }
+        //}
         return $attributes;
     }
 
