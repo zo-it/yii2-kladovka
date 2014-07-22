@@ -15,11 +15,21 @@ class CreateModify extends \yii\base\Behavior
         $this->_modifyAttribute = $modifyAttribute;
     }
 
+    public function getModifyAttribute()
+    {
+        return $this->_modifyAttribute;
+    }
+
     private $_createAttribute = 'created';
 
     public function setCreateAttribute($createAttribute)
     {
         $this->_createAttribute = $createAttribute;
+    }
+
+    public function getCreateAttribute()
+    {
+        return $this->_createAttribute;
     }
 
     private $_dateFormat = 'Y-m-d';
@@ -29,11 +39,21 @@ class CreateModify extends \yii\base\Behavior
         $this->_dateFormat = $dateFormat;
     }
 
+    public function getDateFormat()
+    {
+        return $this->_dateFormat;
+    }
+
     private $_dateTimeFormat = 'Y-m-d H:i:s';
 
     public function setDateTimeFormat($dateTimeFormat)
     {
         $this->_dateTimeFormat = $dateTimeFormat;
+    }
+
+    public function getDateTimeFormat()
+    {
+        return $this->_dateTimeFormat;
     }
 
     public function events()
@@ -54,35 +74,37 @@ class CreateModify extends \yii\base\Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
-            if ($this->_modifyAttribute && is_string($this->_modifyAttribute)) {
-                if ($owner->hasAttribute($this->_modifyAttribute)) {
-                    switch ($tableSchema->getColumn($this->_modifyAttribute)->dbType) {
-                        case 'date': $format = $this->_dateFormat; break;
-                        default: $format = $this->_dateTimeFormat;
+            $modifyAttribute = $this->getModifyAttribute();
+            if ($modifyAttribute && is_string($modifyAttribute)) {
+                if ($owner->hasAttribute($modifyAttribute)) {
+                    switch ($tableSchema->getColumn($modifyAttribute)->dbType) {
+                        case 'date': $format = $this->getDateFormat(); break;
+                        default: $format = $this->getDateTimeFormat();
                     }
-                    $owner->{$this->_modifyAttribute} = date($format);
+                    $owner->{$modifyAttribute} = date($format);
                 }
             }
-            if ($this->_createAttribute && is_string($this->_createAttribute)) {
-                if ($owner->hasAttribute($this->_createAttribute)) {
-                    switch ($tableSchema->getColumn($this->_createAttribute)->dbType) {
-                        case 'date': $format = $this->_dateFormat; break;
-                        default: $format = $this->_dateTimeFormat;
+            $createAttribute = $this->getCreateAttribute();
+            if ($createAttribute && is_string($createAttribute)) {
+                if ($owner->hasAttribute($createAttribute)) {
+                    switch ($tableSchema->getColumn($createAttribute)->dbType) {
+                        case 'date': $format = $this->getDateFormat(); break;
+                        default: $format = $this->getDateTimeFormat();
                     }
-                    if ($owner->{$this->_createAttribute}) {
-                        if (is_int($owner->{$this->_createAttribute})) {
-                            $owner->{$this->_createAttribute} = date($format, $owner->{$this->_createAttribute});
-                        } elseif (is_string($owner->{$this->_createAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_createAttribute}, $match)) {
+                    if ($owner->{$createAttribute}) {
+                        if (is_int($owner->{$createAttribute})) {
+                            $owner->{$createAttribute} = date($format, $owner->{$createAttribute});
+                        } elseif (is_string($owner->{$createAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createAttribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                                $owner->{$createAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                                $owner->{$this->_createAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                                $owner->{$createAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
                             }
                         }
                     } elseif ($owner->getIsNewRecord()) {
-                        $owner->{$this->_createAttribute} = date($format);
+                        $owner->{$createAttribute} = date($format);
                     } else {
-                        $owner->{$this->_createAttribute} = date($format, 0);
+                        $owner->{$createAttribute} = date($format, 0);
                     }
                 }
             }
@@ -93,24 +115,26 @@ class CreateModify extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_modifyAttribute && is_string($this->_modifyAttribute)) {
-                if ($owner->hasAttribute($this->_modifyAttribute)) {
-                    if ($owner->{$this->_modifyAttribute} && is_string($owner->{$this->_modifyAttribute})) {
-                        if (($owner->{$this->_modifyAttribute} == '0000-00-00') || ($owner->{$this->_modifyAttribute} == '0000-00-00 00:00:00')) {
-                            $owner->{$this->_modifyAttribute} = 0;
+            $modifyAttribute = $this->getModifyAttribute();
+            if ($modifyAttribute && is_string($modifyAttribute)) {
+                if ($owner->hasAttribute($modifyAttribute)) {
+                    if ($owner->{$modifyAttribute} && is_string($owner->{$modifyAttribute})) {
+                        if (($owner->{$modifyAttribute} == '0000-00-00') || ($owner->{$modifyAttribute} == '0000-00-00 00:00:00')) {
+                            $owner->{$modifyAttribute} = 0;
                         } else {
-                            $owner->{$this->_modifyAttribute} = strtotime($owner->{$this->_modifyAttribute});
+                            $owner->{$modifyAttribute} = strtotime($owner->{$modifyAttribute});
                         }
                     }
                 }
             }
-            if ($this->_createAttribute && is_string($this->_createAttribute)) {
-                if ($owner->hasAttribute($this->_createAttribute)) {
-                    if ($owner->{$this->_createAttribute} && is_string($owner->{$this->_createAttribute})) {
-                        if (($owner->{$this->_createAttribute} == '0000-00-00') || ($owner->{$this->_createAttribute} == '0000-00-00 00:00:00')) {
-                            $owner->{$this->_createAttribute} = 0;
+            $createAttribute = $this->getCreateAttribute();
+            if ($createAttribute && is_string($createAttribute)) {
+                if ($owner->hasAttribute($createAttribute)) {
+                    if ($owner->{$createAttribute} && is_string($owner->{$createAttribute})) {
+                        if (($owner->{$createAttribute} == '0000-00-00') || ($owner->{$createAttribute} == '0000-00-00 00:00:00')) {
+                            $owner->{$createAttribute} = 0;
                         } else {
-                            $owner->{$this->_createAttribute} = strtotime($owner->{$this->_createAttribute});
+                            $owner->{$createAttribute} = strtotime($owner->{$createAttribute});
                         }
                     }
                 }
