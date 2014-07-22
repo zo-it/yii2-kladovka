@@ -2,10 +2,11 @@
 
 namespace yii\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord;
+use yii\base\Behavior,
+    yii\db\ActiveRecord;
 
 
-class Datetime extends \yii\base\Behavior
+class Datetime extends Behavior
 {
 
     private $_attributeNames = [];
@@ -56,33 +57,38 @@ class Datetime extends \yii\base\Behavior
         return $this->_attributes;
     }
 
+    protected function getAttributeDefaultConfig()
+    {
+        return [
+            'dateFormat' => $this->getDateFormat(),
+            'dateTimeFormat' => $this->getDateTimeFormat()
+        ];
+    }
+
     protected function buildAttributes()
     {
-        $defaultConfig = [
-            'dateFormat' => $this->_dateFormat,
-            'dateTimeFormat' => $this->_dateTimeFormat
-        ];
         $attributes = [];
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->_attributeNames as $attributeName) {
+            $attributeDefaultConfig = $this->getAttributeDefaultConfig();
+            foreach ($this->getAttributeNames() as $attributeName) {
                 if ($attributeName && is_string($attributeName)) {
                     if ($owner->hasAttribute($attributeName)) {
-                        $attributes[$attributeName] = $defaultConfig;
+                        $attributes[$attributeName] = $attributeDefaultConfig;
                     }
                 }
             }
-            foreach ($this->_attributes as $attributeName => $config) {
-                if ($attributeName && is_string($attributeName) && $config/* && (is_string($config) || is_array($config))*/) {
-                    if (is_string($config)) {
-                        $config = [
-                            'dateFormat' => $config,
-                            'dateTimeFormat' => $config
+            foreach ($this->getAttributes() as $attributeName => $attributeConfig) {
+                if ($attributeName && is_string($attributeName) && $attributeConfig/* && (is_string($attributeConfig) || is_array($attributeConfig))*/) {
+                    if (is_string($attributeConfig)) {
+                        $attributeConfig = [
+                            'dateFormat' => $attributeConfig,
+                            'dateTimeFormat' => $attributeConfig
                         ];
                     }
-                    if (is_array($config)) {
+                    if (is_array($attributeConfig)) {
                         if ($owner->hasAttribute($attributeName)) {
-                            $attributes[$attributeName] = array_merge($defaultConfig, array_intersect_key($config, $defaultConfig));
+                            $attributes[$attributeName] = array_merge($attributeDefaultConfig, array_intersect_key($attributeConfig, $attributeDefaultConfig));
                         }
                     }
                 }
@@ -108,11 +114,11 @@ class Datetime extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->buildAttributes() as $attributeName => $config) {
+            foreach ($this->buildAttributes() as $attributeName => $attributeConfig) {
                 if ($owner->{$attributeName}) {
                     switch ($owner->getTableSchema()->getColumn($attributeName)->dbType) {
-                        case 'date': $format = $config['dateFormat']; break;
-                        default: $format = $config['dateTimeFormat'];
+                        case 'date': $format = $attributeConfig['dateFormat']; break;
+                        default: $format = $attributeConfig['dateTimeFormat'];
                     }
                     if (is_int($owner->{$attributeName})) {
                         $owner->{$attributeName} = date($format, $owner->{$attributeName});
@@ -132,7 +138,7 @@ class Datetime extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            foreach ($this->buildAttributes() as $attributeName => $config) {
+            foreach ($this->buildAttributes() as $attributeName => $attributeConfig) {
                 if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
                     if (($owner->{$attributeName} == '0000-00-00') || ($owner->{$attributeName} == '0000-00-00 00:00:00')) {
                         $owner->{$attributeName} = 0;

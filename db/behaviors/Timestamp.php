@@ -2,10 +2,11 @@
 
 namespace yii\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord;
+use yii\base\Behavior,
+    yii\db\ActiveRecord;
 
 
-class Timestamp extends \yii\base\Behavior
+class Timestamp extends Behavior
 {
 
     private $_timestampAttribute = 'timestamp';

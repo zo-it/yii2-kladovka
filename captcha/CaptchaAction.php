@@ -35,11 +35,13 @@ class CaptchaAction extends CaptchaActionBase
 
     public function getVerifyCode($regenerate = false)
     {
-        if ($this->getIgnoreRegenerateIfAjax() && Yii::$app->getRequest()->getIsAjax()) {
-            return parent::getVerifyCode(false);
-        } else {
-            return parent::getVerifyCode($regenerate);
+        if ($this->getIgnoreRegenerateIfAjax()) {
+            $request = Yii::$app->getRequest();
+            if ($request->getIsAjax() && !$request->getQueryParam(static::REFRESH_GET_VAR)) {
+                return parent::getVerifyCode(false);
+            }
         }
+        return parent::getVerifyCode($regenerate);
     }
 
     protected function generateVerifyCode()
@@ -60,8 +62,7 @@ class CaptchaAction extends CaptchaActionBase
                 $code .= mt_rand(0, 9);
             }
             return $code;
-        } else {
-            return parent::generateVerifyCode();
         }
+        return parent::generateVerifyCode();
     }
 }
