@@ -6,7 +6,7 @@ use yii\base\Behavior,
     yii\db\ActiveRecord;
 
 
-class Datetime extends Behavior
+class Arrayable extends Behavior
 {
 
     private $_attributeNames = [];
@@ -21,28 +21,28 @@ class Datetime extends Behavior
         return $this->_attributeNames;
     }
 
-    private $_dateFormat = 'Y-m-d';
+    private $_separator = ',';
 
-    public function setDateFormat($dateFormat)
+    public function setSeparator($separator)
     {
-        $this->_dateFormat = $dateFormat;
+        $this->_separator = $separator;
     }
 
-    public function getDateFormat()
+    public function getSeparator()
     {
-        return $this->_dateFormat;
+        return $this->_separator;
     }
 
-    private $_dateTimeFormat = 'Y-m-d H:i:s';
+    private $_emptyValue = null;
 
-    public function setDateTimeFormat($dateTimeFormat)
+    public function setEmptyValue($emptyValue)
     {
-        $this->_dateTimeFormat = $dateTimeFormat;
+        $this->_emptyValue = $emptyValue;
     }
 
-    public function getDateTimeFormat()
+    public function getEmptyValue()
     {
-        return $this->_dateTimeFormat;
+        return $this->_emptyValue;
     }
 
     private $_attributes = [];
@@ -60,8 +60,8 @@ class Datetime extends Behavior
     protected function getAttributeDefaultConfig()
     {
         return [
-            'dateFormat' => $this->getDateFormat(),
-            'dateTimeFormat' => $this->getDateTimeFormat()
+            'separator' => $this->getSeparator(),
+            'emptyValue' => $this->getEmptyValue()
         ];
     }
 
@@ -83,8 +83,7 @@ class Datetime extends Behavior
                     if ($owner->hasAttribute($attributeName)) {
                         if (is_string($attributeConfig)) {
                             $attributeConfig = [
-                                'dateFormat' => $attributeConfig,
-                                'dateTimeFormat' => $attributeConfig
+                                'separator' => $attributeConfig
                             ];
                         }
                         if (is_array($attributeConfig)) {
@@ -115,19 +114,11 @@ class Datetime extends Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             foreach ($this->buildAttributes() as $attributeName => $attributeConfig) {
-                if ($owner->{$attributeName}) {
-                    switch ($owner->getTableSchema()->getColumn($attributeName)->dbType) {
-                        case 'date': $format = $attributeConfig['dateFormat']; break;
-                        default: $format = $attributeConfig['dateTimeFormat'];
-                    }
-                    if (is_int($owner->{$attributeName})) {
-                        $owner->{$attributeName} = date($format, $owner->{$attributeName});
-                    } elseif (is_string($owner->{$attributeName}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attributeName}, $match)) {
-                        if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                            $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
-                        } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                            $owner->{$attributeName} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
-                        }
+                if (is_array($owner->{$attributeName})) {
+                    if ($owner->{$attributeName}) {
+                        $owner->{$attributeName} = implode($attributeConfig['separator'], $owner->{$attributeName});
+                    } else {
+                        $owner->{$attributeName} = $attributeConfig['emptyValue'];
                     }
                 }
             }
@@ -139,11 +130,11 @@ class Datetime extends Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             foreach ($this->buildAttributes() as $attributeName => $attributeConfig) {
-                if ($owner->{$attributeName} && is_string($owner->{$attributeName})) {
-                    if (($owner->{$attributeName} == '0000-00-00') || ($owner->{$attributeName} == '0000-00-00 00:00:00')) {
-                        $owner->{$attributeName} = 0;
+                if (!is_array($owner->{$attributeName})) {
+                    if ($owner->{$attributeName}) {
+                        $owner->{$attributeName} = explode($attributeConfig['separator'], $owner->{$attributeName});
                     } else {
-                        $owner->{$attributeName} = strtotime($owner->{$attributeName});
+                        $owner->{$attributeName} = [];
                     }
                 }
             }

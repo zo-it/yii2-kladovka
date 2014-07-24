@@ -2,10 +2,11 @@
 
 namespace yii\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord;
+use yii\base\Behavior,
+    yii\db\ActiveRecord;
 
 
-class CreateModify extends \yii\base\Behavior
+class CreateModify extends Behavior
 {
 
     private $_modifyAttribute = 'modified';
