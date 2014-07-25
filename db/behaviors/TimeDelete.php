@@ -2,11 +2,12 @@
 
 namespace yii\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord,
+use yii\base\Behavior,
+    yii\db\ActiveRecord,
     yii\base\ModelEvent;
 
 
-class TimeDelete extends \yii\base\Behavior
+class TimeDelete extends Behavior
 {
 
     private $_deleteAttribute = 'deleted';
@@ -90,10 +91,11 @@ class TimeDelete extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
-                if ($owner->hasAttribute($this->_deleteAttribute)) {
+            $deleteAttribute = $this->getDeleteAttribute();
+            if ($deleteAttribute && is_string($deleteAttribute)) {
+                if ($owner->hasAttribute($deleteAttribute)) {
                     if ($this->beforeDeleteOwner()) {
-                        $owner->{$this->_deleteAttribute} = true;
+                        $owner->{$deleteAttribute} = true;
                         $result = $owner->save($runValidation, $attributeNames);
                         $this->afterDeleteOwner();
                         return $result;
@@ -108,22 +110,23 @@ class TimeDelete extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
-                if ($owner->hasAttribute($this->_deleteAttribute)) {
-                    if ($owner->{$this->_deleteAttribute}) {
-                        switch ($owner->getTableSchema()->getColumn($this->_deleteAttribute)->dbType) {
-                            case 'date': $format = $this->_dateFormat; break;
-                            default: $format = $this->_dateTimeFormat;
+            $deleteAttribute = $this->getDeleteAttribute();
+            if ($deleteAttribute && is_string($deleteAttribute)) {
+                if ($owner->hasAttribute($deleteAttribute)) {
+                    if ($owner->{$deleteAttribute}) {
+                        switch ($owner->getTableSchema()->getColumn($deleteAttribute)->dbType) {
+                            case 'date': $format = $this->getDateFormat(); break;
+                            default: $format = $this->getDateTimeFormat();
                         }
-                        if (is_bool($owner->{$this->_deleteAttribute})) {
-                            $owner->{$this->_deleteAttribute} = date($format);
-                        } elseif (is_int($owner->{$this->_deleteAttribute})) {
-                            $owner->{$this->_deleteAttribute} = date($format, $owner->{$this->_deleteAttribute});
-                        } elseif (is_string($owner->{$this->_deleteAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$this->_deleteAttribute}, $match)) {
+                        if (is_bool($owner->{$deleteAttribute})) {
+                            $owner->{$deleteAttribute} = date($format);
+                        } elseif (is_int($owner->{$deleteAttribute})) {
+                            $owner->{$deleteAttribute} = date($format, $owner->{$deleteAttribute});
+                        } elseif (is_string($owner->{$deleteAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$deleteAttribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                                $owner->{$this->_deleteAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                                $owner->{$deleteAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                                $owner->{$this->_deleteAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                                $owner->{$deleteAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
                             }
                         }
                     }
@@ -136,13 +139,14 @@ class TimeDelete extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
-                if ($owner->hasAttribute($this->_deleteAttribute)) {
-                    if ($owner->{$this->_deleteAttribute} && is_string($owner->{$this->_deleteAttribute})) {
-                        if (($owner->{$this->_deleteAttribute} == '0000-00-00') || ($owner->{$this->_deleteAttribute} == '0000-00-00 00:00:00')) {
-                            $owner->{$this->_deleteAttribute} = 0;
+            $deleteAttribute = $this->getDeleteAttribute();
+            if ($deleteAttribute && is_string($deleteAttribute)) {
+                if ($owner->hasAttribute($deleteAttribute)) {
+                    if ($owner->{$deleteAttribute} && is_string($owner->{$deleteAttribute})) {
+                        if (($owner->{$deleteAttribute} == '0000-00-00') || ($owner->{$deleteAttribute} == '0000-00-00 00:00:00')) {
+                            $owner->{$deleteAttribute} = 0;
                         } else {
-                            $owner->{$this->_deleteAttribute} = strtotime($owner->{$this->_deleteAttribute});
+                            $owner->{$deleteAttribute} = strtotime($owner->{$deleteAttribute});
                         }
                     }
                 }
