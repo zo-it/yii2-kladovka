@@ -2,11 +2,12 @@
 
 namespace yii\kladovka\db\behaviors;
 
-use yii\db\ActiveRecord,
+use yii\base\Behavior,
+    yii\db\ActiveRecord,
     yii\base\ModelEvent;
 
 
-class SoftDelete extends \yii\base\Behavior
+class SoftDelete extends Behavior
 {
 
     private $_deleteAttribute = 'deleted';
@@ -71,10 +72,11 @@ class SoftDelete extends \yii\base\Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            if ($this->_deleteAttribute && is_string($this->_deleteAttribute)) {
-                if ($owner->hasAttribute($this->_deleteAttribute)) {
+            $deleteAttribute = $this->getDeleteAttribute();
+            if ($deleteAttribute && is_string($deleteAttribute)) {
+                if ($owner->hasAttribute($deleteAttribute)) {
                     if ($this->beforeDeleteOwner()) {
-                        $owner->{$this->_deleteAttribute} = $this->_deleteValue;
+                        $owner->{$deleteAttribute} = $this->getDeleteValue();
                         $result = $owner->save($runValidation, $attributeNames);
                         $this->afterDeleteOwner();
                         return $result;
