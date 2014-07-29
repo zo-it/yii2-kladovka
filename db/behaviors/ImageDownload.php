@@ -253,7 +253,8 @@ class ImageDownload extends Behavior
             $owner = $this->owner;
             $basename = $owner->{$attributeName};
             if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['baseDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
+                $tableName = preg_replace('~^.+\.([^\.]+)$~', '$1', $owner::tableName());
+                $filename = Yii::getAlias($attributeConfig['baseDir'] . DIRECTORY_SEPARATOR . $tableName . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
                     return $filename;
                 }
@@ -270,7 +271,8 @@ class ImageDownload extends Behavior
             if ($filename && is_string($filename)) {
                 $owner = $this->owner;
                 $basename = $owner->{$attributeName};
-                $url = Url::to($attributeConfig['baseUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                $tableName = preg_replace('~^.+\.([^\.]+)$~', '$1', $owner::tableName());
+                $url = Url::to($attributeConfig['baseUrl'] . '/' . $tableName . '/' . $attributeName . '/' . $basename);
                 // file.jpg?modified
                 $modifyAttribute = $attributeConfig['modifyAttribute'];
                 if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
