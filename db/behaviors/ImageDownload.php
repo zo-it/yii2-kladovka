@@ -3,6 +3,7 @@
 namespace yii\kladovka\db\behaviors;
 
 use Yii,
+    yii\base\Behavior,
     yii\db\ActiveRecord,
     yii\helpers\Url,
     yii\helpers\Html,
@@ -10,7 +11,7 @@ use Yii,
     yii\kladovka\image\magick\Convert;
 
 
-class ImageDownload extends \yii\base\Behavior
+class ImageDownload extends Behavior
 {
 
     public function init()
@@ -30,11 +31,16 @@ class ImageDownload extends \yii\base\Behavior
         }
     }
 
-    private $_downloadDir = '@app/web/uploads';
+    private $_baseDir = '@app/web/uploads';
 
-    public function setDownloadDir($downloadDir)
+    public function setBaseDir($baseDir)
     {
-        $this->_downloadDir = $downloadDir;
+        $this->_baseDir = $baseDir;
+    }
+
+    public function getBaseDir()
+    {
+        return $this->_baseDir;
     }
 
     private $_dirMode = 0770;
@@ -44,6 +50,11 @@ class ImageDownload extends \yii\base\Behavior
         $this->_dirMode = $dirMode;
     }
 
+    public function getDirMode()
+    {
+        return $this->_dirMode;
+    }
+
     private $_convertConfig = [];
 
     public function setConvertConfig(array $convertConfig)
@@ -51,11 +62,21 @@ class ImageDownload extends \yii\base\Behavior
         $this->_convertConfig = $convertConfig;
     }
 
-    private $_downloadUrl = '@web/uploads';
-
-    public function setDownloadUrl($downloadUrl)
+    public function getConvertConfig()
     {
-        $this->_downloadUrl = $downloadUrl;
+        return $this->_convertConfig;
+    }
+
+    private $_baseUrl = '@web/uploads';
+
+    public function setBaseUrl($baseUrl)
+    {
+        $this->_baseUrl = $baseUrl;
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->_baseUrl;
     }
 
     private $_modifyAttribute = 'modified';
@@ -65,11 +86,21 @@ class ImageDownload extends \yii\base\Behavior
         $this->_modifyAttribute = $modifyAttribute;
     }
 
+    public function getModifyAttribute()
+    {
+        return $this->_modifyAttribute;
+    }
+
     private $_defaultImageUrl = false;
 
     public function setDefaultImageUrl($defaultImageUrl)
     {
         $this->_defaultImageUrl = $defaultImageUrl;
+    }
+
+    public function getDefaultImageUrl()
+    {
+        return $this->_defaultImageUrl;
     }
 
     private $_htmlOptions = [];
@@ -79,6 +110,11 @@ class ImageDownload extends \yii\base\Behavior
         $this->_htmlOptions = $htmlOptions;
     }
 
+    public function getHtmlOptions()
+    {
+        return $this->_htmlOptions;
+    }
+
     private $_attributes = [];
 
     public function setAttributes(array $attributes)
@@ -86,17 +122,27 @@ class ImageDownload extends \yii\base\Behavior
         $this->_attributes = $attributes;
     }
 
+    public function getAttributes()
+    {
+        return $this->_attributes;
+    }
+
+    protected function getAttributeDefaultConfig()
+    {
+        return [
+            'baseDir' => $this->getBaseDir(),
+            'dirMode' => $this->getDirMode(),
+            'convertConfig' => $this->getConvertConfig(),
+            'baseUrl' => $this->getBaseUrl(),
+            'modifyAttribute' => $this->getModifyAttribute(),
+            'defaultImageUrl' => $this->getDefaultImageUrl(),
+            'htmlOptions' => $this->getHtmlOptions()
+        ];
+    }
+
     protected function buildAttributes()
     {
-        $defaultConfig = [
-            'downloadDir' => $this->_downloadDir,
-            'dirMode' => $this->_dirMode,
-            'convertConfig' => $this->_convertConfig,
-            'downloadUrl' => $this->_downloadUrl,
-            'modifyAttribute' => $this->_modifyAttribute,
-            'defaultImageUrl' => $this->_defaultImageUrl,
-            'htmlOptions' => $this->_htmlOptions
-        ];
+        $defaultConfig = $this->getAttributeDefaultConfig();
         $attributes = [];
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
@@ -183,7 +229,7 @@ class ImageDownload extends \yii\base\Behavior
                         $extension = array_key_exists($contentType, $contentTypeFileExtensionMap) ? $contentTypeFileExtensionMap[$contentType] : 'jpg';
                         $basename = $basenamePrefix . DIRECTORY_SEPARATOR . $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
-                            $outputFilename = Yii::getAlias($config['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
+                            $outputFilename = Yii::getAlias($config['baseDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
                             $dir = dirname($outputFilename);
                             if (!file_exists($dir)) {
                                 mkdir($dir, $config['dirMode'], true);
@@ -207,7 +253,8 @@ class ImageDownload extends \yii\base\Behavior
             $owner = $this->owner;
             $basename = $owner->{$attributeName};
             if ($basename && is_string($basename)) {
-                $filename = Yii::getAlias($attributeConfig['downloadDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
+                $tableName = preg_replace('~^.+\.([^\.]+)$~', '$1', $owner::tableName());
+                $filename = Yii::getAlias($attributeConfig['baseDir'] . DIRECTORY_SEPARATOR . $tableName . DIRECTORY_SEPARATOR . $attributeName . DIRECTORY_SEPARATOR . $basename);
                 if (file_exists($filename)) {
                     return $filename;
                 }
@@ -224,7 +271,8 @@ class ImageDownload extends \yii\base\Behavior
             if ($filename && is_string($filename)) {
                 $owner = $this->owner;
                 $basename = $owner->{$attributeName};
-                $url = Url::to($attributeConfig['downloadUrl'] . '/' . $owner::tableName() . '/' . $attributeName . '/' . $basename);
+                $tableName = preg_replace('~^.+\.([^\.]+)$~', '$1', $owner::tableName());
+                $url = Url::to($attributeConfig['baseUrl'] . '/' . $tableName . '/' . $attributeName . '/' . $basename);
                 // file.jpg?modified
                 $modifyAttribute = $attributeConfig['modifyAttribute'];
                 if ($modifyAttribute && is_string($modifyAttribute) && $owner->hasAttribute($modifyAttribute) && $owner->{$modifyAttribute} && is_int($owner->{$modifyAttribute})) {
