@@ -43,7 +43,7 @@ class ImageDownload extends Behavior
         return $this->_baseDir;
     }
 
-    private $_dirMode = 0770;
+    private $_dirMode = 0775;
 
     public function setDirMode($dirMode)
     {
