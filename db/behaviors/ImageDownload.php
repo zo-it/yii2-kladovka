@@ -91,16 +91,16 @@ class ImageDownload extends Behavior
         return $this->_modifyAttribute;
     }
 
-    private $_defaultImageUrl = false;
+    private $_noImageUrl = false;
 
-    public function setDefaultImageUrl($defaultImageUrl)
+    public function setNoImageUrl($noImageUrl)
     {
-        $this->_defaultImageUrl = $defaultImageUrl;
+        $this->_noImageUrl = $noImageUrl;
     }
 
-    public function getDefaultImageUrl()
+    public function getNoImageUrl()
     {
-        return $this->_defaultImageUrl;
+        return $this->_noImageUrl;
     }
 
     private $_htmlOptions = [];
@@ -135,7 +135,7 @@ class ImageDownload extends Behavior
             'convertConfig' => $this->getConvertConfig(),
             'baseUrl' => $this->getBaseUrl(),
             'modifyAttribute' => $this->getModifyAttribute(),
-            'defaultImageUrl' => $this->getDefaultImageUrl(),
+            'noImageUrl' => $this->getNoImageUrl(),
             'htmlOptions' => $this->getHtmlOptions()
         ];
     }
@@ -280,9 +280,9 @@ class ImageDownload extends Behavior
                 }
                 return $url;
             } else {
-                $defaultImageUrl = $attributeConfig['defaultImageUrl'];
-                if ($defaultImageUrl && is_string($defaultImageUrl)) {
-                    return Url::to($defaultImageUrl);
+                $noImageUrl = $attributeConfig['noImageUrl'];
+                if ($noImageUrl && is_string($noImageUrl)) {
+                    return Url::to($noImageUrl);
                 }
             }
         }
