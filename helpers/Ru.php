@@ -24,10 +24,10 @@ class Ru
             $timestamp = time();
         }
         $i = date('n', $timestamp) - 1;
-        $map = array(
-            'F' => self::$_F[$i],
-            'M' => self::$_M[$i]
-        );
+        $map = [
+            'F' => static::$_F[$i],
+            'M' => static::$_M[$i]
+        ];
         return date(str_replace(array_keys($map), array_values($map), $format), $timestamp);
     }
 
