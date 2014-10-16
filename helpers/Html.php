@@ -22,4 +22,6 @@ class Html extends BaseHtml
     }
 }
 
-class_alias('yii\kladovka\helpers\Html', 'yii\helpers\Html', false);
+if (!class_exists('yii\helpers\Html', false)) {
+    class_alias('yii\kladovka\helpers\Html', 'yii\helpers\Html', false);
+}
