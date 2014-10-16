@@ -59,7 +59,7 @@ class StdoutTarget extends Target
             $level = $message[1];
             $ansiColor = array_key_exists($level, $this->_levelAnsiColorMap) ? $this->_levelAnsiColorMap[$level] : [];
             if ($this->_stdoutIsTerminal) {
-                if ($this->_stdoutSupportsAnsiColors) {
+                if ($this->_stdoutSupportsAnsiColors && $ansiColor) {
                     Console::stdout(Console::ansiFormat($string, $ansiColor));
                 } else {
                     Console::stdout($string);
@@ -67,7 +67,7 @@ class StdoutTarget extends Target
             } else {
                 Console::stdout($string);
                 if ($this->_stderrIsTerminal && ($level == Logger::LEVEL_ERROR || $level == Logger::LEVEL_WARNING)) {
-                    if ($this->_stderrSupportsAnsiColors) {
+                    if ($this->_stderrSupportsAnsiColors && $ansiColor) {
                         Console::stderr(Console::ansiFormat($string, $ansiColor));
                     } else {
                         Console::stderr($string);
