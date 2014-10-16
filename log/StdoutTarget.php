@@ -10,11 +10,11 @@ use yii\log\Target,
 class StdoutTarget extends Target
 {
 
-    private $_stdoutIsTerminal = false;
+    private $_stdoutIsTerminal = true;
 
     private $_stdoutSupportsColors = false;
 
-    private $_stderrIsTerminal = false;
+    private $_stderrIsTerminal = true;
 
     private $_stderrSupportsColors = false;
 
@@ -27,6 +27,11 @@ class StdoutTarget extends Target
         Logger::LEVEL_PROFILE_BEGIN => [Console::FG_PURPLE],
         Logger::LEVEL_PROFILE_END => [Console::FG_PURPLE]
     ];
+
+    public function setLevelFormatMap(array $levelFormatMap)
+    {
+        $this->_levelFormatMap = $levelFormatMap;
+    }
 
     public function init()
     {
