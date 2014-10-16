@@ -18,19 +18,19 @@ class StdoutTarget extends Target
 
     private $_stderrSupportsAnsiColors = false;
 
-    private $_errorAnsiColor = [Console::BOLD, Console::FG_RED];
+    public $errorAnsiColor = [Console::BOLD, Console::FG_RED];
 
-    private $_warningAnsiColor = [Console::BOLD, Console::FG_YELLOW];
+    public $warningAnsiColor = [Console::BOLD, Console::FG_YELLOW];
 
-    private $_infoAnsiColor = [];
+    public $infoAnsiColor = [];
 
-    private $_traceAnsiColor = [Console::FG_CYAN];
+    public $traceAnsiColor = [Console::FG_CYAN];
 
-    private $_profileAnsiColor = [Console::FG_PURPLE];
+    public $profileAnsiColor = [Console::FG_PURPLE];
 
-    private $_profileBeginAnsiColor = [Console::FG_PURPLE];
+    public $profileBeginAnsiColor = [Console::FG_PURPLE];
 
-    private $_profileEndAnsiColor = [Console::FG_PURPLE];
+    public $profileEndAnsiColor = [Console::FG_PURPLE];
 
     private $_levelAnsiColorMap = [];
 
@@ -42,13 +42,13 @@ class StdoutTarget extends Target
         $this->_stderrIsTerminal = posix_isatty(\STDERR);
         $this->_stderrSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDERR);
         $this->_levelAnsiColorMap = [
-            Logger::LEVEL_ERROR => $this->_errorAnsiColor,
-            Logger::LEVEL_WARNING => $this->_warningAnsiColor,
-            Logger::LEVEL_INFO => $this->_infoAnsiColor,
-            Logger::LEVEL_TRACE => $this->_traceAnsiColor,
-            Logger::LEVEL_PROFILE => $this->_profileAnsiColor,
-            Logger::LEVEL_PROFILE_BEGIN => $this->_profileBeginAnsiColor,
-            Logger::LEVEL_PROFILE_END => $this->_profileEndAnsiColor
+            Logger::LEVEL_ERROR => $this->errorAnsiColor,
+            Logger::LEVEL_WARNING => $this->warningAnsiColor,
+            Logger::LEVEL_INFO => $this->infoAnsiColor,
+            Logger::LEVEL_TRACE => $this->traceAnsiColor,
+            Logger::LEVEL_PROFILE => $this->profileAnsiColor,
+            Logger::LEVEL_PROFILE_BEGIN => $this->profileBeginAnsiColor,
+            Logger::LEVEL_PROFILE_END => $this->profileEndAnsiColor
         ];
     }
 
