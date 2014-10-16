@@ -43,16 +43,20 @@ class StdoutTarget extends Target
             $string = $this->formatMessage($message) . "\n";
             $level = $message[1];
             $format = array_key_exists($level, $this->_levelFormatMap) ? $this->_levelFormatMap[$level] : [];
-            if ($this->_stdoutIsTerminal && $this->_stdoutSupportsColors) {
-                Console::stdout(Console::ansiFormat($string, $format));
+            if ($this->_stdoutIsTerminal) {
+                if ($this->_stdoutSupportsColors) {
+                    Console::stdout(Console::ansiFormat($string, $format));
+                } else {
+                    Console::stdout($string);
+                }
             } else {
                 Console::stdout($string);
-            }
-            if (($level == Logger::LEVEL_ERROR || $level == Logger::LEVEL_WARNING) && !$this->_stdoutIsTerminal && $this->_stderrIsTerminal) {
-                if ($this->_stderrSupportsColors) {
-                    Console::stderr(Console::ansiFormat($string, $format));
-                } else {
-                    Console::stderr($string);
+                if ($this->_stderrIsTerminal && ($level == Logger::LEVEL_ERROR || $level == Logger::LEVEL_WARNING)) {
+                    if ($this->_stderrSupportsColors) {
+                        Console::stderr(Console::ansiFormat($string, $format));
+                    } else {
+                        Console::stderr($string);
+                    }
                 }
             }
         }
