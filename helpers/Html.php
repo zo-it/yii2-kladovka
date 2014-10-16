@@ -10,15 +10,15 @@ class Html extends BaseHtml
 
     public static function label($content, $for = null, $options = [])
     {
-        $labelTag = 'label';
+        $tag = 'label';
         if (array_key_exists('tag', $options)) {
-            $labelTag = $options['tag'];
+            $tag = $options['tag'];
             unset($options['tag']);
         }
-        if ($labelTag == 'label') {
+        if ($tag == 'label') {
             $options['for'] = $for;
         }
-        return static::tag($labelTag, $content, $options);
+        return static::tag($tag, $content, $options);
     }
 }
 
