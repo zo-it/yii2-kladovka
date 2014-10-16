@@ -2,7 +2,8 @@
 
 namespace yii\kladovka\log;
 
-use yii\log\Target;
+use yii\log\Target,
+    yii\helpers\Console;
 
 
 class StdoutTarget extends Target
@@ -10,12 +11,8 @@ class StdoutTarget extends Target
 
     public function export()
     {
-        $fh = fopen('php://stdout', 'w');
-        if ($fh) {
-            foreach ($this->messages as $message) {
-                fwrite($fh, $this->formatMessage($message) . "\n");
-            }
-            fclose($fh);
+        foreach ($this->messages as $message) {
+            Console::stdout($this->formatMessage($message) . "\n");
         }
     }
 }
