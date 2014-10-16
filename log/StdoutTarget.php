@@ -12,13 +12,13 @@ class StdoutTarget extends Target
 
     private $_stdoutIsTerminal = true;
 
-    private $_stdoutSupportsColors = false;
+    private $_stdoutSupportsAnsiColors = false;
 
     private $_stderrIsTerminal = true;
 
-    private $_stderrSupportsColors = false;
+    private $_stderrSupportsAnsiColors = false;
 
-    private $_levelFormatMap = [
+    private $_levelAnsiColorMap = [
         Logger::LEVEL_ERROR => [Console::BOLD, Console::FG_RED],
         Logger::LEVEL_WARNING => [Console::BOLD, Console::FG_YELLOW],
         Logger::LEVEL_INFO => [],
@@ -28,18 +28,13 @@ class StdoutTarget extends Target
         Logger::LEVEL_PROFILE_END => [Console::FG_PURPLE]
     ];
 
-    public function setLevelFormatMap(array $levelFormatMap)
-    {
-        $this->_levelFormatMap = $levelFormatMap;
-    }
-
     public function init()
     {
         parent::init();
         $this->_stdoutIsTerminal = posix_isatty(\STDOUT);
-        $this->_stdoutSupportsColors = Console::streamSupportsAnsiColors(\STDOUT);
+        $this->_stdoutSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDOUT);
         $this->_stderrIsTerminal = posix_isatty(\STDERR);
-        $this->_stderrSupportsColors = Console::streamSupportsAnsiColors(\STDERR);
+        $this->_stderrSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDERR);
     }
 
     public function export()
@@ -47,18 +42,18 @@ class StdoutTarget extends Target
         foreach ($this->messages as $message) {
             $string = $this->formatMessage($message) . "\n";
             $level = $message[1];
-            $format = array_key_exists($level, $this->_levelFormatMap) ? $this->_levelFormatMap[$level] : [];
+            $ansiColor = array_key_exists($level, $this->_levelAnsiFormatMap) ? $this->_levelAnsiFormatMap[$level] : [];
             if ($this->_stdoutIsTerminal) {
-                if ($this->_stdoutSupportsColors) {
-                    Console::stdout(Console::ansiFormat($string, $format));
+                if ($this->_stdoutSupportsAnsiColors) {
+                    Console::stdout(Console::ansiFormat($string, $ansiColor));
                 } else {
                     Console::stdout($string);
                 }
             } else {
                 Console::stdout($string);
                 if ($this->_stderrIsTerminal && ($level == Logger::LEVEL_ERROR || $level == Logger::LEVEL_WARNING)) {
-                    if ($this->_stderrSupportsColors) {
-                        Console::stderr(Console::ansiFormat($string, $format));
+                    if ($this->_stderrSupportsAnsiColors) {
+                        Console::stderr(Console::ansiFormat($string, $ansiColor));
                     } else {
                         Console::stderr($string);
                     }
