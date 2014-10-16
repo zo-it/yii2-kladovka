@@ -2,40 +2,20 @@
 
 namespace yii\kladovka\captcha;
 
-use Yii,
-    yii\captcha\CaptchaAction as CaptchaActionBase;
+use yii\captcha\CaptchaAction as YiiCaptchaAction,
+    Yii;
 
 
-class CaptchaAction extends CaptchaActionBase
+class CaptchaAction extends YiiCaptchaAction
 {
 
-    private $_ignoreRegenerateIfAjax = true;
+    public $ignoreRegenerateIfAjax = true;
 
-    public function setIgnoreRegenerateIfAjax($ignoreRegenerateIfAjax)
-    {
-        $this->_ignoreRegenerateIfAjax = $ignoreRegenerateIfAjax;
-    }
-
-    public function getIgnoreRegenerateIfAjax()
-    {
-        return $this->_ignoreRegenerateIfAjax;
-    }
-
-    private $_isDigital = true;
-
-    public function setIsDigital($isDigital)
-    {
-        $this->_isDigital = $isDigital;
-    }
-
-    public function getIsDigital()
-    {
-        return $this->_isDigital;
-    }
+    public $isDigital = false;
 
     public function getVerifyCode($regenerate = false)
     {
-        if ($this->getIgnoreRegenerateIfAjax()) {
+        if ($this->ignoreRegenerateIfAjax) {
             $request = Yii::$app->getRequest();
             if ($request->getIsAjax() && !$request->getQueryParam(static::REFRESH_GET_VAR)) {
                 return parent::getVerifyCode(false);
@@ -46,7 +26,7 @@ class CaptchaAction extends CaptchaActionBase
 
     protected function generateVerifyCode()
     {
-        if ($this->getIsDigital()) {
+        if ($this->isDigital) {
             if ($this->minLength > $this->maxLength) {
                 $this->maxLength = $this->minLength;
             }
