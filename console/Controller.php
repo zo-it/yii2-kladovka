@@ -2,11 +2,11 @@
 
 namespace yii\kladovka\console;
 
-use yii\console\Controller as ConsoleController,
+use yii\console\Controller as YiiController,
     yii\helpers\Console;
 
 
-class Controller extends ConsoleController
+class Controller extends YiiController
 {
 
     public function stdoutBegin($method)
