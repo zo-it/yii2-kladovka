@@ -963,6 +963,7 @@ class Curl
             $options = [];
         }
         $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_FTP;
+        $options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
         $options[CURLINFO_HEADER_OUT] = true;
         // url
         $url = $this->buildUrl();
