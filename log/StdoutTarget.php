@@ -21,8 +21,8 @@ class StdoutTarget extends Target
     public function export()
     {
         static $levelFormatMap = [
-            Logger::LEVEL_ERROR => [Console::FG_RED],
-            Logger::LEVEL_WARNING => [Console::FG_YELLOW],
+            Logger::LEVEL_ERROR => [Console::BOLD, Console::FG_RED],
+            Logger::LEVEL_WARNING => [Console::BOLD, Console::FG_YELLOW],
             Logger::LEVEL_INFO => [],
             Logger::LEVEL_TRACE => [Console::FG_CYAN],
             Logger::LEVEL_PROFILE => [Console::FG_PURPLE],
