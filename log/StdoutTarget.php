@@ -42,7 +42,7 @@ class StdoutTarget extends Target
         foreach ($this->messages as $message) {
             $string = $this->formatMessage($message) . "\n";
             $level = $message[1];
-            $ansiColor = array_key_exists($level, $this->_levelAnsiFormatMap) ? $this->_levelAnsiFormatMap[$level] : [];
+            $ansiColor = array_key_exists($level, $this->_levelAnsiColorMap) ? $this->_levelAnsiColorMap[$level] : [];
             if ($this->_stdoutIsTerminal) {
                 if ($this->_stdoutSupportsAnsiColors) {
                     Console::stdout(Console::ansiFormat($string, $ansiColor));
