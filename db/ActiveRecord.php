@@ -26,7 +26,7 @@ class ActiveRecord extends YiiActiveRecord
                 'class' => get_class($this),
                 'attributes' => $this->getAttributes(),
                 'errors' => $this->getErrors()
-            ]));
+            ]), $category);
         }
     }
 }
