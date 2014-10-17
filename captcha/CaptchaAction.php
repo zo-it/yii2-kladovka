@@ -9,13 +9,13 @@ use yii\captcha\CaptchaAction as YiiCaptchaAction,
 class CaptchaAction extends YiiCaptchaAction
 {
 
-    public $ignoreRegenerateIfAjax = true;
+    public $regenerateIfAjax = false;
 
     public $isDigital = false;
 
     public function getVerifyCode($regenerate = false)
     {
-        if ($this->ignoreRegenerateIfAjax) {
+        if (!$this->regenerateIfAjax) {
             $request = Yii::$app->getRequest();
             if ($request->getIsAjax() && !$request->getQueryParam(static::REFRESH_GET_VAR)) {
                 return parent::getVerifyCode(false);
