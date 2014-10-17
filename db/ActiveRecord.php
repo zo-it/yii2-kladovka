@@ -15,8 +15,12 @@ class ActiveRecord extends YiiActiveRecord
         return Yii::createObject(ActiveQuery::className(), [get_called_class()]);
     }
 
-    public function logErrors()
+    public function logError($message, $category = 'application')
     {
+        if (!is_scalar($message)) {
+            $message = VarDumper::dumpAsString($message);
+        }
+        Yii::error($message, $category);
         if ($this->hasErrors()) {
             Yii::error(VarDumper::dumpAsString([
                 'class' => get_class($this),
