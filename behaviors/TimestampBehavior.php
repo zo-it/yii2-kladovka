@@ -35,23 +35,26 @@ class TimestampBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+            $tableSchema = $owner->getTableSchema();
             // updated
             $updatedAttribute = $this->updatedAttribute;
             if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
                 switch ($tableSchema->getColumn($updatedAttribute)->dbType) {
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
-                    default: $format = $this->dateTimeFormat; break;
+                    case 'datetime': $format = $this->dateTimeFormat; break;
+                    default: $format = 'U'; break;
                 }
                 $owner->{$updatedAttribute} = date($format);
             }
             // timestamp
             $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute) && $owner->hasAttribute($timestampAttribute)) {
-                switch ($owner->getTableSchema()->getColumn($timestampAttribute)->dbType) {
+                switch ($tableSchema->getColumn($timestampAttribute)->dbType) {
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
-                    default: $format = $this->dateTimeFormat; break;
+                    case 'datetime': $format = $this->dateTimeFormat; break;
+                    default: $format = 'U'; break;
                 }
                 $owner->{$timestampAttribute} = date($format);
             }
