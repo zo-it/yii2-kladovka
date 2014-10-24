@@ -9,7 +9,7 @@ use yii\base\Behavior,
 class TimestampBehavior extends Behavior
 {
 
-    //public $createdAttribute = 'created_at';
+    public $createdAttribute = 'created_at';
 
     public $updatedAttribute = 'updated_at';
 
@@ -36,6 +36,31 @@ class TimestampBehavior extends Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
+            // created
+            $createdAttribute = $this->createdAttribute;
+            if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
+                switch ($tableSchema->getColumn($createdAttribute)->dbType) {
+                    case 'date': $format = $this->dateFormat; break;
+                    case 'time': $format = $this->timeFormat; break;
+                    case 'datetime': $format = $this->dateTimeFormat; break;
+                    default: $format = 'U'; break;
+                }
+                if ($owner->{$createdAttribute}) {
+                    if (is_int($owner->{$createdAttribute})) {
+                        $owner->{$createdAttribute} = date($format, $owner->{$createdAttribute});
+                    } elseif (is_string($owner->{$createdAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAttribute}, $match)) {
+                        if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                            $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                        } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                            $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                        }
+                    }
+                } elseif ($owner->getIsNewRecord()) {
+                    $owner->{$createdAttribute} = date($format);
+                } else {
+                    $owner->{$createdAttribute} = date($format, 0);
+                }
+            }
             // updated
             $updatedAttribute = $this->updatedAttribute;
             if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
@@ -65,6 +90,17 @@ class TimestampBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+            // created
+            $createdAttribute = $this->createdAttribute;
+            if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
+                if ($owner->{$createdAttribute} && is_string($owner->{$createdAttribute})) {
+                    if (($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '0000-00-00 00:00:00')) {
+                        $owner->{$createdAttribute} = 0;
+                    } else {
+                        $owner->{$createdAttribute} = strtotime($owner->{$createdAttribute});
+                    }
+                }
+            }
             // updated
             $updatedAttribute = $this->updatedAttribute;
             if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
