@@ -100,6 +100,8 @@ class TimestampBehavior extends Behavior
                 if ($owner->{$createdAttribute} && is_string($owner->{$createdAttribute})) {
                     if (($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '0000-00-00 00:00:00')) {
                         $owner->{$createdAttribute} = 0;
+                    } elseif (preg_match('~^\d+$~', $owner->{$createdAttribute})) {
+                        $owner->{$createdAttribute} = (int)$owner->{$createdAttribute};
                     } else {
                         $owner->{$createdAttribute} = strtotime($owner->{$createdAttribute});
                     }
@@ -111,6 +113,8 @@ class TimestampBehavior extends Behavior
                 if ($owner->{$updatedAttribute} && is_string($owner->{$updatedAttribute})) {
                     if (($owner->{$updatedAttribute} == '0000-00-00') || ($owner->{$updatedAttribute} == '0000-00-00 00:00:00')) {
                         $owner->{$updatedAttribute} = 0;
+                    } elseif (preg_match('~^\d+$~', $owner->{$updatedAttribute})) {
+                        $owner->{$updatedAttribute} = (int)$owner->{$updatedAttribute};
                     } else {
                         $owner->{$updatedAttribute} = strtotime($owner->{$updatedAttribute});
                     }
@@ -122,6 +126,8 @@ class TimestampBehavior extends Behavior
                 if ($owner->{$timestampAttribute} && is_string($owner->{$timestampAttribute})) {
                     if (($owner->{$timestampAttribute} == '0000-00-00') || ($owner->{$timestampAttribute} == '00:00:00') || ($owner->{$timestampAttribute} == '0000-00-00 00:00:00')) {
                         $owner->{$timestampAttribute} = 0;
+                    } elseif (preg_match('~^\d+$~', $owner->{$timestampAttribute})) {
+                        $owner->{$timestampAttribute} = (int)$owner->{$timestampAttribute};
                     } else {
                         $owner->{$timestampAttribute} = strtotime($owner->{$timestampAttribute});
                     }
