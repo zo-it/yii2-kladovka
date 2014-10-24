@@ -9,6 +9,10 @@ use yii\base\Behavior,
 class TimestampBehavior extends Behavior
 {
 
+    //public $createdAttribute = 'created_at';
+
+    public $updatedAttribute = 'updated_at';
+
     public $timestampAttribute = 'timestamp';
 
     public $dateFormat = 'Y-m-d';
@@ -31,6 +35,17 @@ class TimestampBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+            // updated
+            $updatedAttribute = $this->updatedAttribute;
+            if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
+                switch ($tableSchema->getColumn($updatedAttribute)->dbType) {
+                    case 'date': $format = $this->dateFormat; break;
+                    case 'time': $format = $this->timeFormat; break;
+                    default: $format = $this->dateTimeFormat; break;
+                }
+                $owner->{$updatedAttribute} = date($format);
+            }
+            // timestamp
             $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute) && $owner->hasAttribute($timestampAttribute)) {
                 switch ($owner->getTableSchema()->getColumn($timestampAttribute)->dbType) {
@@ -47,6 +62,18 @@ class TimestampBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+            // updated
+            $updatedAttribute = $this->updatedAttribute;
+            if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
+                if ($owner->{$updatedAttribute} && is_string($owner->{$updatedAttribute})) {
+                    if (($owner->{$updatedAttribute} == '0000-00-00') || ($owner->{$updatedAttribute} == '0000-00-00 00:00:00')) {
+                        $owner->{$updatedAttribute} = 0;
+                    } else {
+                        $owner->{$updatedAttribute} = strtotime($owner->{$updatedAttribute});
+                    }
+                }
+            }
+            // timestamp
             $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute) && $owner->hasAttribute($timestampAttribute)) {
                 if ($owner->{$timestampAttribute} && is_string($owner->{$timestampAttribute})) {
