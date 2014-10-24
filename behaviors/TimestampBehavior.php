@@ -48,11 +48,15 @@ class TimestampBehavior extends Behavior
                 if ($owner->{$createdAttribute}) {
                     if (is_int($owner->{$createdAttribute})) {
                         $owner->{$createdAttribute} = date($format, $owner->{$createdAttribute});
-                    } elseif (is_string($owner->{$createdAttribute}) && preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAttribute}, $match)) {
-                        if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                            $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
-                        } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                            $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                    } elseif (is_string($owner->{$createdAttribute})) {
+                        if (preg_match('~^\d+$~', $owner->{$createdAttribute})) {
+                            $owner->{$createdAttribute} = date($format, (int)$owner->{$createdAttribute});
+                        } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAttribute}, $match)) {
+                            if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                                $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                            } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                                $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                            }
                         }
                     }
                 } elseif ($owner->getIsNewRecord()) {
