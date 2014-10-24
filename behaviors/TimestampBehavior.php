@@ -1,69 +1,26 @@
 <?php
 
-namespace yii\kladovka\db\behaviors;
+namespace yii\kladovka\behaviors;
 
 use yii\base\Behavior,
     yii\db\ActiveRecord;
 
 
-class Timestamp extends Behavior
+class TimestampBehavior extends Behavior
 {
 
-    private $_timestampAttribute = 'timestamp';
+    public $timestampAttribute = 'timestamp';
 
-    public function setTimestampAttribute($timestampAttribute)
-    {
-        $this->_timestampAttribute = $timestampAttribute;
-    }
+    public $dateFormat = 'Y-m-d';
 
-    public function getTimestampAttribute()
-    {
-        return $this->_timestampAttribute;
-    }
+    public $timeFormat = 'H:i:s';
 
-    private $_dateFormat = 'Y-m-d';
-
-    public function setDateFormat($dateFormat)
-    {
-        $this->_dateFormat = $dateFormat;
-    }
-
-    public function getDateFormat()
-    {
-        return $this->_dateFormat;
-    }
-
-    private $_timeFormat = 'H:i:s';
-
-    public function setTimeFormat($timeFormat)
-    {
-        $this->_timeFormat = $timeFormat;
-    }
-
-    public function getTimeFormat()
-    {
-        return $this->_timeFormat;
-    }
-
-    private $_dateTimeFormat = 'Y-m-d H:i:s';
-
-    public function setDateTimeFormat($dateTimeFormat)
-    {
-        $this->_dateTimeFormat = $dateTimeFormat;
-    }
-
-    public function getDateTimeFormat()
-    {
-        return $this->_dateTimeFormat;
-    }
+    public $dateTimeFormat = 'Y-m-d H:i:s';
 
     public function events()
     {
         return [
             ActiveRecord::EVENT_BEFORE_VALIDATE => 'beforeSave',
-            /*ActiveRecord::EVENT_BEFORE_INSERT => 'beforeSave',
-            ActiveRecord::EVENT_BEFORE_UPDATE => 'beforeSave',
-            ActiveRecord::EVENT_AFTER_VALIDATE => 'afterFind',*/
             ActiveRecord::EVENT_AFTER_INSERT => 'afterFind',
             ActiveRecord::EVENT_AFTER_UPDATE => 'afterFind',
             ActiveRecord::EVENT_AFTER_FIND => 'afterFind'
@@ -74,13 +31,13 @@ class Timestamp extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            $timestampAttribute = $this->getTimestampAttribute();
+            $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute)) {
                 if ($owner->hasAttribute($timestampAttribute)) {
                     switch ($owner->getTableSchema()->getColumn($timestampAttribute)->dbType) {
-                        case 'date': $format = $this->getDateFormat(); break;
-                        case 'time': $format = $this->getTimeFormat(); break;
-                        default: $format = $this->getDateTimeFormat();
+                        case 'date': $format = $this->dateFormat; break;
+                        case 'time': $format = $this->timeFormat; break;
+                        default: $format = $this->dateTimeFormat; break;
                     }
                     $owner->{$timestampAttribute} = date($format);
                 }
@@ -92,7 +49,7 @@ class Timestamp extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            $timestampAttribute = $this->getTimestampAttribute();
+            $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute)) {
                 if ($owner->hasAttribute($timestampAttribute)) {
                     if ($owner->{$timestampAttribute} && is_string($owner->{$timestampAttribute})) {
