@@ -15,11 +15,11 @@ class TimestampBehavior extends Behavior
 
     public $timestampAttribute = 'timestamp';
 
+    public $dateTimeFormat = 'Y-m-d H:i:s';
+
     public $dateFormat = 'Y-m-d';
 
     public $timeFormat = 'H:i:s';
-
-    public $dateTimeFormat = 'Y-m-d H:i:s';
 
     public function events()
     {
@@ -40,9 +40,9 @@ class TimestampBehavior extends Behavior
             $createdAttribute = $this->createdAttribute;
             if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
                 switch ($tableSchema->getColumn($createdAttribute)->dbType) {
+                    case 'datetime': $format = $this->dateTimeFormat; break;
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
-                    case 'datetime': $format = $this->dateTimeFormat; break;
                     default: $format = 'U'; break;
                 }
                 if ($owner->{$createdAttribute}) {
@@ -56,6 +56,8 @@ class TimestampBehavior extends Behavior
                                 $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
                                 $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                            } else {
+                                $owner->{$createdAttribute} = date($format, strtotime($owner->{$createdAttribute}));
                             }
                         }
                     }
@@ -69,9 +71,9 @@ class TimestampBehavior extends Behavior
             $updatedAttribute = $this->updatedAttribute;
             if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
                 switch ($tableSchema->getColumn($updatedAttribute)->dbType) {
+                    case 'datetime': $format = $this->dateTimeFormat; break;
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
-                    case 'datetime': $format = $this->dateTimeFormat; break;
                     default: $format = 'U'; break;
                 }
                 $owner->{$updatedAttribute} = date($format);
@@ -80,9 +82,9 @@ class TimestampBehavior extends Behavior
             $timestampAttribute = $this->timestampAttribute;
             if ($timestampAttribute && is_string($timestampAttribute) && $owner->hasAttribute($timestampAttribute)) {
                 switch ($tableSchema->getColumn($timestampAttribute)->dbType) {
+                    case 'datetime': $format = $this->dateTimeFormat; break;
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
-                    case 'datetime': $format = $this->dateTimeFormat; break;
                     default: $format = 'U'; break;
                 }
                 $owner->{$timestampAttribute} = date($format);
@@ -99,7 +101,7 @@ class TimestampBehavior extends Behavior
             if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
                 if ($owner->{$createdAttribute}) {
                     if (is_string($owner->{$createdAttribute})) {
-                        if (($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '0000-00-00 00:00:00')) {
+                        if (($owner->{$createdAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '00:00:00')) {
                             $owner->{$createdAttribute} = 0;
                         } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAttribute})) {
                             $owner->{$createdAttribute} = (int)$owner->{$createdAttribute};
@@ -116,7 +118,7 @@ class TimestampBehavior extends Behavior
             if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
                 if ($owner->{$updatedAttribute}) {
                     if (is_string($owner->{$updatedAttribute})) {
-                        if (($owner->{$updatedAttribute} == '0000-00-00') || ($owner->{$updatedAttribute} == '0000-00-00 00:00:00')) {
+                        if (($owner->{$updatedAttribute} == '0000-00-00 00:00:00') || ($owner->{$updatedAttribute} == '0000-00-00') || ($owner->{$updatedAttribute} == '00:00:00')) {
                             $owner->{$updatedAttribute} = 0;
                         } elseif (preg_match('~^\d{9,10}$~', $owner->{$updatedAttribute})) {
                             $owner->{$updatedAttribute} = (int)$owner->{$updatedAttribute};
@@ -133,7 +135,7 @@ class TimestampBehavior extends Behavior
             if ($timestampAttribute && is_string($timestampAttribute) && $owner->hasAttribute($timestampAttribute)) {
                 if ($owner->{$timestampAttribute}) {
                     if (is_string($owner->{$timestampAttribute})) {
-                        if (($owner->{$timestampAttribute} == '0000-00-00') || ($owner->{$timestampAttribute} == '00:00:00') || ($owner->{$timestampAttribute} == '0000-00-00 00:00:00')) {
+                        if (($owner->{$timestampAttribute} == '0000-00-00 00:00:00') || ($owner->{$timestampAttribute} == '0000-00-00') || ($owner->{$timestampAttribute} == '00:00:00')) {
                             $owner->{$timestampAttribute} = 0;
                         } elseif (preg_match('~^\d{9,10}$~', $owner->{$timestampAttribute})) {
                             $owner->{$timestampAttribute} = (int)$owner->{$timestampAttribute};
