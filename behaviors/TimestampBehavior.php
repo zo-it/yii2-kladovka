@@ -58,9 +58,9 @@ class TimestampBehavior extends Behavior
                                 $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
                                 $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
-                            } else {
-                                $owner->{$createdAttribute} = date($format, strtotime($owner->{$createdAttribute}));
                             }
+                        } else {
+                            $owner->{$createdAttribute} = date($format, strtotime($owner->{$createdAttribute}));
                         }
                     }
                 } elseif ($owner->getIsNewRecord()) {
