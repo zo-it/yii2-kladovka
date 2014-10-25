@@ -49,7 +49,9 @@ class TimestampBehavior extends Behavior
                     if (is_int($owner->{$createdAttribute})) {
                         $owner->{$createdAttribute} = date($format, $owner->{$createdAttribute});
                     } elseif (is_string($owner->{$createdAttribute})) {
-                        if (preg_match('~^\d{9,10}$~', $owner->{$createdAttribute})) {
+                        if (($owner->{$createdAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '00:00:00')) {
+                            $owner->{$createdAttribute} = date($format, 0);
+                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAttribute})) {
                             $owner->{$createdAttribute} = date($format, (int)$owner->{$createdAttribute});
                         } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAttribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
