@@ -9,9 +9,9 @@ use yii\base\Behavior,
 class TimestampBehavior extends Behavior
 {
 
-    public $createdAttribute = 'created_at';
+    public $createdAtAttribute = 'created_at';
 
-    public $updatedAttribute = 'updated_at';
+    public $updatedAtAttribute = 'updated_at';
 
     public $timestampAttribute = 'timestamp';
 
@@ -37,48 +37,48 @@ class TimestampBehavior extends Behavior
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
             // created
-            $createdAttribute = $this->createdAttribute;
-            if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
-                switch ($tableSchema->getColumn($createdAttribute)->dbType) {
+            $createdAtAttribute = $this->createdAtAttribute;
+            if ($createdAtAttribute && is_string($createdAtAttribute) && $owner->hasAttribute($createdAtAttribute)) {
+                switch ($tableSchema->getColumn($createdAtAttribute)->dbType) {
                     case 'datetime': $format = $this->dateTimeFormat; break;
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
                     default: $format = 'U'; break;
                 }
-                if ($owner->{$createdAttribute}) {
-                    if (is_int($owner->{$createdAttribute})) {
-                        $owner->{$createdAttribute} = date($format, $owner->{$createdAttribute});
-                    } elseif (is_string($owner->{$createdAttribute})) {
-                        if (($owner->{$createdAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '00:00:00')) {
-                            $owner->{$createdAttribute} = date($format, 0);
-                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAttribute})) {
-                            $owner->{$createdAttribute} = date($format, (int)$owner->{$createdAttribute});
-                        } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAttribute}, $match)) {
+                if ($owner->{$createdAtAttribute}) {
+                    if (is_int($owner->{$createdAtAttribute})) {
+                        $owner->{$createdAtAttribute} = date($format, $owner->{$createdAtAttribute});
+                    } elseif (is_string($owner->{$createdAtAttribute})) {
+                        if (($owner->{$createdAtAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAtAttribute} == '0000-00-00') || ($owner->{$createdAtAttribute} == '00:00:00')) {
+                            $owner->{$createdAtAttribute} = date($format, 0);
+                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAtAttribute})) {
+                            $owner->{$createdAtAttribute} = date($format, (int)$owner->{$createdAtAttribute});
+                        } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$createdAtAttribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                                $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
+                                $owner->{$createdAtAttribute} = date($format, mktime(0, 0, 0, $match[2], $match[1], $match[3]));
                             } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                                $owner->{$createdAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
+                                $owner->{$createdAtAttribute} = date($format, mktime(0, 0, 0, $match[1], $match[2], $match[3]));
                             }
                         } else {
-                            $owner->{$createdAttribute} = date($format, strtotime($owner->{$createdAttribute}));
+                            $owner->{$createdAtAttribute} = date($format, strtotime($owner->{$createdAtAttribute}));
                         }
                     }
                 } elseif ($owner->getIsNewRecord()) {
-                    $owner->{$createdAttribute} = date($format);
-                } elseif (!is_null($owner->{$createdAttribute})) {
-                    $owner->{$createdAttribute} = date($format, 0);
+                    $owner->{$createdAtAttribute} = date($format);
+                } elseif (!is_null($owner->{$createdAtAttribute})) {
+                    $owner->{$createdAtAttribute} = date($format, 0);
                 }
             }
             // updated
-            $updatedAttribute = $this->updatedAttribute;
-            if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
-                switch ($tableSchema->getColumn($updatedAttribute)->dbType) {
+            $updatedAtAttribute = $this->updatedAtAttribute;
+            if ($updatedAtAttribute && is_string($updatedAtAttribute) && $owner->hasAttribute($updatedAtAttribute)) {
+                switch ($tableSchema->getColumn($updatedAtAttribute)->dbType) {
                     case 'datetime': $format = $this->dateTimeFormat; break;
                     case 'date': $format = $this->dateFormat; break;
                     case 'time': $format = $this->timeFormat; break;
                     default: $format = 'U'; break;
                 }
-                $owner->{$updatedAttribute} = date($format);
+                $owner->{$updatedAtAttribute} = date($format);
             }
             // timestamp
             $timestampAttribute = $this->timestampAttribute;
@@ -99,37 +99,37 @@ class TimestampBehavior extends Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             // created
-            $createdAttribute = $this->createdAttribute;
-            if ($createdAttribute && is_string($createdAttribute) && $owner->hasAttribute($createdAttribute)) {
-                if ($owner->{$createdAttribute}) {
-                    if (is_string($owner->{$createdAttribute})) {
-                        if (($owner->{$createdAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAttribute} == '0000-00-00') || ($owner->{$createdAttribute} == '00:00:00')) {
-                            $owner->{$createdAttribute} = 0;
-                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAttribute})) {
-                            $owner->{$createdAttribute} = (int)$owner->{$createdAttribute};
+            $createdAtAttribute = $this->createdAtAttribute;
+            if ($createdAtAttribute && is_string($createdAtAttribute) && $owner->hasAttribute($createdAtAttribute)) {
+                if ($owner->{$createdAtAttribute}) {
+                    if (is_string($owner->{$createdAtAttribute})) {
+                        if (($owner->{$createdAtAttribute} == '0000-00-00 00:00:00') || ($owner->{$createdAtAttribute} == '0000-00-00') || ($owner->{$createdAtAttribute} == '00:00:00')) {
+                            $owner->{$createdAtAttribute} = 0;
+                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$createdAtAttribute})) {
+                            $owner->{$createdAtAttribute} = (int)$owner->{$createdAtAttribute};
                         } else {
-                            $owner->{$createdAttribute} = strtotime($owner->{$createdAttribute});
+                            $owner->{$createdAtAttribute} = strtotime($owner->{$createdAtAttribute});
                         }
                     }
-                } elseif (!is_null($owner->{$createdAttribute})) {
-                    $owner->{$createdAttribute} = 0;
+                } elseif (!is_null($owner->{$createdAtAttribute})) {
+                    $owner->{$createdAtAttribute} = 0;
                 }
             }
             // updated
-            $updatedAttribute = $this->updatedAttribute;
-            if ($updatedAttribute && is_string($updatedAttribute) && $owner->hasAttribute($updatedAttribute)) {
-                if ($owner->{$updatedAttribute}) {
-                    if (is_string($owner->{$updatedAttribute})) {
-                        if (($owner->{$updatedAttribute} == '0000-00-00 00:00:00') || ($owner->{$updatedAttribute} == '0000-00-00') || ($owner->{$updatedAttribute} == '00:00:00')) {
-                            $owner->{$updatedAttribute} = 0;
-                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$updatedAttribute})) {
-                            $owner->{$updatedAttribute} = (int)$owner->{$updatedAttribute};
+            $updatedAtAttribute = $this->updatedAtAttribute;
+            if ($updatedAtAttribute && is_string($updatedAtAttribute) && $owner->hasAttribute($updatedAtAttribute)) {
+                if ($owner->{$updatedAtAttribute}) {
+                    if (is_string($owner->{$updatedAtAttribute})) {
+                        if (($owner->{$updatedAtAttribute} == '0000-00-00 00:00:00') || ($owner->{$updatedAtAttribute} == '0000-00-00') || ($owner->{$updatedAtAttribute} == '00:00:00')) {
+                            $owner->{$updatedAtAttribute} = 0;
+                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$updatedAtAttribute})) {
+                            $owner->{$updatedAtAttribute} = (int)$owner->{$updatedAtAttribute};
                         } else {
-                            $owner->{$updatedAttribute} = strtotime($owner->{$updatedAttribute});
+                            $owner->{$updatedAtAttribute} = strtotime($owner->{$updatedAtAttribute});
                         }
                     }
-                } elseif (!is_null($owner->{$updatedAttribute})) {
-                    $owner->{$updatedAttribute} = 0;
+                } elseif (!is_null($owner->{$updatedAtAttribute})) {
+                    $owner->{$updatedAtAttribute} = 0;
                 }
             }
             // timestamp
