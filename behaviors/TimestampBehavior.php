@@ -36,7 +36,7 @@ class TimestampBehavior extends Behavior
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
-            // created
+            // created_at
             $createdAtAttribute = $this->createdAtAttribute;
             if ($createdAtAttribute && is_string($createdAtAttribute) && $owner->hasAttribute($createdAtAttribute)) {
                 switch ($tableSchema->getColumn($createdAtAttribute)->dbType) {
@@ -69,7 +69,7 @@ class TimestampBehavior extends Behavior
                     $owner->{$createdAtAttribute} = date($format, 0);
                 }
             }
-            // updated
+            // updated_at
             $updatedAtAttribute = $this->updatedAtAttribute;
             if ($updatedAtAttribute && is_string($updatedAtAttribute) && $owner->hasAttribute($updatedAtAttribute)) {
                 switch ($tableSchema->getColumn($updatedAtAttribute)->dbType) {
@@ -98,7 +98,7 @@ class TimestampBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
-            // created
+            // created_at
             $createdAtAttribute = $this->createdAtAttribute;
             if ($createdAtAttribute && is_string($createdAtAttribute) && $owner->hasAttribute($createdAtAttribute)) {
                 if ($owner->{$createdAtAttribute}) {
@@ -115,7 +115,7 @@ class TimestampBehavior extends Behavior
                     $owner->{$createdAtAttribute} = 0;
                 }
             }
-            // updated
+            // updated_at
             $updatedAtAttribute = $this->updatedAtAttribute;
             if ($updatedAtAttribute && is_string($updatedAtAttribute) && $owner->hasAttribute($updatedAtAttribute)) {
                 if ($owner->{$updatedAtAttribute}) {
