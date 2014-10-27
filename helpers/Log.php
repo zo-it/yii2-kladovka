@@ -22,7 +22,7 @@ class Log
 
     public static function error($message, $category = 'application')
     {
-        if (!is_scalar($message)) {
+        if (!is_string($message)) {
             $message = VarDumper::dumpAsString($message);
         }
         Yii::error($message, $category);
