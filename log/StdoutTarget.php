@@ -64,6 +64,13 @@ class StdoutTarget extends Target
             } else {
                 $ansiColor = $this->defaultAnsiColor;
             }
+            if ($level == Logger::LEVEL_INFO) {
+                if (strncmp('BEGIN ', $message[0], 6) == 0) {
+                    $ansiColor = $this->_levelAnsiColorMap[Logger::LEVEL_PROFILE_BEGIN];
+                } elseif (strncmp('END ', $message[0], 4) == 0) {
+                    $ansiColor = $this->_levelAnsiColorMap[Logger::LEVEL_PROFILE_END];
+                }
+            }
             if ($this->_stdoutIsTerminal) {
                 if ($this->_stdoutSupportsAnsiColors && $ansiColor) {
                     Console::stdout(Console::ansiFormat($string, $ansiColor));
