@@ -18,6 +18,8 @@ class StdoutTarget extends Target
 
     private $_stderrSupportsAnsiColors = false;
 
+    private $_levelAnsiColorMap = [];
+
     public $errorAnsiColor = [Console::BOLD, Console::FG_RED];
 
     public $warningAnsiColor = [Console::BOLD, Console::FG_YELLOW];
@@ -32,11 +34,10 @@ class StdoutTarget extends Target
 
     public $profileEndAnsiColor = [Console::FG_PURPLE];
 
-    private $_levelAnsiColorMap = [];
+    public $defaultAnsiColor = [];
 
     public function init()
     {
-        parent::init();
         $this->_stdoutIsTerminal = posix_isatty(\STDOUT);
         $this->_stdoutSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDOUT);
         $this->_stderrIsTerminal = posix_isatty(\STDERR);
@@ -50,6 +51,7 @@ class StdoutTarget extends Target
             Logger::LEVEL_PROFILE_BEGIN => $this->profileBeginAnsiColor,
             Logger::LEVEL_PROFILE_END => $this->profileEndAnsiColor
         ];
+        parent::init();
     }
 
     public function export()
@@ -57,7 +59,11 @@ class StdoutTarget extends Target
         foreach ($this->messages as $message) {
             $string = $this->formatMessage($message) . "\n";
             $level = $message[1];
-            $ansiColor = array_key_exists($level, $this->_levelAnsiColorMap) ? $this->_levelAnsiColorMap[$level] : [];
+            if (array_key_exists($level, $this->_levelAnsiColorMap)) {
+                $ansiColor = $this->_levelAnsiColorMap[$level];
+            } else {
+                $ansiColor = $this->defaultAnsiColor;
+            }
             if ($this->_stdoutIsTerminal) {
                 if ($this->_stdoutSupportsAnsiColors && $ansiColor) {
                     Console::stdout(Console::ansiFormat($string, $ansiColor));
@@ -66,7 +72,7 @@ class StdoutTarget extends Target
                 }
             } else {
                 Console::stdout($string);
-                if ($this->_stderrIsTerminal && ($level == Logger::LEVEL_ERROR || $level == Logger::LEVEL_WARNING)) {
+                if ($this->_stderrIsTerminal && (($level == Logger::LEVEL_ERROR) || ($level == Logger::LEVEL_WARNING))) {
                     if ($this->_stderrSupportsAnsiColors && $ansiColor) {
                         Console::stderr(Console::ansiFormat($string, $ansiColor));
                     } else {
