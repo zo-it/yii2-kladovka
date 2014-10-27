@@ -12,12 +12,12 @@ class Log
 
     public static function beginMethod($token, $category = 'application')
     {
-        Yii::beginProfile('BEGIN ' . $token . date(' c') . "\n", $category);
+        Yii::beginProfile($token, $category);
     }
 
     public static function endMethod($token, $category = 'application')
     {
-        Yii::endProfile('END ' . $token . date(' c') . "\n", $category);
+        Yii::endProfile($token, $category);
     }
 
     public static function error($message, $category = 'application')
@@ -28,8 +28,9 @@ class Log
         Yii::error($message, $category);
     }
 
-    public static function modelErrors(Model $model, $category = 'application')
+    public static function modelErrors(Model $model, $message, $category = 'application')
     {
+        static::error($message, $category);
         if ($model->hasErrors()) {
             Yii::error(VarDumper::dumpAsString([
                 'class' => get_class($model),
