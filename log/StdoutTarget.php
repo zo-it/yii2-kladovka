@@ -10,16 +10,6 @@ use yii\log\Target,
 class StdoutTarget extends Target
 {
 
-    private $_stdoutIsTerminal = true;
-
-    private $_stdoutSupportsAnsiColors = false;
-
-    private $_stderrIsTerminal = true;
-
-    private $_stderrSupportsAnsiColors = false;
-
-    private $_levelAnsiColorMap = [];
-
     public $errorAnsiColor = [Console::BOLD, Console::FG_RED];
 
     public $warningAnsiColor = [Console::BOLD, Console::FG_YELLOW];
@@ -36,9 +26,22 @@ class StdoutTarget extends Target
 
     public $defaultAnsiColor = [];
 
+    private $_stdoutIsTerminal = true;
+
+    private $_stdoutSupportsAnsiColors = false;
+
+    private $_stderrIsTerminal = true;
+
+    private $_stderrSupportsAnsiColors = false;
+
+    private $_levelAnsiColorMap = [];
+
     public function init()
     {
         $this->_stdoutIsTerminal = posix_isatty(\STDOUT);
+        if ($this->_stdoutIsTerminal) {
+            $this->logVars = [];
+        }
         $this->_stdoutSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDOUT);
         $this->_stderrIsTerminal = posix_isatty(\STDERR);
         $this->_stderrSupportsAnsiColors = Console::streamSupportsAnsiColors(\STDERR);
@@ -59,17 +62,18 @@ class StdoutTarget extends Target
         foreach ($this->messages as $message) {
             $string = $this->formatMessage($message) . "\n";
             $level = $message[1];
-            if (array_key_exists($level, $this->_levelAnsiColorMap)) {
-                $ansiColor = $this->_levelAnsiColorMap[$level];
-            } else {
-                $ansiColor = $this->defaultAnsiColor;
-            }
             if ($level == Logger::LEVEL_INFO) {
                 if (strncmp('BEGIN ', $message[0], 6) == 0) {
                     $ansiColor = $this->_levelAnsiColorMap[Logger::LEVEL_PROFILE_BEGIN];
                 } elseif (strncmp('END ', $message[0], 4) == 0) {
                     $ansiColor = $this->_levelAnsiColorMap[Logger::LEVEL_PROFILE_END];
+                } else {
+                    $ansiColor = $this->_levelAnsiColorMap[Logger::LEVEL_INFO];
                 }
+            } elseif (array_key_exists($level, $this->_levelAnsiColorMap)) {
+                $ansiColor = $this->_levelAnsiColorMap[$level];
+            } else {
+                $ansiColor = $this->defaultAnsiColor;
             }
             if ($this->_stdoutIsTerminal) {
                 if ($this->_stdoutSupportsAnsiColors && $ansiColor) {
