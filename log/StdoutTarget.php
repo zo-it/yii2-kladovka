@@ -30,7 +30,7 @@ class StdoutTarget extends Target
 
     public $profileAnsiColor = [Console::FG_PURPLE];
 
-    public $profileBeginAnsiColor = [Console::FG_PURPLE];
+    public $profileBeginAnsiColor = [Console::BOLD, Console::FG_PURPLE];
 
     public $profileEndAnsiColor = [Console::FG_PURPLE];
 
