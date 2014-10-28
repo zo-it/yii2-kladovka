@@ -28,7 +28,7 @@ class Log
         Yii::error($message, $category);
     }
 
-    public static function modelErrors(Model $model, $message = '', $category = 'application')
+    public static function modelErrors(Model $model, $message = null, $category = 'application')
     {
         if ($message) {
             static::error($message, $category);
