@@ -64,7 +64,8 @@ class DatetimeBehavior extends Behavior
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
             foreach ($this->prepareAttributes() as $attribute => $options) {
-                switch ($tableSchema->getColumn($attribute)->dbType) {
+                $columnSchema = $tableSchema->getColumn($attribute);
+                switch ($columnSchema->dbType) {
                     case 'datetime': $format = $options['dateTimeFormat']; break;
                     case 'date': $format = $options['dateFormat']; break;
                     case 'time': $format = $options['timeFormat']; break;
@@ -76,7 +77,7 @@ class DatetimeBehavior extends Behavior
                     } elseif (is_string($owner->{$attribute})) {
                         if (($owner->{$attribute} == '0000-00-00 00:00:00') || ($owner->{$attribute} == '0000-00-00') || ($owner->{$attribute} == '00:00:00')) {
                             $owner->{$attribute} = date($format, 0);
-                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$attribute})) {
+                        } elseif (preg_match('~^\-?\d{9,10}$~', $owner->{$attribute})) {
                             $owner->{$attribute} = date($format, (int)$owner->{$attribute});
                         } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $owner->{$attribute}, $match)) {
                             if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
@@ -88,7 +89,9 @@ class DatetimeBehavior extends Behavior
                             $owner->{$attribute} = date($format, strtotime($owner->{$attribute}));
                         }
                     }
-                } elseif (!is_null($owner->{$attribute})) {
+                } elseif ($columnSchema->allowNull) {
+                    $owner->{$attribute} = null;
+                } else {
                     $owner->{$attribute} = date($format, 0);
                 }
             }
@@ -99,18 +102,22 @@ class DatetimeBehavior extends Behavior
     {
         $owner = $this->owner;
         if ($owner instanceof ActiveRecord) {
+            $tableSchema = $owner->getTableSchema();
             foreach ($this->prepareAttributes() as $attribute => $options) {
+                $columnSchema = $tableSchema->getColumn($attribute);
                 if ($owner->{$attribute}) {
                     if (is_string($owner->{$attribute})) {
                         if (($owner->{$attribute} == '0000-00-00 00:00:00') || ($owner->{$attribute} == '0000-00-00') || ($owner->{$attribute} == '00:00:00')) {
                             $owner->{$attribute} = 0;
-                        } elseif (preg_match('~^\d{9,10}$~', $owner->{$attribute})) {
+                        } elseif (preg_match('~^\-?\d{9,10}$~', $owner->{$attribute})) {
                             $owner->{$attribute} = (int)$owner->{$attribute};
                         } else {
                             $owner->{$attribute} = strtotime($owner->{$attribute});
                         }
                     }
-                } elseif (!is_null($owner->{$attribute})) {
+                } elseif ($columnSchema->allowNull) {
+                    $owner->{$attribute} = null;
+                } else {
                     $owner->{$attribute} = 0;
                 }
             }
