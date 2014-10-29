@@ -1,6 +1,6 @@
 <?php
 
-namespace yii\mozayka\helpers;
+namespace yii\kladovka\helpers;
 
 use Yii;
 
@@ -13,6 +13,9 @@ class Text
         if (is_null($timestamp)) {
             $timestamp = time();
         }
-        return preg_replace_callback('~\w{3,}~', function ($m) { return Yii::t('mozayka', $m[0]); }, date($format, $timestamp));
+        if (array_key_exists('kladovka', Yii::$app->getI18n()->translations)) {
+            return preg_replace_callback('~\w{3,}~', function ($m) { return Yii::t('kladovka', $m[0]); }, date($format, $timestamp));
+        }
+        return date($format, $timestamp);
     }
 }
