@@ -68,8 +68,8 @@ class TimestampBehavior extends Behavior
                     $owner->{$createdAtAttribute} = date($format);
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$createdAtAttribute} = null;
-                } else {
-                    $owner->{$createdAtAttribute} = date($format, 0);
+                /*} else {
+                    $owner->{$createdAtAttribute} = date($format, 0);*/
                 }
             }
             // updated_at
@@ -120,8 +120,8 @@ class TimestampBehavior extends Behavior
                     }
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$createdAtAttribute} = null;
-                } else {
-                    $owner->{$createdAtAttribute} = 0;
+                /*} else {
+                    $owner->{$createdAtAttribute} = 0;*/
                 }
             }
             // updated_at
@@ -140,8 +140,8 @@ class TimestampBehavior extends Behavior
                     }
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$updatedAtAttribute} = null;
-                } else {
-                    $owner->{$updatedAtAttribute} = 0;
+                /*} else {
+                    $owner->{$updatedAtAttribute} = 0;*/
                 }
             }
             // timestamp
@@ -160,8 +160,8 @@ class TimestampBehavior extends Behavior
                     }
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$timestampAttribute} = null;
-                } else {
-                    $owner->{$timestampAttribute} = 0;
+                /*} else {
+                    $owner->{$timestampAttribute} = 0;*/
                 }
             }
         }
