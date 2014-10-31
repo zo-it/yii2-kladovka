@@ -17,7 +17,7 @@ class CaptchaAction extends YiiCaptchaAction
     {
         if (!$this->regenerateIfAjax) {
             $request = Yii::$app->getRequest();
-            if ($request->getIsAjax() && !$request->getQueryParam(static::REFRESH_GET_VAR)) {
+            if ($request->getIsAjax() && !$request->getQueryParam(self::REFRESH_GET_VAR)) {
                 return parent::getVerifyCode(false);
             }
         }

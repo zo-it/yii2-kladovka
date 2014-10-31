@@ -10,14 +10,20 @@ use yii\helpers\VarDumper,
 class Log
 {
 
-    public static function beginMethod($token, $category = 'application')
+    public static function beginMethod($token, $category = 'application', $flush = false)
     {
         Yii::info('BEGIN ' . $token, $category);
+        if ($flush) {
+            Yii::getLogger()->flush();
+        }
     }
 
-    public static function endMethod($token, $category = 'application')
+    public static function endMethod($token, $category = 'application', $flush = false)
     {
         Yii::info('END ' . $token, $category);
+        if ($flush) {
+            Yii::getLogger()->flush();
+        }
     }
 
     public static function error($message, $category = 'application')

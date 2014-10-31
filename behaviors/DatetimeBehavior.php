@@ -91,8 +91,8 @@ class DatetimeBehavior extends Behavior
                     }
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$attribute} = null;
-                } else {
-                    $owner->{$attribute} = date($format, 0);
+                /*} else {
+                    $owner->{$attribute} = date($format, 0);*/
                 }
             }
         }
@@ -117,8 +117,8 @@ class DatetimeBehavior extends Behavior
                     }
                 } elseif ($columnSchema->allowNull) {
                     $owner->{$attribute} = null;
-                } else {
-                    $owner->{$attribute} = 0;
+                /*} else {
+                    $owner->{$attribute} = 0;*/
                 }
             }
         }
