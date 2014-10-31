@@ -18,4 +18,13 @@ class Text
         }
         return date($format, $timestamp);
     }
+
+    public static function slug($title)
+    {
+        $fix = [
+            '~[\s_]+~' => '_',
+            '~[^a-zа-яё_\-]~iu' => ''
+        ];
+        return preg_replace(array_keys($fix), array_values($fix), $title);
+    }
 }
