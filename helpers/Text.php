@@ -47,8 +47,12 @@ class Text
     public static function juiTimeFormat($format)
     {
         return strtr($format, [
-            'H' => 'hh',
-            'G' => 'h',
+            'A' => 'TT',
+            'a' => 'tt',
+            'H' => 'HH',
+            'G' => 'H',
+            'h' => 'hh',
+            'g' => 'h',
             'i' => 'mm',
             's' => 'ss'
         ]);
