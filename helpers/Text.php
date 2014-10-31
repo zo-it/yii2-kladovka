@@ -19,6 +19,11 @@ class Text
         return date($format, $timestamp);
     }
 
+    public static function date2($format, $timestamp = null)
+    {
+        return static::date(str_replace('F', 'F_', $format), $timestamp);
+    }
+
     public static function slug($title)
     {
         $fix = [
