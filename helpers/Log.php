@@ -47,4 +47,9 @@ class Log
             ], $category);
         }
     }
+
+    public static function flush()
+    {
+        Yii::getLogger()->flush();
+    }
 }
