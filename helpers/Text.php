@@ -27,4 +27,30 @@ class Text
         ];
         return preg_replace(array_keys($fix), array_values($fix), $title);
     }
+
+    public static function juiDateFormat($format)
+    {
+        return strtr($format, [
+            'Y' => 'yy',
+            //'y' => 'y',
+            'F' => 'MM',
+            //'M' => 'M',
+            'm' => 'mm',
+            'n' => 'm',
+            'l' => 'DD',
+            'D' => 'D',
+            'd' => 'dd',
+            'j' => 'd'
+        ]);
+    }
+
+    public static function juiTimeFormat($format)
+    {
+        return strtr($format, [
+            'H' => 'hh',
+            'G' => 'h',
+            'i' => 'mm',
+            's' => 'ss'
+        ]);
+    }
 }
