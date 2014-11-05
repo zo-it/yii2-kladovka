@@ -4,13 +4,14 @@ namespace yii\kladovka\console;
 
 use yii\console\Controller,
     yii\kladovka\helpers\Log,
+    yii\helpers\Inflector,
     Yii;
 
 
 class GenerateController extends Controller
 {
 
-    public function actionDumpSchema()
+    public function actionDbSchema()
     {
         Log::beginMethod(__METHOD__);
         $db = Yii::$app->getDb();
@@ -25,6 +26,31 @@ class GenerateController extends Controller
             ' > ' . escapeshellarg($filename);
         passthru($command);
         Log::endMethod(__METHOD__);
+    }
+
+    public function actionBaseModels()
+    {
+        Log::beginMethod(__METHOD__);
+        $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
+        $db = Yii::$app->getDb();
+        foreach ($db->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+            $className = Inflector::classify($tableName);
+            $command = getcwd() . '/yii gii/model' .
+                ' --tableName=' . escapeshellarg($tableName) .
+                ' --modelClass=' . escapeshellarg($className . 'Base') .
+                ' --baseClass=' . escapeshellarg($baseClass) .
+                ' --generateLabelsFromComments=1' .
+                ' --interactive=0' .
+                ' --overwrite=1';
+            passthru($command);
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionAll()
+    {
+        $this->actionDbSchema();
+        $this->actionBaseModels();
     }
 
     public function actionIndex()
