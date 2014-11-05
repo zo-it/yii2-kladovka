@@ -22,7 +22,6 @@ class Html extends BaseHtml
     }
 }
 
-// Yii::$classMap['yii\helpers\Html'] = '@yii/kladovka/helpers/Html.php';
 if (!class_exists('yii\helpers\Html', false)) {
     class_alias('yii\kladovka\helpers\Html', 'yii\helpers\Html', false);
 }
