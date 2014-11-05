@@ -2,7 +2,7 @@
 use yii\helpers\StringHelper;
 /**
  * @var yii\web\View $this
- * @var yii\kladovka\generators\model2\Generator $generator
+ * @var yii\kladovka\generators\search2\Generator $generator
  */
 
 $modelClass = StringHelper::basename($generator->modelClass);
@@ -11,8 +11,7 @@ $secondModelClass = StringHelper::basename($generator->secondModelClass);
 $modelNamespace = StringHelper::dirname(ltrim($generator->modelClass, '\\'));
 $secondModelNamespace = StringHelper::dirname(ltrim($generator->secondModelClass, '\\'));
 
-$baseQueryClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
-$use = [$baseQueryClass];
+$use = [];
 
 $modelAlias = $modelClass;
 if ($modelNamespace != $secondModelNamespace) {
@@ -23,8 +22,6 @@ if ($modelNamespace != $secondModelNamespace) {
         $use[] = $modelNamespace . '\\' . $modelClass;
     }
 }
-
-$use[] = 'Yii';
 
 echo "<?php\n";
 ?>
@@ -40,23 +37,4 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
 
 {
 
-    public static function find()
-    {
-        return Yii::createObject(<?php echo $secondModelClass; ?>Query::className(), [get_called_class()]);
-    }
-
-    public function behaviors()
-    {
-        return [];
-    }
-}
-
-
-class <?php echo $secondModelClass; ?>Query extends ActiveQuery
-{
-
-    public function init()
-    {
-        // nothing to do
-    }
 }
