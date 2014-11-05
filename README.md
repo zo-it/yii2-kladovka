@@ -11,6 +11,7 @@ Yii::$classMap['yii\helpers\Html'] = '@yii/kladovka/helpers/Html.php';
 $config['modules']['gii'] = [
     'class' => 'yii\gii\Module',
     'generators' => [
+        'model2' => 'yii\kladovka\generators\model2\Generator',
         'search' => 'yii\kladovka\generators\search\Generator'
     ]
 ];

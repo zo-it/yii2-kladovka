@@ -52,6 +52,21 @@ class GenerateController extends Controller
         Log::endMethod(__METHOD__);
     }
 
+    public function actionModels()
+    {
+        Log::beginMethod(__METHOD__);
+        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+            $className = Inflector::classify($tableName);
+            $command = getcwd() . '/yii gii/model2' .
+                ' --modelClass=' . escapeshellarg('app\models\\' . $className . 'Base') .
+                ' --secondModelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --interactive=0' .
+                ' --overwrite=0';
+            passthru($command);
+        }
+        Log::endMethod(__METHOD__);
+    }
+
     public function actionBaseSearchModels()
     {
         Log::beginMethod(__METHOD__);
@@ -75,6 +90,7 @@ class GenerateController extends Controller
     {
         $this->actionDbSchema();
         $this->actionBaseModels();
+        $this->actionModels();
         $this->actionBaseSearchModels();
     }
 
