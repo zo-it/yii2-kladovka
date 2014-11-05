@@ -10,20 +10,16 @@ use yii\helpers\VarDumper,
 class Log
 {
 
-    public static function beginMethod($token, $category = 'application', $flush = false)
+    public static function beginMethod($token, $category = 'application')
     {
         Yii::info('BEGIN ' . $token, $category);
-        if ($flush) {
-            Yii::getLogger()->flush();
-        }
+        Yii::getLogger()->flush();
     }
 
-    public static function endMethod($token, $category = 'application', $flush = false)
+    public static function endMethod($token, $category = 'application')
     {
         Yii::info('END ' . $token, $category);
-        if ($flush) {
-            Yii::getLogger()->flush();
-        }
+        Yii::getLogger()->flush();
     }
 
     public static function error($message, $category = 'application')
@@ -46,6 +42,22 @@ class Log
                 'errors' => $model->getErrors()
             ], $category);
         }
+    }
+
+    public static function warning($message, $category = 'application')
+    {
+        if (!is_string($message)) {
+            $message = VarDumper::dumpAsString($message);
+        }
+        Yii::warning($message, $category);
+    }
+
+    public static function info($message, $category = 'application')
+    {
+        if (!is_string($message)) {
+            $message = VarDumper::dumpAsString($message);
+        }
+        Yii::info($message, $category);
     }
 
     public static function flush()
