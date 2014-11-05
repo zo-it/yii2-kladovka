@@ -11,12 +11,18 @@ use yii\console\Controller,
 class GenerateController extends Controller
 {
 
+    public $dirMode = 0777;
+
     public function actionDbSchema()
     {
         Log::beginMethod(__METHOD__);
+        $sqlPath = Yii::getAlias('@app/sql');
+        if (!is_dir($sqlPath)) {
+            mkdir($sqlPath, $this->dirMode);
+        }
         $db = Yii::$app->getDb();
         parse_str(str_replace(';', '&', substr($db->dsn, 6)), $dsnParams);
-        $filename = Yii::$app->getBasePath() . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . $dsnParams['dbname'] . '-schema.sql';
+        $filename = $sqlPath . DIRECTORY_SEPARATOR . $dsnParams['dbname'] . '-schema.sql';
         $command = 'mysqldump --create-options --no-data --events' .
             ' --host=' . escapeshellarg(array_key_exists('host', $dsnParams) ? $dsnParams['host'] : 'localhost') .
             ' --user=' . escapeshellarg($db->username) .
@@ -32,8 +38,7 @@ class GenerateController extends Controller
     {
         Log::beginMethod(__METHOD__);
         $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
-        $db = Yii::$app->getDb();
-        foreach ($db->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model' .
                 ' --tableName=' . escapeshellarg($tableName) .
@@ -47,10 +52,30 @@ class GenerateController extends Controller
         Log::endMethod(__METHOD__);
     }
 
-    public function actionAll()
+    public function actionBaseSearchModels()
+    {
+        Log::beginMethod(__METHOD__);
+        $searchPath = Yii::getAlias('@app/models/search');
+        if (!is_dir($searchPath)) {
+            mkdir($searchPath, $this->dirMode);
+        }
+        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+            $className = Inflector::classify($tableName);
+            $command = getcwd() . '/yii gii/search' .
+                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --searchModelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
+                ' --interactive=0' .
+                ' --overwrite=1';
+            passthru($command);
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionMakeAll()
     {
         $this->actionDbSchema();
         $this->actionBaseModels();
+        $this->actionBaseSearchModels();
     }
 
     public function actionIndex()
