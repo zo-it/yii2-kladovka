@@ -4,7 +4,8 @@ namespace yii\kladovka;
 
 use yii\base\Module as YiiModule,
     yii\base\BootstrapInterface,
-    yii\web\Application as YiiWebApplication;
+    yii\web\Application as YiiWebApplication,
+    yii\console\Application as YiiConsoleApplication;
 
 
 class Module extends YiiModule implements BootstrapInterface
@@ -18,6 +19,8 @@ class Module extends YiiModule implements BootstrapInterface
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@yii/kladovka/messages'
             ];
+        } elseif ($app instanceof YiiConsoleApplication) {
+            //$app->controllerMap[$this->id] = [];
         }
     }
 }
