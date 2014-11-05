@@ -20,7 +20,9 @@ class Module extends YiiModule implements BootstrapInterface
                 'basePath' => '@yii/kladovka/messages'
             ];
         } elseif ($app instanceof YiiConsoleApplication) {
-            //$app->controllerMap[$this->id] = [];
+            $app->controllerMap[$this->id] = [
+                'class' => 'yii\kladovka\console\GenerateController'
+            ];
         }
     }
 }
