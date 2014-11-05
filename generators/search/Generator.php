@@ -46,6 +46,12 @@ class Generator extends GiiCrudGenerator
         return ['search.php'];
     }
 
+    public function formView()
+    {
+        $class = new ReflectionClass(get_parent_class($this));
+        return dirname($class->getFileName()) . '/form.php';
+    }
+
     public function defaultTemplate()
     {
         $class = new ReflectionClass(get_parent_class($this));
