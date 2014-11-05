@@ -50,7 +50,7 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
 }
 
 
-class <?= $secondModelClass ?>Query extends ActiveQuery
+class <?php echo $secondModelClass; ?>Query extends ActiveQuery
 {
 
     public function init()
