@@ -2,14 +2,11 @@
 
 namespace yii\kladovka\behaviors;
 
-use yii\base\Behavior,
-    yii\db\ActiveRecord;
+use yii\db\ActiveRecord;
 
 
-class DatetimeBehavior extends Behavior
+class DatetimeBehavior extends AttributesBehavior
 {
-
-    public $attributes = [];
 
     public $dateTimeFormat = 'Y-m-d H:i:s';
 
@@ -17,35 +14,13 @@ class DatetimeBehavior extends Behavior
 
     public $timeFormat = 'H:i:s';
 
-    private $_preparedAttributes = null;
-
-    protected function prepareAttributes()
+    protected function defaultOptions()
     {
-        if (!is_array($this->_preparedAttributes)) {
-            $attributes = [];
-            $owner = $this->owner;
-            if ($owner instanceof ActiveRecord) {
-                foreach ($this->attributes as $key => $value) {
-                    $attribute = null;
-                    $options = [
-                        'dateTimeFormat' => $this->dateTimeFormat,
-                        'dateFormat' => $this->dateFormat,
-                        'timeFormat' => $this->timeFormat
-                    ];
-                    if (is_int($key) && $value && is_string($value) && $owner->hasAttribute($value)) {
-                        $attribute = $value;
-                    } elseif ($key && is_string($key) && $owner->hasAttribute($key) && $value && is_array($value)) {
-                        $attribute = $key;
-                        $options = array_merge($options, array_intersect_key($value, $options));
-                    }
-                    if ($attribute) {
-                        $attributes[$attribute] = $options;
-                    }
-                }
-            }
-            $this->_preparedAttributes = $attributes;
-        }
-        return $this->_preparedAttributes;
+        return [
+            'dateTimeFormat' => $this->dateTimeFormat,
+            'dateFormat' => $this->dateFormat,
+            'timeFormat' => $this->timeFormat
+        ];
     }
 
     public function events()
