@@ -12,7 +12,6 @@ $modelNamespace = StringHelper::dirname(ltrim($generator->modelClass, '\\'));
 $secondModelNamespace = StringHelper::dirname(ltrim($generator->secondModelClass, '\\'));
 
 $use = [];
-
 $modelAlias = $modelClass;
 if ($modelNamespace != $secondModelNamespace) {
     if ($modelClass == $secondModelClass) {
