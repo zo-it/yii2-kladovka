@@ -13,13 +13,13 @@ class Log
     public static function beginMethod($token, $category = 'application')
     {
         Yii::info('BEGIN ' . $token, $category);
-        Yii::getLogger()->flush();
+        Yii::getLogger()->flush(true);
     }
 
     public static function endMethod($token, $category = 'application')
     {
         Yii::info('END ' . $token, $category);
-        Yii::getLogger()->flush();
+        Yii::getLogger()->flush(true);
     }
 
     public static function error($message, $category = 'application')

@@ -14,6 +14,9 @@
         "php": ">=5.4.0",
         "yiisoft/yii2": "*"
     },
+    "require-dev": {
+        "yiisoft/yii2-gii": "*"
+    },
     "autoload": {
         "psr-4": {
             "yii\\kladovka\\": ""
