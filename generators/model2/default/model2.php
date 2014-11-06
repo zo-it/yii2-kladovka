@@ -32,8 +32,10 @@ foreach ($generator->getTableSchema()->columns as $columnSchema) {
     if (in_array($columnSchema->type, ['datetime', 'date', 'time'])) {
         if (in_array($columnSchema->name, ['created_at', 'updated_at', 'timestamp'])) {
             $behaviors['timestamp'] = 'yii\kladovka\behaviors\TimestampBehavior';
-        } elseif ($columnSchema->name == 'deleted_at') {
+            continue;
+        } elseif ($columnSchema->allowNull && ($columnSchema->name == 'deleted_at')) {
             $behaviors['timeDelete'] = 'yii\kladovka\behaviors\TimeDeleteBehavior';
+            continue;
         } elseif (!array_key_exists('datetime', $behaviors)) {
             $behaviors['datetime'] = [
                 'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
@@ -42,8 +44,19 @@ foreach ($generator->getTableSchema()->columns as $columnSchema) {
         } else {
             $behaviors['datetime']['attributes'][] = $columnSchema->name;
         }
-    } elseif (($columnSchema->type == 'smallint') && ($columnSchema->name == 'deleted')) {
+    } elseif (($columnSchema->type == 'smallint') && ($columnSchema->size == 1) && $columnSchema->unsigned && !$columnSchema->allowNull && ($columnSchema->name == 'deleted')) {
         $behaviors['softDelete'] = 'yii\kladovka\behaviors\SoftDeleteBehavior';
+        continue;
+    }
+    if ($columnSchema->allowNull) {
+        if (!array_key_exists('nullable', $behaviors)) {
+            $behaviors['nullable'] = [
+                'class' => 'yii\kladovka\behaviors\NullableBehavior',
+                'attributes' => [$columnSchema->name]
+            ];
+        } else {
+            $behaviors['nullable']['attributes'][] = $columnSchema->name;
+        }
     }
 }
 
