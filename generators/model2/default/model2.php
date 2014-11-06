@@ -27,6 +27,15 @@ if ($secondModelClass == 'User') {
 $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
 $use[] = 'Yii';
 
+$behaviors = [
+/*'yii\kladovka\behaviors\DatetimeBehavior',
+['class' => 'yii\kladovka\behaviors\DatetimeBehavior'],
+[
+'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+'attributes' => ['qweqew', 'qweqew']
+]*/
+];
+
 echo "<?php\n";
 ?>
 
@@ -86,11 +95,37 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
         return $this->password == $password;
     }
 <?php } ?>
+<?php if ($behaviors) { ?>
 
     public function behaviors()
     {
-        return [];
+        return [
+<?php
+foreach ($behaviors as $i => $behavior) {
+    if (is_string($behavior)) {
+        echo '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+    } elseif (is_array($behavior)) {
+        $behaviorKeys = array_keys($behavior);
+        $behaviorValues = array_values($behavior);
+        if (count($behavior) == 1) {
+            echo '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+        } else {
+            echo '            [' . "\n";
+            foreach ($behaviorValues as $j => $behaviorValue) {
+                if (is_string($behaviorValue)) {
+                    echo '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                } elseif (is_array($behaviorValue)) {
+                    echo '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                }
+            }
+            echo '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+        }
     }
+}
+?>
+        ];
+    }
+<?php } ?>
 }
 
 
