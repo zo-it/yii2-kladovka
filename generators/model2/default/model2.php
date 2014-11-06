@@ -27,14 +27,24 @@ if ($secondModelClass == 'User') {
 $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
 $use[] = 'Yii';
 
-$behaviors = [
-/*'yii\kladovka\behaviors\DatetimeBehavior',
-['class' => 'yii\kladovka\behaviors\DatetimeBehavior'],
-[
-'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
-'attributes' => ['qweqew', 'qweqew']
-]*/
-];
+$behaviors = [];
+foreach ($generator->getTableSchema()->columns as $columnSchema) {
+    if (in_array($columnSchema->type, ['datetime', 'date', 'time'])) {
+        if (in_array($columnSchema->name, ['created_at', 'updated_at', 'timestamp'])) {
+            $behaviors['timestamp'] = 'yii\kladovka\behaviors\TimestampBehavior';
+        } elseif ($columnSchema->name == 'deleted_at') {
+            $behaviors['timeDelete'] = 'yii\kladovka\behaviors\TimeDeleteBehavior';
+        } elseif (!array_key_exists('datetime', $behaviors)) {
+            $behaviors['datetime'] = [
+                'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+                'attributes' => [$columnSchema->name]
+            ];
+        } else {
+            $behaviors['datetime']['attributes'] = $columnSchema->name;
+        }
+    }
+}
+$behaviors = array_values($behaviors);
 
 echo "<?php\n";
 ?>
