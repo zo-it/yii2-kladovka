@@ -15,9 +15,9 @@ class GenerateController extends Controller
 
     public $overwriteAll = false;
 
-    public function options($actionID)
+    public function options($actionId)
     {
-        return array_merge(parent::options($actionID), ['dirMode', 'overwriteAll']);
+        return array_merge(parent::options($actionId), ['dirMode', 'overwriteAll']);
     }
 
     public function actionDbSchema()
