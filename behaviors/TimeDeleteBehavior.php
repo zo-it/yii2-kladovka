@@ -21,11 +21,14 @@ class TimeDeleteBehavior extends Behavior
     public function events()
     {
         return [
-            ActiveRecord::EVENT_BEFORE_DELETE => 'invalidEvent',
             ActiveRecord::EVENT_BEFORE_VALIDATE => 'encodeData',
+            ActiveRecord::EVENT_AFTER_VALIDATE => 'decodeData',
+            ActiveRecord::EVENT_BEFORE_INSERT => 'encodeData',
             ActiveRecord::EVENT_AFTER_INSERT => 'decodeData',
+            ActiveRecord::EVENT_BEFORE_UPDATE => 'encodeData',
             ActiveRecord::EVENT_AFTER_UPDATE => 'decodeData',
-            ActiveRecord::EVENT_AFTER_FIND => 'decodeData'
+            ActiveRecord::EVENT_AFTER_FIND => 'decodeData',
+            ActiveRecord::EVENT_BEFORE_DELETE => 'invalidEvent'
         ];
     }
 
