@@ -11,7 +11,14 @@ use yii\console\Controller,
 class GenerateController extends Controller
 {
 
-    public $dirMode = 0777;
+    public $dirMode = '0777';
+
+    public $overwriteAll = false;
+
+    public function options($actionID)
+    {
+        return array_merge(parent::options($actionID), ['dirMode', 'overwriteAll']);
+    }
 
     public function actionDbSchema()
     {
@@ -61,7 +68,7 @@ class GenerateController extends Controller
                 ' --modelClass=' . escapeshellarg('app\models\\' . $className . 'Base') .
                 ' --secondModelClass=' . escapeshellarg('app\models\\' . $className) .
                 ' --interactive=0' .
-                ' --overwrite=0';
+                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
         }
         Log::endMethod(__METHOD__);
@@ -95,7 +102,7 @@ class GenerateController extends Controller
                 ' --modelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
                 ' --secondModelClass=' . escapeshellarg('app\models\search\\' . $className . 'Search') .
                 ' --interactive=0' .
-                ' --overwrite=0';
+                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
         }
         Log::endMethod(__METHOD__);
