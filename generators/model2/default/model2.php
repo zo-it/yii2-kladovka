@@ -40,11 +40,12 @@ foreach ($generator->getTableSchema()->columns as $columnSchema) {
                 'attributes' => [$columnSchema->name]
             ];
         } else {
-            $behaviors['datetime']['attributes'] = $columnSchema->name;
+            $behaviors['datetime']['attributes'][] = $columnSchema->name;
         }
+    } elseif (($columnSchema->type == 'smallint') && ($columnSchema->name == 'deleted')) {
+        $behaviors['softDelete'] = 'yii\kladovka\behaviors\SoftDeleteBehavior';
     }
 }
-$behaviors = array_values($behaviors);
 
 echo "<?php\n";
 ?>
@@ -111,7 +112,7 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
     {
         return [
 <?php
-foreach ($behaviors as $i => $behavior) {
+foreach (array_values($behaviors) as $i => $behavior) {
     if (is_string($behavior)) {
         echo '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
     } elseif (is_array($behavior)) {
@@ -136,6 +137,19 @@ foreach ($behaviors as $i => $behavior) {
         ];
     }
 <?php } ?>
+<?php if (array_key_exists('softDelete', $behaviors)) { ?>
+
+    public function delete()
+    {
+        return $this->softDelete();
+    }
+<?php } elseif (array_key_exists('timeDelete', $behaviors)) { ?>
+
+    public function delete()
+    {
+        return $this->timeDelete();
+    }
+<?php } ?>
 }
 
 
@@ -144,6 +158,10 @@ class <?php echo $secondModelClass; ?>Query extends ActiveQuery
 
     public function init()
     {
-        // nothing to do
+<?php if (array_key_exists('softDelete', $behaviors)) { ?>
+        $this->where($this->getAlias() . '.`deleted` = 0');
+<?php } elseif (array_key_exists('timeDelete', $behaviors)) { ?>
+        $this->where($this->getAlias() . '.`deleted_at` IS NULL');
+<?php } ?>
     }
 }
