@@ -12,7 +12,7 @@ class Generator extends GiiCrudGenerator
 
     public function getName()
     {
-        return 'Controller Generator';
+        return 'Controller Generator 2';
     }
 
     public function getDescription()

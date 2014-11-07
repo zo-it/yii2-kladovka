@@ -14,7 +14,7 @@ class Generator extends GiiCrudGenerator
 
     public function getName()
     {
-        return 'Second Model Generator';
+        return 'Model Generator 2';
     }
 
     public function getDescription()

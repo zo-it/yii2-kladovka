@@ -20,7 +20,8 @@ class Module extends YiiModule implements BootstrapInterface
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@yii/kladovka/messages'
             ];
-        } elseif (YII_ENV_DEV && ($app instanceof YiiConsoleApplication)) {
+        }
+        if (YII_ENV_DEV) {
             $gii = Yii::$app->getModule('gii');
             if ($gii) {
                 $gii->generators = array_merge($gii->generators, [
@@ -29,7 +30,9 @@ class Module extends YiiModule implements BootstrapInterface
                     'search2' => 'yii\kladovka\generators\search2\Generator',
                     'controller2' => 'yii\kladovka\generators\controller2\Generator'
                 ]);
-                $app->controllerMap[$this->id] = 'yii\kladovka\console\GenerateController';
+                if ($app instanceof YiiConsoleApplication) {
+                    $app->controllerMap[$this->id] = 'yii\kladovka\console\GenerateController';
+                }
             }
         }
     }

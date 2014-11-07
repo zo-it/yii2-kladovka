@@ -14,12 +14,12 @@ class Generator extends GiiCrudGenerator
 
     public function getName()
     {
-        return 'Second Search Model Generator';
+        return 'Search Generator 2';
     }
 
     public function getDescription()
     {
-        return 'This generator generates a second search model class for the specified search model class.';
+        return 'This generator generates a second search class for the specified search class.';
     }
 
     public function attributes()

@@ -15,7 +15,7 @@ $use = [];
 $baseControllerAlias = $baseControllerClass;
 if ($baseControllerNamespace != $controllerNamespace) {
     if ($baseControllerClass == $controllerClass) {
-        $baseControllerAlias .= 'Base';
+        $baseControllerAlias = 'Base' . $baseControllerAlias;
         $use[] = $baseControllerNamespace . '\\' . $baseControllerClass . ' as ' . $baseControllerAlias;
     } else {
         $use[] = $baseControllerNamespace . '\\' . $baseControllerClass;
