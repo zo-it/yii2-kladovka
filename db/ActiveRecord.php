@@ -13,4 +13,9 @@ class ActiveRecord extends YiiActiveRecord
     {
         return Yii::createObject(ActiveQuery::className(), [get_called_class()]);
     }
+
+    public function implodePrimaryKey($glue = ',')
+    {
+        return implode($glue, array_values($this->getPrimaryKey(true)));
+    }
 }
