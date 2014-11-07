@@ -108,6 +108,23 @@ class GenerateController extends Controller
         Log::endMethod(__METHOD__);
     }
 
+    public function actionControllers()
+    {
+        Log::beginMethod(__METHOD__);
+        $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
+        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+            $className = Inflector::classify($tableName);
+            $command = getcwd() . '/yii gii/controller2' .
+                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --controllerClass=' . escapeshellarg('app\controllers\\' . $className . 'Controller') .
+                ' --baseControllerClass=' . escapeshellarg($baseControllerClass) .
+                ' --interactive=0' .
+                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
+            passthru($command);
+        }
+        Log::endMethod(__METHOD__);
+    }
+
     public function actionMakeAll()
     {
         $this->actionDbSchema();
@@ -115,6 +132,7 @@ class GenerateController extends Controller
         $this->actionModels();
         $this->actionBaseSearchModels();
         $this->actionSearchModels();
+        $this->actionControllers();
     }
 
     public function actionIndex()

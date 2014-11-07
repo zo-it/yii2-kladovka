@@ -26,7 +26,8 @@ class Module extends YiiModule implements BootstrapInterface
                 $gii->generators = array_merge($gii->generators, [
                     'model2' => 'yii\kladovka\generators\model2\Generator',
                     'search' => 'yii\kladovka\generators\search\Generator',
-                    'search2' => 'yii\kladovka\generators\search2\Generator'
+                    'search2' => 'yii\kladovka\generators\search2\Generator',
+                    'controller2' => 'yii\kladovka\generators\controller2\Generator'
                 ]);
                 $app->controllerMap[$this->id] = 'yii\kladovka\console\GenerateController';
             }
