@@ -21,6 +21,7 @@ if ($modelNamespace != $secondModelNamespace) {
         $use[] = $modelNamespace . '\\' . $modelClass;
     }
 }
+$use[] = 'yii\base\Model';
 
 $behaviors = [];
 foreach ($generator->getTableSchema()->columns as $columnSchema) {
@@ -90,4 +91,14 @@ foreach (array_values($behaviors) as $i => $behavior) {
         ];
     }
 <?php /*}*/ ?>
+
+    public function beforeValidate()
+    {
+        return Model::beforeValidate();
+    }
+
+    public function afterValidate()
+    {
+        Model::afterValidate();
+    }
 }
