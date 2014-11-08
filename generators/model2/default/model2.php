@@ -119,7 +119,7 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
         return $this->password == $password;
     }
 <?php } ?>
-<?php if ($behaviors) { ?>
+<?php /*if ($behaviors) {*/ ?>
 
     public function behaviors()
     {
@@ -149,7 +149,7 @@ foreach (array_values($behaviors) as $i => $behavior) {
 ?>
         ];
     }
-<?php } ?>
+<?php /*}*/ ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 
     public function delete()
