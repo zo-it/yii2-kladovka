@@ -42,6 +42,10 @@ class Generator extends GiiCrudGenerator
         return ['controller2.php'];
     }
 
+    public function validateModelClass()
+    {
+    }
+
     public function generate()
     {
         $controller = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->controllerClass, '\\') . '.php'));
