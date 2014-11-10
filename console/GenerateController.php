@@ -132,7 +132,7 @@ class GenerateController extends Controller
         $this->actionModels();
         $this->actionBaseSearchModels();
         $this->actionSearchModels();
-        $this->actionControllers();
+        //$this->actionControllers();
     }
 
     public function actionIndex()
