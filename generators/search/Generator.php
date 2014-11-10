@@ -46,10 +46,8 @@ class Generator extends GiiCrudGenerator
         return ['search.php'];
     }
 
-    public function defaultTemplate()
+    public function validateModelClass()
     {
-        $class = new ReflectionClass(get_parent_class($this));
-        return dirname($class->getFileName()) . '/default';
     }
 
     public function generate()
@@ -59,5 +57,11 @@ class Generator extends GiiCrudGenerator
             new CodeFile($searchModel, $this->render('search.php'))
         ];
         return $files;
+    }
+
+    public function defaultTemplate()
+    {
+        $class = new ReflectionClass(get_parent_class($this));
+        return dirname($class->getFileName()) . '/default';
     }
 }
