@@ -25,7 +25,7 @@ class GenerateController extends Controller
         Log::beginMethod(__METHOD__);
         $sqlPath = Yii::getAlias('@app/sql');
         if (!is_dir($sqlPath)) {
-            mkdir($sqlPath, $this->dirMode);
+            mkdir($sqlPath, octdec($this->dirMode));
         }
         $db = Yii::$app->getDb();
         parse_str(str_replace(';', '&', substr($db->dsn, 6)), $dsnParams);
@@ -79,7 +79,7 @@ class GenerateController extends Controller
         Log::beginMethod(__METHOD__);
         $searchPath = Yii::getAlias('@app/models/search');
         if (!is_dir($searchPath)) {
-            mkdir($searchPath, $this->dirMode);
+            mkdir($searchPath, octdec($this->dirMode));
         }
         foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
             $className = Inflector::classify($tableName);
