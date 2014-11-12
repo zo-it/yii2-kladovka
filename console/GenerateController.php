@@ -44,6 +44,10 @@ class GenerateController extends Controller
     public function actionBaseModels()
     {
         Log::beginMethod(__METHOD__);
+        $readonlyPath = Yii::getAlias('@app/models/readonly');
+        if (!is_dir($readonlyPath)) {
+            mkdir($readonlyPath, octdec($this->dirMode));
+        }
         $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
@@ -85,6 +89,10 @@ class GenerateController extends Controller
         $searchPath = Yii::getAlias('@app/models/search');
         if (!is_dir($searchPath)) {
             mkdir($searchPath, octdec($this->dirMode));
+        }
+        $readonlySearchPath = Yii::getAlias('@app/models/readonly/search');
+        if (!is_dir($readonlySearchPath)) {
+            mkdir($readonlySearchPath, octdec($this->dirMode));
         }
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
