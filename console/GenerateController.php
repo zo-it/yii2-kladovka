@@ -45,11 +45,13 @@ class GenerateController extends Controller
     {
         Log::beginMethod(__METHOD__);
         $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
-            $className = Inflector::classify($tableName);
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $command = getcwd() . '/yii gii/model' .
                 ' --tableName=' . escapeshellarg($tableName) .
-                ' --modelClass=' . escapeshellarg($className . 'Base') .
+                ' --ns=' . escapeshellarg($ns) .
+                ' --modelClass=' . escapeshellarg(Inflector::classify($tableName) . 'Base') .
                 ' --baseClass=' . escapeshellarg($baseClass) .
                 ' --generateLabelsFromComments=1' .
                 ' --interactive=0' .
