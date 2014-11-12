@@ -121,10 +121,12 @@ class GenerateController extends Controller
     {
         Log::beginMethod(__METHOD__);
         $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/controller2' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
                 ' --controllerClass=' . escapeshellarg('app\controllers\\' . $className . 'Controller') .
                 ' --baseControllerClass=' . escapeshellarg($baseControllerClass) .
                 ' --interactive=0' .
