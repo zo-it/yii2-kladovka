@@ -64,11 +64,13 @@ class GenerateController extends Controller
     public function actionModels()
     {
         Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
-            $className = Inflector::classify($tableName);
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $className = $ns . '\\' . Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model2' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className . 'Base') .
-                ' --secondModelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --modelClass=' . escapeshellarg($className . 'Base') .
+                ' --secondModelClass=' . escapeshellarg($className) .
                 ' --interactive=0' .
                 ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
