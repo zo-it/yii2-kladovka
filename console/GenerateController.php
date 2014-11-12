@@ -48,10 +48,11 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model' .
                 ' --tableName=' . escapeshellarg($tableName) .
                 ' --ns=' . escapeshellarg($ns) .
-                ' --modelClass=' . escapeshellarg(Inflector::classify($tableName) . 'Base') .
+                ' --modelClass=' . escapeshellarg($className . 'Base') .
                 ' --baseClass=' . escapeshellarg($baseClass) .
                 ' --generateLabelsFromComments=1' .
                 ' --interactive=0' .
@@ -67,10 +68,10 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = $ns . '\\' . Inflector::classify($tableName);
+            $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model2' .
-                ' --modelClass=' . escapeshellarg($className . 'Base') .
-                ' --secondModelClass=' . escapeshellarg($className) .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'Base') .
+                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className) .
                 ' --interactive=0' .
                 ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
@@ -85,11 +86,13 @@ class GenerateController extends Controller
         if (!is_dir($searchPath)) {
             mkdir($searchPath, octdec($this->dirMode));
         }
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/search' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
-                ' --searchModelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
+                ' --searchModelClass=' . escapeshellarg($ns . '\search\\' . $className . 'SearchBase') .
                 ' --interactive=0' .
                 ' --overwrite=1';
             passthru($command);
@@ -100,11 +103,13 @@ class GenerateController extends Controller
     public function actionSearchModels()
     {
         Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/search2' .
-                ' --modelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
-                ' --secondModelClass=' . escapeshellarg('app\models\search\\' . $className . 'Search') .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'SearchBase') .
+                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className . 'Search') .
                 ' --interactive=0' .
                 ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
