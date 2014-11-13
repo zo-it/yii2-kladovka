@@ -44,11 +44,18 @@ class GenerateController extends Controller
     public function actionBaseModels()
     {
         Log::beginMethod(__METHOD__);
+        $readonlyPath = Yii::getAlias('@app/models/readonly');
+        if (!is_dir($readonlyPath)) {
+            mkdir($readonlyPath, octdec($this->dirMode));
+        }
         $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model' .
                 ' --tableName=' . escapeshellarg($tableName) .
+                ' --ns=' . escapeshellarg($ns) .
                 ' --modelClass=' . escapeshellarg($className . 'Base') .
                 ' --baseClass=' . escapeshellarg($baseClass) .
                 ' --generateLabelsFromComments=1' .
@@ -62,11 +69,13 @@ class GenerateController extends Controller
     public function actionModels()
     {
         Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/model2' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className . 'Base') .
-                ' --secondModelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'Base') .
+                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className) .
                 ' --interactive=0' .
                 ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
@@ -81,11 +90,17 @@ class GenerateController extends Controller
         if (!is_dir($searchPath)) {
             mkdir($searchPath, octdec($this->dirMode));
         }
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        $readonlySearchPath = Yii::getAlias('@app/models/readonly/search');
+        if (!is_dir($readonlySearchPath)) {
+            mkdir($readonlySearchPath, octdec($this->dirMode));
+        }
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/search' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
-                ' --searchModelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
+                ' --searchModelClass=' . escapeshellarg($ns . '\search\\' . $className . 'SearchBase') .
                 ' --interactive=0' .
                 ' --overwrite=1';
             passthru($command);
@@ -96,11 +111,13 @@ class GenerateController extends Controller
     public function actionSearchModels()
     {
         Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/search2' .
-                ' --modelClass=' . escapeshellarg('app\models\search\\' . $className . 'SearchBase') .
-                ' --secondModelClass=' . escapeshellarg('app\models\search\\' . $className . 'Search') .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'SearchBase') .
+                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className . 'Search') .
                 ' --interactive=0' .
                 ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
             passthru($command);
@@ -112,10 +129,12 @@ class GenerateController extends Controller
     {
         Log::beginMethod(__METHOD__);
         $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
-        foreach (Yii::$app->getDb()->createCommand('SHOW TABLES;')->queryColumn() as $tableName) {
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
             $className = Inflector::classify($tableName);
             $command = getcwd() . '/yii gii/controller2' .
-                ' --modelClass=' . escapeshellarg('app\models\\' . $className) .
+                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
                 ' --controllerClass=' . escapeshellarg('app\controllers\\' . $className . 'Controller') .
                 ' --baseControllerClass=' . escapeshellarg($baseControllerClass) .
                 ' --interactive=0' .
