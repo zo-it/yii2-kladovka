@@ -12,8 +12,8 @@ class NullableBehavior extends AttributesBehavior
     {
         return [
             ActiveRecord::EVENT_BEFORE_VALIDATE => 'encodeData',
-            ActiveRecord::EVENT_BEFORE_INSERT => 'encodeData',
-            ActiveRecord::EVENT_BEFORE_UPDATE => 'encodeData'
+            //ActiveRecord::EVENT_BEFORE_INSERT => 'encodeData',
+            //ActiveRecord::EVENT_BEFORE_UPDATE => 'encodeData'
         ];
     }
 
