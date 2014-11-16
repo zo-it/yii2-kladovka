@@ -12,9 +12,13 @@ class Text
     {
         if (is_null($timestamp)) {
             $timestamp = time();
+        } elseif (is_string($timestamp)) {
+            $timestamp = strtotime($timestamp);
         }
         if (array_key_exists('kladovka', Yii::$app->getI18n()->translations)) {
-            return preg_replace_callback('~\w{3,}~', function ($m) { return Yii::t('kladovka', $m[0]); }, date($format, $timestamp));
+            return preg_replace_callback('~\w{3,}~', function ($match) {
+                return Yii::t('kladovka', $match[0]);
+            }, date($format, $timestamp));
         }
         return date($format, $timestamp);
     }
