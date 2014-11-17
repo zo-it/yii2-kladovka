@@ -60,6 +60,17 @@ class Log
         Yii::info($message, $category);
     }
 
+    public static function modelAttributes(Model $model, $message = null, $category = 'application')
+    {
+        if (!is_null($message)) {
+            static::info($message, $category);
+        }
+        static::info([
+            'class' => get_class($model),
+            'attributes' => $model->getAttributes()
+        ], $category);
+    }
+
     public static function flush()
     {
         Yii::getLogger()->flush();
