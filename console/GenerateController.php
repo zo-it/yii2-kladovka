@@ -174,7 +174,7 @@ class GenerateController extends Controller
             $modelClass = $ns . '\\' . $modelName . 'SearchBase';
             $secondModelClass = $ns . '\\' . $modelName . 'Search';
             $args = [
-                'gii/search',
+                'gii/search2',
                 'modelClass' => $modelClass,
                 'secondModelClass' => $secondModelClass,
                 'interactive' => 0,
@@ -196,14 +196,22 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/controller2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
-                ' --controllerClass=' . escapeshellarg('app\controllers\\' . $className . 'Controller') .
-                ' --baseControllerClass=' . escapeshellarg($baseControllerClass) .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName;
+            $controllerClass = 'app\controllers\\' . $modelName . 'Controller';
+            $args = [
+                'gii/controller2',
+                'modelClass' => $modelClass,
+                'controllerClass' => $controllerClass,
+                'baseControllerClass' => $baseControllerClass,
+                'interactive' => 0,
+                'overwrite' => 0
+            ];
+            if (array_key_exists($controllerClass, $this->_commands)) {
+                $this->_commands[$controllerClass] += $args;
+            } else {
+                $this->_commands[$controllerClass] = $args;
+            }
         }
         Log::endMethod(__METHOD__);
     }
@@ -220,6 +228,6 @@ class GenerateController extends Controller
 
     public function actionIndex()
     {
-        passthru(getcwd() . '/yii help ' . $this->id);
+        passthru(Yii::$app->getBasePath() . '/yii help ' . $this->id);
     }
 }
