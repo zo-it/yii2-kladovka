@@ -32,7 +32,7 @@ class Log
 
     public static function modelErrors(Model $model, $message = null, $category = 'application')
     {
-        if ($message) {
+        if (!is_null($message)) {
             static::error($message, $category);
         }
         if ($model->hasErrors()) {
