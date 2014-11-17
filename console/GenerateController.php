@@ -3,6 +3,7 @@
 namespace yii\kladovka\console;
 
 use yii\console\Controller,
+    yii\helpers\Json,
     yii\kladovka\helpers\Log,
     yii\helpers\Inflector,
     Yii;
@@ -11,13 +12,44 @@ use yii\console\Controller,
 class GenerateController extends Controller
 {
 
+    public $filename = './generate.json';
+
     public $dirMode = '0777';
 
     public $overwriteAll = false;
 
+    public function init()
+    {
+        if (strncmp($this->filename, './', 2) == 0) {
+            $this->filename = Yii::$app->getBasePath() . substr($this->filename, 1);
+        }
+        parent::init();
+    }
+
     public function options($actionId)
     {
-        return array_merge(parent::options($actionId), ['dirMode', 'overwriteAll']);
+        return array_merge(parent::options($actionId), ['filename', 'dirMode', 'overwriteAll']);
+    }
+
+    protected $_commands = [];
+
+    public function beforeAction($action)
+    {
+        if (parent::beforeAction($action)) {
+            if (is_file($this->filename)) {
+                $this->_commands = Json::decode(file_get_contents($this->filename));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function afterAction($action, $result)
+    {
+        $result = parent::afterAction($action, $result);
+        file_put_contents($this->filename, Json::encode($this->_commands, \JSON_PRETTY_PRINT));
+        return $result;
     }
 
     public function actionDbSchema()
@@ -52,18 +84,23 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $modelClass = Inflector::classify($tableName) . 'Base';
+            $modelName = Inflector::classify($tableName) . 'Base';
+            $modelClass = $ns . '\\' . $modelName;
             $args = [
+                'gii/model',
                 'tableName' => $tableName,
                 'ns' => $ns,
-                'modelClass' => $modelClass,
+                'modelClass' => $modelName,
                 'baseClass' => $baseClass,
                 'generateLabelsFromComments' => 1,
                 'interactive' => 0,
                 'overwrite' => 1
             ];
-            $command = getcwd() . '/yii gii/model --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
-            passthru($command);
+            if (array_key_exists($modelClass, $this->_commands)) {
+                $this->_commands[$modelClass] += $args;
+            } else {
+                $this->_commands[$modelClass] = $args;
+            }
         }
         Log::endMethod(__METHOD__);
     }
