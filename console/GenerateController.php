@@ -6,6 +6,7 @@ use yii\console\Controller,
     yii\helpers\Json,
     yii\kladovka\helpers\Log,
     yii\helpers\Inflector,
+    yii\helpers\StringHelper,
     Yii;
 
 
@@ -84,13 +85,13 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $modelName = Inflector::classify($tableName) . 'Base';
-            $modelClass = $ns . '\\' . $modelName;
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'Base';
             $args = [
                 'gii/model',
                 'tableName' => $tableName,
                 'ns' => $ns,
-                'modelClass' => $modelName,
+                'modelClass' => StringHelper::basename($modelClass),
                 'baseClass' => $baseClass,
                 'generateLabelsFromComments' => 1,
                 'interactive' => 0,
@@ -111,13 +112,21 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/model2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'Base') .
-                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className) .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'Base';
+            $secondModelClass = $ns . '\\' . $modelName;
+            $args = [
+                'gii/model2',
+                'modelClass' => $modelClass,
+                'secondModelClass' => $secondModelClass,
+                'interactive' => 0,
+                'overwrite' => 0
+            ];
+            if (array_key_exists($secondModelClass, $this->_commands)) {
+                $this->_commands[$secondModelClass] += $args;
+            } else {
+                $this->_commands[$secondModelClass] = $args;
+            }
         }
         Log::endMethod(__METHOD__);
     }
