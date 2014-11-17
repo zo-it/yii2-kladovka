@@ -13,21 +13,20 @@ class Text
         if (is_null($now)) {
             $now = time();
         }
-        if (($time == '0000-00-00 00:00:00') || ($time == '0000-00-00') || ($time == '00:00:00')) {
-            return 0;
-        } elseif (preg_match('~^\-?\d{9,10}$~', $time)) {
-            return (int)$time;
-        } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $time, $match)) {
-            if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                return mktime(0, 0, 0, $match[2], $match[1], $match[3]);
-            } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                return mktime(0, 0, 0, $match[1], $match[2], $match[3]);
-            } else {
-                return false;
+        if ($time && is_string($time)) {
+            if (($time == '0000-00-00 00:00:00') || ($time == '0000-00-00') || ($time == '00:00:00')) {
+                return 0;
+            } elseif (preg_match('~^\-?\d{9,10}$~', $time)) {
+                return (int)$time;
+            } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $time, $match)) {
+                if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
+                    $time = $match[3] . '-' . $match[2] . '-' . $match[1];
+                } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
+                    $time = $match[3] . '-' . $match[1] . '-' . $match[2];
+                }
             }
-        } else {
-            return strtotime($time, $now);
         }
+        return strtotime($time, $now);
     }
 
     public static function date($format, $timestamp = null)
