@@ -218,7 +218,6 @@ class GenerateController extends Controller
 
     public function actionAllModels()
     {
-        $this->actionDbSchema();
         $this->actionBaseModels();
         $this->actionModels();
         $this->actionBaseSearchModels();
@@ -227,6 +226,7 @@ class GenerateController extends Controller
 
     public function actionExecute()
     {
+        $this->actionDbSchema();
         $basePath = Yii::$app->getBasePath();
         foreach ($this->_commands as $args) {
             $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
