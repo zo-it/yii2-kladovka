@@ -170,13 +170,21 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/search2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'SearchBase') .
-                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className . 'Search') .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'SearchBase';
+            $secondModelClass = $ns . '\\' . $modelName . 'Search';
+            $args = [
+                'gii/search',
+                'modelClass' => $modelClass,
+                'secondModelClass' => $secondModelClass,
+                'interactive' => 0,
+                'overwrite' => 1
+            ];
+            if (array_key_exists($secondModelClass, $this->_commands)) {
+                $this->_commands[$secondModelClass] += $args;
+            } else {
+                $this->_commands[$secondModelClass] = $args;
+            }
         }
         Log::endMethod(__METHOD__);
     }
