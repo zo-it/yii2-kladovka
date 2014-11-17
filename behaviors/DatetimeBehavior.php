@@ -14,12 +14,15 @@ class DatetimeBehavior extends AttributesBehavior
 
     public $timeFormat = 'H:i:s';
 
+    public $autoDecoding = true;
+
     protected function defaultOptions()
     {
         return [
             'dateTimeFormat' => $this->dateTimeFormat,
             'dateFormat' => $this->dateFormat,
-            'timeFormat' => $this->timeFormat
+            'timeFormat' => $this->timeFormat,
+            'autoDecoding' => $this->autoDecoding
         ];
     }
 
@@ -82,6 +85,9 @@ class DatetimeBehavior extends AttributesBehavior
         if ($owner instanceof ActiveRecord) {
             $tableSchema = $owner->getTableSchema();
             foreach ($this->prepareAttributes() as $attribute => $options) {
+if (!$options['autoDecoding']) {
+continue;
+}
                 $columnSchema = $tableSchema->getColumn($attribute);
                 if ($owner->{$attribute}) {
                     if (is_string($owner->{$attribute})) {
