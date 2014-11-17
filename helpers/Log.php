@@ -32,7 +32,7 @@ class Log
 
     public static function modelErrors(Model $model, $message = null, $category = 'application')
     {
-        if ($message) {
+        if (!is_null($message)) {
             static::error($message, $category);
         }
         if ($model->hasErrors()) {
@@ -58,6 +58,17 @@ class Log
             $message = VarDumper::dumpAsString($message);
         }
         Yii::info($message, $category);
+    }
+
+    public static function modelAttributes(Model $model, $message = null, $category = 'application')
+    {
+        if (!is_null($message)) {
+            static::info($message, $category);
+        }
+        static::info([
+            'class' => get_class($model),
+            'attributes' => $model->getAttributes()
+        ], $category);
     }
 
     public static function flush()

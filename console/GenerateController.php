@@ -3,21 +3,209 @@
 namespace yii\kladovka\console;
 
 use yii\console\Controller,
+    yii\helpers\Json,
     yii\kladovka\helpers\Log,
     yii\helpers\Inflector,
+    yii\helpers\StringHelper,
+    yii\helpers\Console,
     Yii;
 
 
 class GenerateController extends Controller
 {
 
+    public $filename = './generators.json';
+
     public $dirMode = '0777';
 
     public $overwriteAll = false;
 
+    public $interactiveOverwrite = false;
+
+    public function init()
+    {
+        if (strncmp($this->filename, './', 2) == 0) {
+            $this->filename = Yii::$app->getBasePath() . substr($this->filename, 1);
+        }
+        parent::init();
+    }
+
     public function options($actionId)
     {
-        return array_merge(parent::options($actionId), ['dirMode', 'overwriteAll']);
+        return array_merge(parent::options($actionId), ['filename', 'dirMode', 'overwriteAll', 'interactiveOverwrite']);
+    }
+
+    protected $_commands = [];
+
+    public function beforeAction($action)
+    {
+        if (parent::beforeAction($action)) {
+            if (is_file($this->filename)) {
+                $this->_commands = Json::decode(file_get_contents($this->filename));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function afterAction($action, $result)
+    {
+        $result = parent::afterAction($action, $result);
+        file_put_contents($this->filename, Json::encode($this->_commands, \JSON_PRETTY_PRINT));
+        return $result;
+    }
+
+    public function actionBaseModels()
+    {
+        Log::beginMethod(__METHOD__);
+        $readonlyPath = Yii::getAlias('@app/models/readonly');
+        if (!is_dir($readonlyPath)) {
+            mkdir($readonlyPath, octdec($this->dirMode));
+        }
+        $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'Base';
+            $args = [
+                'gii/model',
+                'tableName' => $tableName,
+                'ns' => $ns,
+                'modelClass' => StringHelper::basename($modelClass),
+                'baseClass' => $baseClass,
+                'generateLabelsFromComments' => 1,
+                'interactive' => 0,
+                'overwrite' => 1
+            ];
+            if (array_key_exists($modelClass, $this->_commands)) {
+                $this->_commands[$modelClass] += $args;
+            } else {
+                $this->_commands[$modelClass] = $args;
+            }
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionModels()
+    {
+        Log::beginMethod(__METHOD__);
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'Base';
+            $secondModelClass = $ns . '\\' . $modelName;
+            $args = [
+                'gii/model2',
+                'modelClass' => $modelClass,
+                'secondModelClass' => $secondModelClass,
+                'interactive' => 0,
+                'overwrite' => 0
+            ];
+            if (array_key_exists($secondModelClass, $this->_commands)) {
+                $this->_commands[$secondModelClass] += $args;
+            } else {
+                $this->_commands[$secondModelClass] = $args;
+            }
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionBaseSearchModels()
+    {
+        Log::beginMethod(__METHOD__);
+        $searchPath = Yii::getAlias('@app/models/search');
+        if (!is_dir($searchPath)) {
+            mkdir($searchPath, octdec($this->dirMode));
+        }
+        $readonlySearchPath = Yii::getAlias('@app/models/readonly/search');
+        if (!is_dir($readonlySearchPath)) {
+            mkdir($readonlySearchPath, octdec($this->dirMode));
+        }
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName;
+            $searchModelClass = $ns . '\search\\' . $modelName . 'SearchBase';
+            $args = [
+                'gii/search',
+                'modelClass' => $modelClass,
+                'searchModelClass' => $searchModelClass,
+                'interactive' => 0,
+                'overwrite' => 1
+            ];
+            if (array_key_exists($searchModelClass, $this->_commands)) {
+                $this->_commands[$searchModelClass] += $args;
+            } else {
+                $this->_commands[$searchModelClass] = $args;
+            }
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionSearchModels()
+    {
+        Log::beginMethod(__METHOD__);
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName . 'SearchBase';
+            $secondModelClass = $ns . '\\' . $modelName . 'Search';
+            $args = [
+                'gii/search2',
+                'modelClass' => $modelClass,
+                'secondModelClass' => $secondModelClass,
+                'interactive' => 0,
+                'overwrite' => 1
+            ];
+            if (array_key_exists($secondModelClass, $this->_commands)) {
+                $this->_commands[$secondModelClass] += $args;
+            } else {
+                $this->_commands[$secondModelClass] = $args;
+            }
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionControllers()
+    {
+        Log::beginMethod(__METHOD__);
+        $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
+        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
+            list($tableName, $tableType) = $row;
+            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $modelName = Inflector::classify($tableName);
+            $modelClass = $ns . '\\' . $modelName;
+            $controllerClass = 'app\controllers\\' . $modelName . 'Controller';
+            $args = [
+                'gii/controller2',
+                'modelClass' => $modelClass,
+                'controllerClass' => $controllerClass,
+                'baseControllerClass' => $baseControllerClass,
+                'interactive' => 0,
+                'overwrite' => 0
+            ];
+            if (array_key_exists($controllerClass, $this->_commands)) {
+                $this->_commands[$controllerClass] += $args;
+            } else {
+                $this->_commands[$controllerClass] = $args;
+            }
+        }
+        Log::endMethod(__METHOD__);
+    }
+
+    public function actionAllModels()
+    {
+        Log::beginMethod(__METHOD__);
+        $this->actionBaseModels();
+        $this->actionModels();
+        $this->actionBaseSearchModels();
+        $this->actionSearchModels();
+        Log::endMethod(__METHOD__);
     }
 
     public function actionDbSchema()
@@ -41,121 +229,30 @@ class GenerateController extends Controller
         Log::endMethod(__METHOD__);
     }
 
-    public function actionBaseModels()
+    public function actionExecute()
     {
         Log::beginMethod(__METHOD__);
-        $readonlyPath = Yii::getAlias('@app/models/readonly');
-        if (!is_dir($readonlyPath)) {
-            mkdir($readonlyPath, octdec($this->dirMode));
-        }
-        $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/model' .
-                ' --tableName=' . escapeshellarg($tableName) .
-                ' --ns=' . escapeshellarg($ns) .
-                ' --modelClass=' . escapeshellarg($className . 'Base') .
-                ' --baseClass=' . escapeshellarg($baseClass) .
-                ' --generateLabelsFromComments=1' .
-                ' --interactive=0' .
-                ' --overwrite=1';
-            passthru($command);
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionModels()
-    {
-        Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/model2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'Base') .
-                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className) .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionBaseSearchModels()
-    {
-        Log::beginMethod(__METHOD__);
-        $searchPath = Yii::getAlias('@app/models/search');
-        if (!is_dir($searchPath)) {
-            mkdir($searchPath, octdec($this->dirMode));
-        }
-        $readonlySearchPath = Yii::getAlias('@app/models/readonly/search');
-        if (!is_dir($readonlySearchPath)) {
-            mkdir($readonlySearchPath, octdec($this->dirMode));
-        }
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/search' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
-                ' --searchModelClass=' . escapeshellarg($ns . '\search\\' . $className . 'SearchBase') .
-                ' --interactive=0' .
-                ' --overwrite=1';
-            passthru($command);
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionSearchModels()
-    {
-        Log::beginMethod(__METHOD__);
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/search2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className . 'SearchBase') .
-                ' --secondModelClass=' . escapeshellarg($ns . '\\' . $className . 'Search') .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionControllers()
-    {
-        Log::beginMethod(__METHOD__);
-        $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/controller2' .
-                ' --modelClass=' . escapeshellarg($ns . '\\' . $className) .
-                ' --controllerClass=' . escapeshellarg('app\controllers\\' . $className . 'Controller') .
-                ' --baseControllerClass=' . escapeshellarg($baseControllerClass) .
-                ' --interactive=0' .
-                ' --overwrite=' . escapeshellarg($this->overwriteAll ? '1' : '0');
-            passthru($command);
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionMakeAll()
-    {
         $this->actionDbSchema();
-        $this->actionBaseModels();
-        $this->actionModels();
-        $this->actionBaseSearchModels();
-        $this->actionSearchModels();
-        //$this->actionControllers();
+        $basePath = Yii::$app->getBasePath();
+        foreach ($this->_commands as $targetClass => $args) {
+            $this->stdout('Generating: ' . $targetClass . "\n", Console::BOLD, Console::FG_CYAN);
+            if (array_key_exists('interactive', $args) && array_key_exists('overwrite', $args) && !$args['overwrite']) {
+                if ($this->overwriteAll) {
+                    $args['overwrite'] = 1;
+                } elseif ($this->interactiveOverwrite) {
+                    $args['interactive'] = 1;
+                    unset($args['overwrite']);
+                }
+            }
+            $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
+            $this->stdout('Executing: ' . $command . "\n", Console::FG_CYAN);
+            passthru($command);
+        }
+        Log::endMethod(__METHOD__);
     }
 
     public function actionIndex()
     {
-        passthru(getcwd() . '/yii help ' . $this->id);
+        passthru(Yii::$app->getBasePath() . '/yii help ' . $this->id);
     }
 }
