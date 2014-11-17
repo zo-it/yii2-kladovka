@@ -14,7 +14,7 @@ class DatetimeBehavior extends AttributesBehavior
 
     public $timeFormat = 'H:i:s';
 
-    public $autoDecoding = true;
+    public $autoDecoding = false;
 
     protected function defaultOptions()
     {
