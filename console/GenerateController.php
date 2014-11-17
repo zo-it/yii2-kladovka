@@ -234,6 +234,9 @@ class GenerateController extends Controller
         $basePath = Yii::$app->getBasePath();
         foreach ($this->_commands as $class => $args) {
             $this->stdout('Generating: ' . $class . "\n", Console::BOLD, Console::FG_CYAN);
+            if ($this->overwriteAll && array_key_exists('overwrite', $args)) {
+                $args['overwrite'] = 1;
+            }
             $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
             $this->stdout('Executing: ' . $command . "\n", Console::FG_CYAN);
             passthru($command);
