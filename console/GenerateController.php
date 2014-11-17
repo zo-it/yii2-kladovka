@@ -232,8 +232,8 @@ class GenerateController extends Controller
         Log::beginMethod(__METHOD__);
         $this->actionDbSchema();
         $basePath = Yii::$app->getBasePath();
-        foreach ($this->_commands as $class => $args) {
-            $this->stdout('Generating: ' . $class . "\n", Console::BOLD, Console::FG_CYAN);
+        foreach ($this->_commands as $targetClass => $args) {
+            $this->stdout('Generating: ' . $targetClass . "\n", Console::BOLD, Console::FG_CYAN);
             if ($this->overwriteAll && array_key_exists('overwrite', $args)) {
                 $args['overwrite'] = 1;
             }
