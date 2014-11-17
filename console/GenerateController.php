@@ -52,15 +52,17 @@ class GenerateController extends Controller
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $className = Inflector::classify($tableName);
-            $command = getcwd() . '/yii gii/model' .
-                ' --tableName=' . escapeshellarg($tableName) .
-                ' --ns=' . escapeshellarg($ns) .
-                ' --modelClass=' . escapeshellarg($className . 'Base') .
-                ' --baseClass=' . escapeshellarg($baseClass) .
-                ' --generateLabelsFromComments=1' .
-                ' --interactive=0' .
-                ' --overwrite=1';
+            $modelClass = Inflector::classify($tableName) . 'Base';
+            $args = [
+                'tableName' => $tableName,
+                'ns' => $ns,
+                'modelClass' => $modelClass,
+                'baseClass' => $baseClass,
+                'generateLabelsFromComments' => 1,
+                'interactive' => 0,
+                'overwrite' => 1
+            ];
+            $command = getcwd() . '/yii gii/model --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
             passthru($command);
         }
         Log::endMethod(__METHOD__);
