@@ -14,7 +14,7 @@ use yii\console\Controller,
 class GenerateController extends Controller
 {
 
-    public $filename = './generate.json';
+    public $filename = './generators.json';
 
     public $dirMode = '0777';
 
