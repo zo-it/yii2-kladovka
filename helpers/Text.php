@@ -20,9 +20,9 @@ class Text
                 return (int)$time;
             } elseif (preg_match('~^(\d{2})\D(\d{2})\D(\d{4})$~', $time, $match)) {
                 if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                    return mktime(0, 0, 0, $match[2], $match[1], $match[3]);
+                    $time = $match[3] . '-' . $match[2] . '-' . $match[1];
                 } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                    return mktime(0, 0, 0, $match[1], $match[2], $match[3]);
+                    $time = $match[3] . '-' . $match[1] . '-' . $match[2];
                 }
             }
         }
@@ -38,12 +38,11 @@ class Text
         }
         $date = date($format, $timestamp);
         if (array_key_exists('kladovka', Yii::$app->getI18n()->translations)) {
-            return preg_replace_callback('~\w{3,}~', function ($match) {
+            $date = preg_replace_callback('~\w{3,}~', function ($match) {
                 return Yii::t('kladovka', $match[0]);
             }, $date);
-        } else {
-            return $date;
         }
+        return $date;
     }
 
     public static function date2($format, $timestamp = null)
