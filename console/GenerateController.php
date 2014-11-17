@@ -216,14 +216,13 @@ class GenerateController extends Controller
         Log::endMethod(__METHOD__);
     }
 
-    public function actionMakeAll()
+    public function actionAllModels()
     {
         $this->actionDbSchema();
         $this->actionBaseModels();
         $this->actionModels();
         $this->actionBaseSearchModels();
         $this->actionSearchModels();
-        //$this->actionControllers();
     }
 
     public function actionIndex()
