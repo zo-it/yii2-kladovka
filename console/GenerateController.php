@@ -225,6 +225,16 @@ class GenerateController extends Controller
         $this->actionSearchModels();
     }
 
+    public function actionExecute()
+    {
+        $basePath = Yii::$app->getBasePath();
+        foreach ($this->_commands as $args) {
+            $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
+            echo $command . "\n";
+            passthru($command);
+        }
+    }
+
     public function actionIndex()
     {
         passthru(Yii::$app->getBasePath() . '/yii help ' . $this->id);
