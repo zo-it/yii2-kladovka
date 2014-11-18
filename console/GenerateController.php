@@ -169,7 +169,7 @@ class GenerateController extends Controller
                 'modelClass' => $modelClass,
                 'secondModelClass' => $secondModelClass,
                 'interactive' => 0,
-                'overwrite' => 1
+                'overwrite' => 0
             ];
             if (array_key_exists($secondModelClass, $this->_commands)) {
                 $this->_commands[$secondModelClass] += $args;
