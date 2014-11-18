@@ -63,10 +63,19 @@ class GenerateController extends Controller
         if (!is_dir($readonlyPath)) {
             mkdir($readonlyPath, octdec($this->dirMode));
         }
-        $baseClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveRecord' : 'yii\kladovka\db\ActiveRecord';
+        $hasModuleMozayka = Yii::$app->hasModule('mozayka');
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
+            $ns = 'app\models';
+            $baseClass = 'yii\kladovka\db\ActiveRecord';
+            if ($tableType == 'VIEW') {
+                $ns = 'app\models\readonly';
+                if ($hasModuleMozayka) {
+                    $baseClass = 'yii\mozayka\db\ReadOnlyActiveRecord';
+                }
+            } elseif ($hasModuleMozayka) {
+                $baseClass = 'yii\mozayka\db\ActiveRecord';
+            }
             $modelName = Inflector::classify($tableName);
             $modelClass = $ns . '\\' . $modelName . 'Base';
             $args = [
