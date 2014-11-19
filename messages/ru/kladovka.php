@@ -100,5 +100,17 @@ return [
     'Date Begin' => 'Дата начала',
     'Date End' => 'Дата конца',
     'Date Start' => 'Дата начала',
-    'Date Finish' => 'Дата конца'
+    'Date Finish' => 'Дата конца',
+    'Meta Tag' => 'Мета-тег',
+    'Description' => 'Описание',
+    'Keywords' => 'Ключевые слова',
+    'Url' => 'Гиперссылка (URL)',
+    'Filename' => 'Имя файла',
+    'Scheme' => 'Схема',
+    'Host' => 'Хост',
+    'Hostname' => 'Имя хоста',
+    'Port' => 'Порт',
+    'Path' => 'Путь',
+    'Query' => 'Запрос',
+    'Fragment' => 'Фрагмент'
 ];
