@@ -1,7 +1,6 @@
 <?php
 
 return [
-    // date
     'Jan' => 'Янв',
     'Feb' => 'Фев',
     'Mar' => 'Мар',
