@@ -47,7 +47,10 @@ class Text
 
     public static function date2($format, $timestamp = null)
     {
-        return static::date(str_replace('F', 'F_', $format), $timestamp);
+        if (Yii::$app->language == 'ru-RU') {
+            $format = str_replace('F', 'F_', $format);
+        }
+        return static::date($format, $timestamp);
     }
 
     public static function slug($title)
