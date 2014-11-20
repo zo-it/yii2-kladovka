@@ -29,8 +29,8 @@ class ActiveRecord extends YiiActiveRecord
         return implode($glue, array_values($this->getPrimaryKey(true)));
     }
 
-    public function generateAttributeLabel($name)
+    public function getAttributeLabel($attribute)
     {
-        return Yii::t('kladovka', parent::generateAttributeLabel($name));
+        return Yii::t('kladovka', parent::getAttributeLabel($attribute));
     }
 }
