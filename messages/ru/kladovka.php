@@ -1,7 +1,6 @@
 <?php
 
 return [
-    // date
     'Jan' => 'Янв',
     'Feb' => 'Фев',
     'Mar' => 'Мар',
@@ -112,5 +111,13 @@ return [
     'Port' => 'Порт',
     'Path' => 'Путь',
     'Query' => 'Запрос',
-    'Fragment' => 'Фрагмент'
+    'Fragment' => 'Фрагмент',
+    'Realty' => 'Недвижимость',
+    'Region' => 'Регион',
+    'Category' => 'Категория',
+    'District' => 'Район',
+    'Locality' => 'Населенный пункт',
+    'Location' => 'Местонахождение',
+    'Latitude' => 'Широта',
+    'Longitude' => 'Долгота'
 ];
