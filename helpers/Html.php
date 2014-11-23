@@ -2,24 +2,9 @@
 
 namespace yii\kladovka\helpers;
 
-use yii\helpers\BaseHtml;
-
 
 class Html extends BaseHtml
 {
-
-    public static function label($content, $for = null, $options = [])
-    {
-        $tag = 'label';
-        if (array_key_exists('tag', $options)) {
-            $tag = $options['tag'];
-            unset($options['tag']);
-        }
-        if ($tag == 'label') {
-            $options['for'] = $for;
-        }
-        return static::tag($tag, $content, $options);
-    }
 }
 
 if (!class_exists('yii\helpers\Html', false)) {
