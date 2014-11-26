@@ -13,9 +13,4 @@ class ActiveRecord extends YiiActiveRecord
     {
         return Yii::createObject(ActiveQuery::className(), [get_called_class()]);
     }
-
-    public function getAttributeLabel($attribute)
-    {
-        return Yii::t('kladovka', parent::getAttributeLabel($attribute));
-    }
 }
