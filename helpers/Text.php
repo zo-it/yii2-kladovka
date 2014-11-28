@@ -12,6 +12,8 @@ class Text
     {
         if (is_null($now)) {
             $now = time();
+        } elseif ($now && is_string($now)) {
+            $now = static::strtotime($now);
         }
         if ($time && is_string($time)) {
             if (($time == '0000-00-00 00:00:00') || ($time == '0000-00-00') || ($time == '00:00:00')) {
@@ -38,7 +40,7 @@ class Text
         }
         $date = date($format, $timestamp);
         if (array_key_exists('kladovka', Yii::$app->getI18n()->translations)) {
-            $date = preg_replace_callback('~\w{3,}~', function ($match) {
+            return preg_replace_callback('~\w{3,}~', function ($match) {
                 return Yii::t('kladovka', $match[0]);
             }, $date);
         }

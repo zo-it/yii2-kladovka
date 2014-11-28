@@ -177,6 +177,7 @@ class <?php echo $secondModelClass; ?>Query extends ActiveQuery
 
     public function init()
     {
+        parent::init();
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
         $this->where($this->getAlias() . '.`deleted` = 0');
 <?php } elseif (array_key_exists('timeDelete', $behaviors)) { ?>
