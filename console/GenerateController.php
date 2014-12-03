@@ -28,7 +28,7 @@ class GenerateController extends Controller
 
     public function options($actionId)
     {
-        return array_merge(parent::options($actionId), ['filename', 'dirMode', 'overwriteAll', 'interactiveOverwrite']);
+        return array_merge(parent::options($actionId), ['filename', 'dirMode']);
     }
 
     protected $_commands = [];
