@@ -59,9 +59,9 @@ class GenerateController extends Controller
     public function actionBaseModels()
     {
         Log::beginMethod(__METHOD__);
-        $readonlyPath = Yii::getAlias('@app/models/readonly');
-        if (!is_dir($readonlyPath)) {
-            mkdir($readonlyPath, octdec($this->dirMode));
+        $readOnlyPath = Yii::getAlias('@app/models/readonly');
+        if (!is_dir($readOnlyPath)) {
+            mkdir($readOnlyPath, octdec($this->dirMode));
         }
         $hasModuleMozayka = Yii::$app->hasModule('mozayka');
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
@@ -88,11 +88,7 @@ class GenerateController extends Controller
                 'interactive' => 0,
                 'overwrite' => 1
             ];
-            if (array_key_exists($modelClass, $this->_commands)) {
-                $this->_commands[$modelClass] += $args;
-            } else {
-                $this->_commands[$modelClass] = $args;
-            }
+            $this->_commands[$modelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -113,11 +109,7 @@ class GenerateController extends Controller
                 'interactive' => 0,
                 'overwrite' => 0
             ];
-            if (array_key_exists($secondModelClass, $this->_commands)) {
-                $this->_commands[$secondModelClass] += $args;
-            } else {
-                $this->_commands[$secondModelClass] = $args;
-            }
+            $this->_commands[$secondModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -146,11 +138,7 @@ class GenerateController extends Controller
                 'interactive' => 0,
                 'overwrite' => 1
             ];
-            if (array_key_exists($searchModelClass, $this->_commands)) {
-                $this->_commands[$searchModelClass] += $args;
-            } else {
-                $this->_commands[$searchModelClass] = $args;
-            }
+            $this->_commands[$searchModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -171,38 +159,7 @@ class GenerateController extends Controller
                 'interactive' => 0,
                 'overwrite' => 0
             ];
-            if (array_key_exists($secondModelClass, $this->_commands)) {
-                $this->_commands[$secondModelClass] += $args;
-            } else {
-                $this->_commands[$secondModelClass] = $args;
-            }
-        }
-        Log::endMethod(__METHOD__);
-    }
-
-    public function actionControllers()
-    {
-        Log::beginMethod(__METHOD__);
-        $baseControllerClass = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\crud\ActiveController' : 'yii\web\Controller';
-        foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
-            list($tableName, $tableType) = $row;
-            $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
-            $modelName = Inflector::classify($tableName);
-            $modelClass = $ns . '\\' . $modelName;
-            $controllerClass = 'app\controllers\\' . $modelName . 'Controller';
-            $args = [
-                'gii/controller2',
-                'modelClass' => $modelClass,
-                'controllerClass' => $controllerClass,
-                'baseControllerClass' => $baseControllerClass,
-                'interactive' => 0,
-                'overwrite' => 0
-            ];
-            if (array_key_exists($controllerClass, $this->_commands)) {
-                $this->_commands[$controllerClass] += $args;
-            } else {
-                $this->_commands[$controllerClass] = $args;
-            }
+            $this->_commands[$secondModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
