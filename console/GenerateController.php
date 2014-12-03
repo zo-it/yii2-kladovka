@@ -183,7 +183,7 @@ class GenerateController extends Controller
         passthru($command);
     }
 
-    public function actionExecute()
+    public function actionGenerate()
     {
         $this->actionDbSchema();
         $basePath = Yii::$app->getBasePath();
