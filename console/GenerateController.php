@@ -78,7 +78,7 @@ class GenerateController extends Controller
             }
             $modelName = Inflector::classify($tableName);
             $modelClass = $ns . '\\' . $modelName . 'Base';
-            $args = [
+            $this->_commands[$modelClass] = [
                 'gii/model',
                 'tableName' => $tableName,
                 'ns' => $ns,
@@ -88,7 +88,6 @@ class GenerateController extends Controller
                 'interactive' => 0,
                 'overwrite' => 1
             ];
-            $this->_commands[$modelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -102,14 +101,13 @@ class GenerateController extends Controller
             $modelName = Inflector::classify($tableName);
             $modelClass = $ns . '\\' . $modelName . 'Base';
             $secondModelClass = $ns . '\\' . $modelName;
-            $args = [
+            $this->_commands[$secondModelClass] = [
                 'gii/model2',
                 'modelClass' => $modelClass,
                 'secondModelClass' => $secondModelClass,
                 'interactive' => 0,
                 'overwrite' => 0
             ];
-            $this->_commands[$secondModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -131,14 +129,13 @@ class GenerateController extends Controller
             $modelName = Inflector::classify($tableName);
             $modelClass = $ns . '\\' . $modelName;
             $searchModelClass = $ns . '\search\\' . $modelName . 'SearchBase';
-            $args = [
+            $this->_commands[$searchModelClass] = [
                 'gii/search',
                 'modelClass' => $modelClass,
                 'searchModelClass' => $searchModelClass,
                 'interactive' => 0,
                 'overwrite' => 1
             ];
-            $this->_commands[$searchModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
@@ -152,14 +149,13 @@ class GenerateController extends Controller
             $modelName = Inflector::classify($tableName);
             $modelClass = $ns . '\\' . $modelName . 'SearchBase';
             $secondModelClass = $ns . '\\' . $modelName . 'Search';
-            $args = [
+            $this->_commands[$secondModelClass] = [
                 'gii/search2',
                 'modelClass' => $modelClass,
                 'secondModelClass' => $secondModelClass,
                 'interactive' => 0,
                 'overwrite' => 0
             ];
-            $this->_commands[$secondModelClass] = $args;
         }
         Log::endMethod(__METHOD__);
     }
