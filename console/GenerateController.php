@@ -31,13 +31,13 @@ class GenerateController extends Controller
         return array_merge(parent::options($actionId), ['filename', 'dirMode']);
     }
 
-    protected $_commands = [];
+    protected $_savedCommands = [];
 
     public function beforeAction($action)
     {
         if (parent::beforeAction($action)) {
             if (is_file($this->filename)) {
-                $this->_commands = Json::decode(file_get_contents($this->filename));
+                $this->_savedCommands = Json::decode(file_get_contents($this->filename));
             }
             return true;
         } else {
@@ -45,9 +45,18 @@ class GenerateController extends Controller
         }
     }
 
+    protected $_commands = [];
+
     public function afterAction($action, $result)
     {
         $result = parent::afterAction($action, $result);
+        foreach ($this->_savedCommands as $targetClass => $args) {
+            if (array_key_exists($targetClass, $this->_commands)) {
+                $this->_commands[$targetClass] = $args + $this->_commands[$targetClass];
+            } else {
+                $this->_commands[$targetClass] = $args;
+            }
+        }
         file_put_contents($this->filename, Json::encode($this->_commands, \JSON_PRETTY_PRINT));
         return $result;
     }
@@ -192,7 +201,7 @@ class GenerateController extends Controller
         Log::beginMethod(__METHOD__);
         $this->actionDbSchema();
         $basePath = Yii::$app->getBasePath();
-        foreach ($this->_commands as $targetClass => $args) {
+        foreach ($this->_savedCommands as $targetClass => $args) {
             $this->stdout('Generating: ' . $targetClass . "\n", Console::BOLD, Console::FG_CYAN);
             $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
             $this->stdout('Executing: ' . $command . "\n", Console::FG_CYAN);
