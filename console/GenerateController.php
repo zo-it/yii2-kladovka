@@ -4,7 +4,6 @@ namespace yii\kladovka\console;
 
 use yii\console\Controller,
     yii\helpers\Json,
-    yii\kladovka\helpers\Log,
     yii\helpers\Inflector,
     yii\helpers\StringHelper,
     yii\helpers\Console,
@@ -63,7 +62,6 @@ class GenerateController extends Controller
 
     public function actionBaseModels()
     {
-        Log::beginMethod(__METHOD__);
         $readOnlyPath = Yii::getAlias('@app/models/readonly');
         if (!is_dir($readOnlyPath)) {
             mkdir($readOnlyPath, octdec($this->dirMode));
@@ -94,12 +92,10 @@ class GenerateController extends Controller
                 'overwrite' => 1
             ];
         }
-        Log::endMethod(__METHOD__);
     }
 
     public function actionModels()
     {
-        Log::beginMethod(__METHOD__);
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly' : 'app\models';
@@ -114,12 +110,10 @@ class GenerateController extends Controller
                 'overwrite' => 0
             ];
         }
-        Log::endMethod(__METHOD__);
     }
 
     public function actionBaseSearchModels()
     {
-        Log::beginMethod(__METHOD__);
         $searchPath = Yii::getAlias('@app/models/search');
         if (!is_dir($searchPath)) {
             mkdir($searchPath, octdec($this->dirMode));
@@ -142,12 +136,10 @@ class GenerateController extends Controller
                 'overwrite' => 1
             ];
         }
-        Log::endMethod(__METHOD__);
     }
 
     public function actionSearchModels()
     {
-        Log::beginMethod(__METHOD__);
         foreach (Yii::$app->getDb()->createCommand('SHOW FULL TABLES;')->queryAll(\PDO::FETCH_NUM) as $row) {
             list($tableName, $tableType) = $row;
             $ns = ($tableType == 'VIEW') ? 'app\models\readonly\search' : 'app\models\search';
@@ -162,22 +154,18 @@ class GenerateController extends Controller
                 'overwrite' => 0
             ];
         }
-        Log::endMethod(__METHOD__);
     }
 
     public function actionAllModels()
     {
-        Log::beginMethod(__METHOD__);
         $this->actionBaseModels();
         $this->actionModels();
         $this->actionBaseSearchModels();
         $this->actionSearchModels();
-        Log::endMethod(__METHOD__);
     }
 
     public function actionDbSchema()
     {
-        Log::beginMethod(__METHOD__);
         $sqlPath = Yii::getAlias('@app/sql');
         if (!is_dir($sqlPath)) {
             mkdir($sqlPath, octdec($this->dirMode));
@@ -193,12 +181,10 @@ class GenerateController extends Controller
             ' | sed -e ' . escapeshellarg('s/ AUTO_INCREMENT=[0-9]\+//') .
             ' > ' . escapeshellarg($filename);
         passthru($command);
-        Log::endMethod(__METHOD__);
     }
 
     public function actionExecute()
     {
-        Log::beginMethod(__METHOD__);
         $this->actionDbSchema();
         $basePath = Yii::$app->getBasePath();
         foreach ($this->_savedCommands as $targetClass => $args) {
@@ -207,7 +193,6 @@ class GenerateController extends Controller
             $this->stdout('Executing: ' . $command . "\n", Console::FG_CYAN);
             passthru($command);
         }
-        Log::endMethod(__METHOD__);
     }
 
     public function actionIndex()
