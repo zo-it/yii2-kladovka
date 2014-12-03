@@ -46,6 +46,12 @@ foreach ($generator->getTableSchema()->columns as $columnSchema) {
         }
     }
 }
+if ($secondModelClass == 'Log') {
+    $behaviors['datetime'] = [
+        'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+        'attributes' => ['log_time']
+    ];
+}
 
 echo "<?php\n";
 ?>
