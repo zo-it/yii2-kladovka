@@ -49,7 +49,7 @@ class Text
 
     public static function date2($format, $timestamp = null)
     {
-        if (Yii::$app->language == 'ru-RU') {
+        if (strncmp(Yii::$app->language, 'ru', 2) == 0) {
             $format = str_replace('F', 'F_', $format);
         }
         return static::date($format, $timestamp);
