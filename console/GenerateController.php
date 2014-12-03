@@ -18,10 +18,6 @@ class GenerateController extends Controller
 
     public $dirMode = '0777';
 
-    public $overwriteAll = false;
-
-    public $interactiveOverwrite = false;
-
     public function init()
     {
         if (strncmp($this->filename, './', 2) == 0) {
@@ -198,14 +194,6 @@ class GenerateController extends Controller
         $basePath = Yii::$app->getBasePath();
         foreach ($this->_commands as $targetClass => $args) {
             $this->stdout('Generating: ' . $targetClass . "\n", Console::BOLD, Console::FG_CYAN);
-            if (array_key_exists('interactive', $args) && array_key_exists('overwrite', $args) && !$args['overwrite']) {
-                if ($this->overwriteAll) {
-                    $args['overwrite'] = 1;
-                } elseif ($this->interactiveOverwrite) {
-                    $args['interactive'] = 1;
-                    unset($args['overwrite']);
-                }
-            }
             $command = $basePath . '/yii ' . escapeshellarg(array_shift($args)) . ' --' . vsprintf(implode('=%s --', array_keys($args)) . '=%s', array_map('escapeshellarg', array_values($args)));
             $this->stdout('Executing: ' . $command . "\n", Console::FG_CYAN);
             passthru($command);
