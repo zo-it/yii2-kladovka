@@ -10,6 +10,9 @@ class BaseText
 
     public static function strtotime($time, $now = null)
     {
+        if (is_int($time)) {
+            return $time;
+        }
         if (is_null($now)) {
             $now = time();
         } elseif ($now && is_string($now)) {
