@@ -43,7 +43,7 @@ class BaseText
         }
         $date = date($format, $timestamp);
         if (array_key_exists('kladovka', Yii::$app->getI18n()->translations)) {
-            return preg_replace_callback('~\w{3,}~', function ($match) {
+            $date = preg_replace_callback('~\w{3,}~', function ($match) {
                 return Yii::t('kladovka', $match[0]);
             }, $date);
         }
