@@ -31,6 +31,10 @@ $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\k
 $use[] = 'Yii';
 
 $behaviors = $generator->prepareBehaviors();
+$behaviors['datetime'] = [
+    'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+    'attributes' => ['log_time']
+];
 
 echo "<?php\n";
 ?>

@@ -10,6 +10,11 @@ use yii\gii\generators\crud\Generator as GiiCrudGenerator,
 class Generator extends GiiCrudGenerator
 {
 
+    public $templates = [
+        'log' => '@yii/kladovka/generators/model2/log',
+        'user' => '@yii/kladovka/generators/model2/user'
+    ];
+
     public $secondModelClass;
 
     public function getName()
@@ -51,6 +56,43 @@ class Generator extends GiiCrudGenerator
 
     public function validateModelClass()
     {
+    }
+
+    public function prepareBehaviors()
+    {
+        $behaviors = [];
+        foreach ($this->getTableSchema()->columns as $columnSchema) {
+            if (in_array($columnSchema->type, ['datetime', 'date', 'time'])) {
+                if (in_array($columnSchema->name, ['created_at', 'updated_at', 'timestamp'])) {
+                    $behaviors['timestamp'] = 'yii\kladovka\behaviors\TimestampBehavior';
+                    continue;
+                } elseif ($columnSchema->allowNull && ($columnSchema->name == 'deleted_at')) {
+                    $behaviors['timeDelete'] = 'yii\kladovka\behaviors\TimeDeleteBehavior';
+                    continue;
+                } elseif (!array_key_exists('datetime', $behaviors)) {
+                    $behaviors['datetime'] = [
+                        'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+                        'attributes' => [$columnSchema->name]
+                    ];
+                } else {
+                    $behaviors['datetime']['attributes'][] = $columnSchema->name;
+                }
+            } elseif (($columnSchema->type == 'smallint') && ($columnSchema->size == 1) && $columnSchema->unsigned && !$columnSchema->allowNull && ($columnSchema->name == 'deleted')) {
+                $behaviors['softDelete'] = 'yii\kladovka\behaviors\SoftDeleteBehavior';
+                continue;
+            }
+            if ($columnSchema->allowNull) {
+                if (!array_key_exists('nullable', $behaviors)) {
+                    $behaviors['nullable'] = [
+                        'class' => 'yii\kladovka\behaviors\NullableBehavior',
+                        'attributes' => [$columnSchema->name]
+                    ];
+                } else {
+                    $behaviors['nullable']['attributes'][] = $columnSchema->name;
+                }
+            }
+        }
+        return $behaviors;
     }
 
     public function requiredTemplates()
