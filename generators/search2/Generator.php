@@ -19,7 +19,7 @@ class Generator extends GiiCrudGenerator
 
     public function getDescription()
     {
-        return 'This generator generates a second search class for the specified search class.';
+        return '';
     }
 
     public function attributes()
@@ -49,21 +49,18 @@ class Generator extends GiiCrudGenerator
         return $rules;
     }
 
+    public function validateModelClass()
+    {
+    }
+
     public function requiredTemplates()
     {
         return ['search2.php'];
     }
 
-    public function validateModelClass()
-    {
-    }
-
     public function generate()
     {
         $secondModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->secondModelClass, '\\') . '.php'));
-        $files = [
-            new CodeFile($secondModel, $this->render('search2.php'))
-        ];
-        return $files;
+        return [new CodeFile($secondModel, $this->render('search2.php'))];
     }
 }
