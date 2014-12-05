@@ -25,9 +25,9 @@ class BaseText
                 return (int)$time;
             } elseif (preg_match('~^(\d{1,2})\D(\d{1,2})\D(\d{4})( \d{2}\:\d{2}(?:\:\d{2})?)?$~', $time, $match)) {
                 if (checkdate($match[2], $match[1], $match[3])) { // d/m/Y
-                    $time = $match[3] . '-' . $match[2] . '-' . $match[1] . $match[4];
+                    $time = $match[3] . '-' . $match[2] . '-' . $match[1] . (array_key_exists(4, $match) ? $match[4] : '');
                 } elseif (checkdate($match[1], $match[2], $match[3])) { // m/d/Y
-                    $time = $match[3] . '-' . $match[1] . '-' . $match[2] . $match[4];
+                    $time = $match[3] . '-' . $match[1] . '-' . $match[2] . (array_key_exists(4, $match) ? $match[4] : '');
                 }
             }
         }
