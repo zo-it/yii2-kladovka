@@ -128,37 +128,8 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
         return $this->password == $password;
     }
 <?php } ?>
-<?php /*if ($behaviors) {*/ ?>
 
-    public function behaviors()
-    {
-        return [
-<?php
-foreach (array_values($behaviors) as $i => $behavior) {
-    if (is_string($behavior)) {
-        echo '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-    } elseif (is_array($behavior)) {
-        $behaviorKeys = array_keys($behavior);
-        $behaviorValues = array_values($behavior);
-        if (count($behavior) == 1) {
-            echo '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-        } else {
-            echo '            [' . "\n";
-            foreach ($behaviorValues as $j => $behaviorValue) {
-                if (is_string($behaviorValue)) {
-                    echo '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                } elseif (is_array($behaviorValue)) {
-                    echo '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                }
-            }
-            echo '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-        }
-    }
-}
-?>
-        ];
-    }
-<?php /*}*/ ?>
+<?php $generator->renderBehaviors($behaviors); ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 
     public function delete()

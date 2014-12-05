@@ -58,6 +58,17 @@ class Generator extends GiiCrudGenerator
     {
     }
 
+    public function requiredTemplates()
+    {
+        return ['model2.php'];
+    }
+
+    public function generate()
+    {
+        $secondModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->secondModelClass, '\\') . '.php'));
+        return [new CodeFile($secondModel, $this->render('model2.php'))];
+    }
+
     public function prepareBehaviors()
     {
         $behaviors = [];
@@ -95,14 +106,33 @@ class Generator extends GiiCrudGenerator
         return $behaviors;
     }
 
-    public function requiredTemplates()
+    public function renderBehaviors(array $behaviors)
     {
-        return ['model2.php'];
-    }
-
-    public function generate()
-    {
-        $secondModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->secondModelClass, '\\') . '.php'));
-        return [new CodeFile($secondModel, $this->render('model2.php'))];
+        echo '    public function behaviors()' . "\n";
+        echo '    {' . "\n";
+        echo '        return [' . "\n";
+        foreach (array_values($behaviors) as $i => $behavior) {
+            if (is_string($behavior)) {
+                echo '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+            } elseif (is_array($behavior)) {
+                $behaviorKeys = array_keys($behavior);
+                $behaviorValues = array_values($behavior);
+                if (count($behavior) == 1) {
+                    echo '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+                } else {
+                    echo '            [' . "\n";
+                    foreach ($behaviorValues as $j => $behaviorValue) {
+                        if (is_string($behaviorValue)) {
+                            echo '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                        } elseif (is_array($behaviorValue)) {
+                            echo '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                        }
+                    }
+                    echo '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+                }
+            }
+        }
+        echo '        ];' . "\n";
+        echo '    }' . "\n";
     }
 }
