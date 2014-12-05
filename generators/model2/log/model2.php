@@ -46,14 +46,9 @@ use <?php echo implode(",\n    ", $use); ?>;
 <?php } ?>
 
 
-<?php if ($secondModelClass == 'User') { ?>
-class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?> implements IdentityInterface
-<?php } else { ?>
 class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
 
-<?php } ?>
 {
-<?php if ($secondModelClass == 'Log') { ?>
 
     const LEVEL_ERROR = Logger::LEVEL_ERROR;
     const LEVEL_WARNING = Logger::LEVEL_WARNING;
@@ -75,13 +70,11 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
             self::LEVEL_PROFILE_END => 'PROFILE_END'
         ];
     }
-<?php } ?>
 
     public static function find()
     {
         return Yii::createObject(<?php echo $secondModelClass; ?>Query::className(), [get_called_class()]);
     }
-<?php if ($secondModelClass == 'Log') { ?>
 
     public static function gridConfig()
     {
@@ -95,45 +88,8 @@ class <?php echo $secondModelClass; ?> extends <?php echo $modelAlias; ?>
             }
         ];
     }
-<?php } elseif ($secondModelClass == 'User') { ?>
 
-    public static function findIdentity($id)
-    {
-        return static::findOne($id);
-    }
-
-    public static function findIdentityByAccessToken($accessToken, $type = null)
-    {
-        return static::findOne(['access_token' => $accessToken]);
-    }
-
-    public static function findByUsername($username)
-    {
-        return static::findOne(['username' => $username]);
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getAuthKey()
-    {
-        return $this->auth_key;
-    }
-
-    public function validateAuthKey($authKey)
-    {
-        return $this->auth_key == $authKey;
-    }
-
-    public function validatePassword($password)
-    {
-        return $this->password == $password;
-    }
-<?php } ?>
-
-<?php $generator->renderBehaviors($behaviors); ?>
+<?php echo $generator->renderBehaviors($behaviors); ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 
     public function delete()

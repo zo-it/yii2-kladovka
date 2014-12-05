@@ -108,31 +108,32 @@ class Generator extends GiiCrudGenerator
 
     public function renderBehaviors(array $behaviors)
     {
-        echo '    public function behaviors()' . "\n";
-        echo '    {' . "\n";
-        echo '        return [' . "\n";
+        $s = '    public function behaviors()' . "\n";
+        $s .= '    {' . "\n";
+        $s .= '        return [' . "\n";
         foreach (array_values($behaviors) as $i => $behavior) {
             if (is_string($behavior)) {
-                echo '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+                $s .= '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
             } elseif (is_array($behavior)) {
                 $behaviorKeys = array_keys($behavior);
                 $behaviorValues = array_values($behavior);
                 if (count($behavior) == 1) {
-                    echo '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+                    $s .= '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
                 } else {
-                    echo '            [' . "\n";
+                    $s .= '            [' . "\n";
                     foreach ($behaviorValues as $j => $behaviorValue) {
                         if (is_string($behaviorValue)) {
-                            echo '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                            $s .= '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
                         } elseif (is_array($behaviorValue)) {
-                            echo '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
+                            $s .= '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
                         }
                     }
-                    echo '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
+                    $s .= '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
                 }
             }
         }
-        echo '        ];' . "\n";
-        echo '    }' . "\n";
+        $s .= '        ];' . "\n";
+        $s .= '    }' . "\n";
+        return $s;
     }
 }
