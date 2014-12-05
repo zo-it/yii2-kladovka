@@ -21,12 +21,6 @@ if ($modelNamespace != $secondModelNamespace) {
         $use[] = $modelNamespace . '\\' . $modelClass;
     }
 }
-if ($secondModelClass == 'Log') {
-    $use[] = 'yii\log\Logger';
-}
-if ($secondModelClass == 'User') {
-    $use[] = 'yii\web\IdentityInterface';
-}
 $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
 $use[] = 'Yii';
 
