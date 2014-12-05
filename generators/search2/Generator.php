@@ -24,7 +24,7 @@ class Generator extends GiiCrudGenerator
 
     public function attributes()
     {
-        $attributes = array_diff(parent::attributes(), ['template', 'controllerClass', 'baseControllerClass', 'indexWidgetType']);
+        $attributes = array_diff(parent::attributes(), ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
         $key = array_search('searchModelClass', $attributes);
         if ($key !== false) {
             $attributes[$key] = 'secondModelClass';
@@ -36,7 +36,7 @@ class Generator extends GiiCrudGenerator
     {
         $rules = [];
         foreach (parent::rules() as $rule) {
-            $rule[0] = array_diff($rule[0], ['template', 'controllerClass', 'baseControllerClass', 'indexWidgetType']);
+            $rule[0] = array_diff($rule[0], ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
             if ($rule[0]) {
                 $key = array_search('searchModelClass', $rule[0]);
                 if ($key !== false) {
