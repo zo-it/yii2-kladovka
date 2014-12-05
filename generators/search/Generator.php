@@ -53,10 +53,7 @@ class Generator extends GiiCrudGenerator
     public function generate()
     {
         $searchModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->searchModelClass, '\\') . '.php'));
-        $files = [
-            new CodeFile($searchModel, $this->render('search.php'))
-        ];
-        return $files;
+        return [new CodeFile($searchModel, $this->render('search.php'))];
     }
 
     public function defaultTemplate()
