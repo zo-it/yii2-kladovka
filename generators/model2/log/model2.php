@@ -4,7 +4,7 @@
  * @var yii\kladovka\generators\model2\Generator $generator
  */
 
-$use = $generator->prepareUse(['yii\log\Logger']);
+$use = $generator->prepareUseWithQuery(['yii\log\Logger']);
 $behaviors = $generator->prepareBehaviors();
 $behaviors['datetime'] = [
     'class' => 'yii\kladovka\behaviors\DatetimeBehavior',

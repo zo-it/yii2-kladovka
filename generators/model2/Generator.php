@@ -112,6 +112,12 @@ class Generator extends GiiCrudGenerator
                 $use[] = $modelNamespace . '\\' . $modelName;
             }
         }
+        return $use;
+    }
+
+    public function prepareUseWithQuery(array $use = [])
+    {
+        $use = $this->prepareUse($use);
         $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
         $use[] = 'Yii';
         return $use;

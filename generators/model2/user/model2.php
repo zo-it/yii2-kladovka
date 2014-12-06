@@ -4,7 +4,7 @@
  * @var yii\kladovka\generators\model2\Generator $generator
  */
 
-$use = $generator->prepareUse(['yii\web\IdentityInterface']);
+$use = $generator->prepareUseWithQuery(['yii\web\IdentityInterface']);
 $behaviors = $generator->prepareBehaviors();
 
 echo "<?php\n";
