@@ -15,7 +15,7 @@ class GenerateController extends Controller
 
     public $filename = './generators.json';
 
-    public $dirMode = '0777';
+    public $dirMode = '0775';
 
     public function init()
     {

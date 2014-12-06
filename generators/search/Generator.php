@@ -20,19 +20,19 @@ class Generator extends GiiCrudGenerator
 
     public function getDescription()
     {
-        return 'This generator generates a search class for the specified model class.';
+        return '';
     }
 
     public function attributes()
     {
-        return array_diff(parent::attributes(), ['template', 'controllerClass', 'baseControllerClass', 'indexWidgetType']);
+        return array_diff(parent::attributes(), ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
     }
 
     public function rules()
     {
         $rules = [];
         foreach (parent::rules() as $rule) {
-            $rule[0] = array_diff($rule[0], ['template', 'controllerClass', 'baseControllerClass', 'indexWidgetType']);
+            $rule[0] = array_diff($rule[0], ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
             if ($rule[0]) {
                 $rules[] = $rule;
             }
@@ -41,27 +41,24 @@ class Generator extends GiiCrudGenerator
         return $rules;
     }
 
-    public function requiredTemplates()
-    {
-        return ['search.php'];
-    }
-
     public function validateModelClass()
     {
-    }
-
-    public function generate()
-    {
-        $searchModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->searchModelClass, '\\') . '.php'));
-        $files = [
-            new CodeFile($searchModel, $this->render('search.php'))
-        ];
-        return $files;
     }
 
     public function defaultTemplate()
     {
         $class = new ReflectionClass(get_parent_class($this));
         return dirname($class->getFileName()) . '/default';
+    }
+
+    public function requiredTemplates()
+    {
+        return ['search.php'];
+    }
+
+    public function generate()
+    {
+        $searchModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->searchModelClass, '\\') . '.php'));
+        return [new CodeFile($searchModel, $this->render('search.php'))];
     }
 }

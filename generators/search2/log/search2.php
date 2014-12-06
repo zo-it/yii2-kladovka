@@ -6,6 +6,10 @@
 
 $use = $generator->prepareUse(['yii\base\Model']);
 $behaviors = $generator->prepareBehaviors();
+$behaviors['datetime'] = [
+    'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+    'attributes' => ['log_time']
+];
 
 echo "<?php\n";
 ?>
