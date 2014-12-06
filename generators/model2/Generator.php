@@ -4,6 +4,7 @@ namespace yii\kladovka\generators\model2;
 
 use yii\gii\generators\crud\Generator as GiiCrudGenerator,
     yii\gii\CodeFile,
+    yii\helpers\StringHelper,
     Yii;
 
 
@@ -69,9 +70,59 @@ class Generator extends GiiCrudGenerator
         return [new CodeFile($secondModel, $this->render('model2.php'))];
     }
 
-    public function prepareBehaviors()
+public function prepareUse(array $use = [])
+{
+$modelClass = StringHelper::basename($this->modelClass);
+$secondModelClass = StringHelper::basename($this->secondModelClass);
+$modelNamespace = StringHelper::dirname(ltrim($this->modelClass, '\\'));
+$secondModelNamespace = StringHelper::dirname(ltrim($this->secondModelClass, '\\'));
+$modelAlias = $modelClass;
+if ($modelNamespace != $secondModelNamespace) {
+    if ($modelClass == $secondModelClass) {
+        $modelAlias .= 'Model';
+        $use[] = $modelNamespace . '\\' . $modelClass . ' as ' . $modelAlias;
+    } else {
+        $use[] = $modelNamespace . '\\' . $modelClass;
+    }
+}
+$use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
+$use[] = 'Yii';
+return $use;
+}
+
+    public function getModelName()
     {
-        $behaviors = [];
+        return StringHelper::basename($this->modelClass);
+    }
+
+    public function getModelNamespace()
+    {
+        return StringHelper::dirname(ltrim($this->modelClass, '\\'));
+    }
+
+    public function getSecondModelName()
+    {
+        return StringHelper::basename($this->secondModelClass);
+    }
+
+    public function getSecondModelNamespace()
+    {
+        return StringHelper::dirname(ltrim($this->secondModelClass, '\\'));
+    }
+
+    public function getModelAlias()
+    {
+        $modelAlias = $this->getModelName();
+        if ($this->getModelNamespace() != $this->getSecondModelNamespace()) {
+            if ($modelAlias == $this->getSecondModelName()) {
+                $modelAlias .= 'Model';
+            }
+        }
+        return $modelAlias;
+    }
+
+    public function prepareBehaviors(array $behaviors = [])
+    {
         foreach ($this->getTableSchema()->columns as $columnSchema) {
             if (in_array($columnSchema->type, ['datetime', 'date', 'time'])) {
                 if (in_array($columnSchema->name, ['created_at', 'updated_at', 'timestamp'])) {
