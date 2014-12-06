@@ -56,7 +56,6 @@ class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $genera
     {
         return $this->password == $password;
     }
-
 <?php echo $generator->renderBehaviors($behaviors); ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 

@@ -169,7 +169,7 @@ class Generator extends GiiCrudGenerator
 
     public function renderBehaviors(array $behaviors)
     {
-        $s = '    public function behaviors()' . "\n";
+        $s = "\n" . '    public function behaviors()' . "\n";
         $s .= '    {' . "\n";
         $s .= '        return [' . "\n";
         foreach (array_values($behaviors) as $i => $behavior) {

@@ -22,7 +22,6 @@ class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $genera
     {
         return Yii::createObject(<?php echo $generator->getSecondModelName(); ?>Query::className(), [get_called_class()]);
     }
-
 <?php echo $generator->renderBehaviors($behaviors); ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 

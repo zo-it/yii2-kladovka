@@ -60,7 +60,6 @@ class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $genera
             }
         ];
     }
-
 <?php echo $generator->renderBehaviors($behaviors); ?>
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
 

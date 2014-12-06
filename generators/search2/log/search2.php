@@ -21,7 +21,6 @@ namespace <?php echo $generator->getSecondModelNamespace(); ?>;
 class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $generator->getModelAlias(); ?>
 
 {
-
 <?php echo $generator->renderBehaviors($behaviors); ?>
 
     public function beforeValidate()
