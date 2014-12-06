@@ -70,26 +70,6 @@ class Generator extends GiiCrudGenerator
         return [new CodeFile($secondModel, $this->render('model2.php'))];
     }
 
-public function prepareUse(array $use = [])
-{
-$modelClass = StringHelper::basename($this->modelClass);
-$secondModelClass = StringHelper::basename($this->secondModelClass);
-$modelNamespace = StringHelper::dirname(ltrim($this->modelClass, '\\'));
-$secondModelNamespace = StringHelper::dirname(ltrim($this->secondModelClass, '\\'));
-$modelAlias = $modelClass;
-if ($modelNamespace != $secondModelNamespace) {
-    if ($modelClass == $secondModelClass) {
-        $modelAlias .= 'Model';
-        $use[] = $modelNamespace . '\\' . $modelClass . ' as ' . $modelAlias;
-    } else {
-        $use[] = $modelNamespace . '\\' . $modelClass;
-    }
-}
-$use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
-$use[] = 'Yii';
-return $use;
-}
-
     public function getModelName()
     {
         return StringHelper::basename($this->modelClass);
@@ -119,6 +99,22 @@ return $use;
             }
         }
         return $modelAlias;
+    }
+
+    public function prepareUse(array $use = [])
+    {
+        $modelNamespace = $this->getModelNamespace();
+        if ($modelNamespace != $this->getSecondModelNamespace()) {
+            $modelName = $this->getModelName();
+            if ($modelName == $this->getSecondModelName()) {
+                $use[] = $modelNamespace . '\\' . $modelName . ' as ' . $modelName . 'Model';
+            } else {
+                $use[] = $modelNamespace . '\\' . $modelName;
+            }
+        }
+        $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
+        $use[] = 'Yii';
+        return $use;
     }
 
     public function prepareBehaviors(array $behaviors = [])
