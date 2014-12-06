@@ -11,10 +11,7 @@ echo "<?php\n";
 ?>
 
 namespace <?php echo $generator->getSecondModelNamespace(); ?>;
-<?php if ($use) { ?>
-
-use <?php echo implode(",\n    ", $use); ?>;
-<?php } ?>
+<?php echo $generator->renderUse($use); ?>
 
 
 class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $generator->getModelAlias(); ?>

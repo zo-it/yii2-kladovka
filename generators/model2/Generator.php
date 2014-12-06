@@ -117,6 +117,14 @@ class Generator extends GiiCrudGenerator
         return $use;
     }
 
+    public function renderUse(array $use)
+    {
+        if ($use) {
+            return "\n" . 'use ' . implode(",\n    ", $use) . ';' . "\n";
+        }
+        return '';
+    }
+
     public function prepareBehaviors(array $behaviors = [])
     {
         foreach ($this->getTableSchema()->columns as $columnSchema) {
