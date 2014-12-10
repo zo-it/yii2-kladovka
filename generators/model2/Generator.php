@@ -42,7 +42,7 @@ class Generator extends GiiCrudGenerator
     {
         $rules = [];
         foreach (parent::rules() as $rule) {
-            $rule[0] = array_diff($rule[0], ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
+            $rule[0] = array_diff((array)$rule[0], ['controllerClass', 'baseControllerClass', 'indexWidgetType']);
             if ($rule[0]) {
                 $key = array_search('searchModelClass', $rule[0]);
                 if ($key !== false) {
