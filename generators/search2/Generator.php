@@ -30,4 +30,45 @@ class Generator extends Model2Generator
         $secondModel = Yii::getAlias('@' . str_replace('\\', '/', ltrim($this->secondModelClass, '\\') . '.php'));
         return [new CodeFile($secondModel, $this->render('search2.php'))];
     }
+
+    public function prepareUse(array $use = [])
+    {
+        $modelNamespace = $this->getModelNamespace();
+        if ($modelNamespace != $this->getSecondModelNamespace()) {
+            $modelName = $this->getModelName();
+            if ($modelName == $this->getSecondModelName()) {
+                $use[] = $modelNamespace . '\\' . $modelName . ' as ' . $modelName . 'Model';
+            } else {
+                $use[] = $modelNamespace . '\\' . $modelName;
+            }
+        }
+        return $use;
+    }
+
+    public function prepareBehaviors(array $behaviors = [])
+    {
+        foreach ($this->getTableSchema()->columns as $columnSchema) {
+            if (in_array($columnSchema->type, ['datetime', 'date', 'time'])) {
+                if (!array_key_exists('datetime', $behaviors)) {
+                    $behaviors['datetime'] = [
+                        'class' => 'yii\kladovka\behaviors\DatetimeBehavior',
+                        'attributes' => [$columnSchema->name]
+                    ];
+                } else {
+                    $behaviors['datetime']['attributes'][] = $columnSchema->name;
+                }
+            }
+            if ($columnSchema->allowNull) {
+                if (!array_key_exists('nullable', $behaviors)) {
+                    $behaviors['nullable'] = [
+                        'class' => 'yii\kladovka\behaviors\NullableBehavior',
+                        'attributes' => [$columnSchema->name]
+                    ];
+                } else {
+                    $behaviors['nullable']['attributes'][] = $columnSchema->name;
+                }
+            }
+        }
+        return $behaviors;
+    }
 }
