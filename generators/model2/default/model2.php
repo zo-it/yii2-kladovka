@@ -4,7 +4,7 @@
  * @var yii\kladovka\generators\model2\Generator $generator
  */
 
-$use = $generator->prepareUseWithQuery();
+$use = $generator->prepareUse();
 $behaviors = $generator->prepareBehaviors();
 
 echo "<?php\n";

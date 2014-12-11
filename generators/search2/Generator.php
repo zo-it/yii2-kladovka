@@ -31,6 +31,20 @@ class Generator extends Model2Generator
         return [new CodeFile($secondModel, $this->render('search2.php'))];
     }
 
+    public function prepareUse(array $use = [])
+    {
+        $modelNamespace = $this->getModelNamespace();
+        if ($modelNamespace != $this->getSecondModelNamespace()) {
+            $modelName = $this->getModelName();
+            if ($modelName == $this->getSecondModelName()) {
+                $use[] = $modelNamespace . '\\' . $modelName . ' as ' . $modelName . 'Model';
+            } else {
+                $use[] = $modelNamespace . '\\' . $modelName;
+            }
+        }
+        return $use;
+    }
+
     public function prepareBehaviors(array $behaviors = [])
     {
         foreach ($this->getTableSchema()->columns as $columnSchema) {
