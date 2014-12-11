@@ -149,7 +149,7 @@ class Generator extends GiiCrudGenerator
                 } else {
                     $behaviors['datetime']['attributes'][] = $columnSchema->name;
                 }
-            } elseif (($columnSchema->type == 'smallint') && ($columnSchema->size == 1) && $columnSchema->unsigned && !$columnSchema->allowNull && ($columnSchema->name == 'deleted')) {
+            } elseif (($columnSchema->name == 'deleted') && ($columnSchema->type == 'smallint') && ($columnSchema->size == 1) && $columnSchema->unsigned && !$columnSchema->allowNull) {
                 $behaviors['softDelete'] = 'yii\kladovka\behaviors\SoftDeleteBehavior';
                 continue;
             }
