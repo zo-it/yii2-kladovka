@@ -12,10 +12,12 @@ class BaseText
     {
         if (is_int($time)) {
             return $time;
+        } elseif (is_float($time)) {
+            return (int)$time;
         }
         if (is_null($now)) {
             $now = time();
-        } elseif ($now && is_string($now)) {
+        } elseif (!is_int($now)) {
             $now = static::strtotime($now);
         }
         if ($time && is_string($time)) {
@@ -38,7 +40,7 @@ class BaseText
     {
         if (is_null($timestamp)) {
             $timestamp = time();
-        } elseif ($timestamp && is_string($timestamp)) {
+        } elseif (!is_int($timestamp)) {
             $timestamp = static::strtotime($timestamp);
         }
         $date = date($format, $timestamp);
