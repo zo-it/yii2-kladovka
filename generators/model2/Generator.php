@@ -5,6 +5,7 @@ namespace yii\kladovka\generators\model2;
 use yii\gii\generators\crud\Generator as GiiCrudGenerator,
     yii\gii\CodeFile,
     yii\helpers\StringHelper,
+    yii\helpers\VarDumper,
     Yii;
 
 
@@ -161,33 +162,16 @@ class Generator extends GiiCrudGenerator
         return $behaviors;
     }
 
+    public static function arrayExport(array $var)
+    {
+        return VarDumper::export($var);
+    }
+
     public function renderBehaviors(array $behaviors)
     {
         $s = "\n" . '    public function behaviors()' . "\n";
         $s .= '    {' . "\n";
-        $s .= '        return [' . "\n";
-        foreach (array_values($behaviors) as $i => $behavior) {
-            if (is_string($behavior)) {
-                $s .= '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-            } elseif (is_array($behavior)) {
-                $behaviorKeys = array_keys($behavior);
-                $behaviorValues = array_values($behavior);
-                if (count($behavior) == 1) {
-                    $s .= '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-                } else {
-                    $s .= '            [' . "\n";
-                    foreach ($behaviorValues as $j => $behaviorValue) {
-                        if (is_string($behaviorValue)) {
-                            $s .= '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                        } elseif (is_array($behaviorValue)) {
-                            $s .= '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                        }
-                    }
-                    $s .= '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-                }
-            }
-        }
-        $s .= '        ];' . "\n";
+        $s .= '        return ' . static::arrayExport($behaviors) . ';' . "\n";
         $s .= '    }' . "\n";
         return $s;
     }

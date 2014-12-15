@@ -151,7 +151,7 @@ class GenerateController extends Controller
                 'modelClass' => $modelClass,
                 'secondModelClass' => $secondModelClass,
                 'interactive' => 0,
-                'overwrite' => 0
+                'overwrite' => 1
             ];
         }
     }
