@@ -5,6 +5,7 @@ namespace yii\kladovka\generators\model2;
 use yii\gii\generators\crud\Generator as GiiCrudGenerator,
     yii\gii\CodeFile,
     yii\helpers\StringHelper,
+    yii\helpers\VarDumper,
     Yii;
 
 
@@ -161,33 +162,83 @@ class Generator extends GiiCrudGenerator
         return $behaviors;
     }
 
+    public static function arrayExport(array $var, $tab = 3)
+    {
+        $s = '[';
+        $count = count($var);
+        if ((count(array_filter(array_map('is_int', array_keys($var)))) == $count) && (count(array_filter(array_map('is_scalar', $var))) == $count)) {
+            if ($count > 5) {
+                $s .= "\n";
+                $chunks = array_chunk($var, 5);
+                $comma = count($chunks);
+                foreach ($chunks as $chunk) {
+                    $comma --;
+                    $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $chunk) . '\'' . ($comma ? ',' : '') . "\n";
+                }
+                $s .= str_repeat('    ', $tab - 1);
+            } else {
+                $s .= '\'' . implode('\', \'', $var) . '\'';
+            }
+        } elseif ($count == 1) {
+            $key = array_keys($var)[0];
+            $value = array_values($var)[0];
+            if (is_int($key)) {
+                if (is_array($value)) {
+                    $arrayExport = static::arrayExport($value, $tab + 1);
+                    if (strpos($arrayExport, "\n") === false) {
+                        $s .= $arrayExport;
+                    } else {
+                        $s .= "\n";
+                        $s .= str_repeat('    ', $tab) . $arrayExport . "\n";
+                        $s .= str_repeat('    ', $tab - 1);
+                    }
+                } elseif (is_scalar($value)) {
+                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
+                }
+            } elseif (is_string($key)) {
+                if (is_array($value)) {
+                    $arrayExport = static::arrayExport($value, $tab + 1);
+                    if (strpos($arrayExport, "\n") === false) {
+                        $s .= '\'' . $key . '\' => ' . $arrayExport;
+                    } else {
+                        $s .= "\n";
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . $arrayExport . "\n";
+                        $s .= str_repeat('    ', $tab - 1);
+                    }
+                } elseif (is_scalar($value)) {
+                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
+                }
+            }
+        } elseif ($count > 1) {
+            $s .= "\n";
+            $comma = $count;
+            foreach ($var as $key => $value) {
+                $comma --;
+                if (is_int($key)) {
+                    if (is_array($value)) {
+                        $s .= str_repeat('    ', $tab) . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
+                    } elseif (is_scalar($value)) {
+                        $s .= str_repeat('    ', $tab) . $value . '\'' . ($comma ? ',' : '') . "\n";
+                    }
+                } elseif (is_string($key)) {
+                    if (is_array($value)) {
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
+                    } elseif (is_scalar($value)) {
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\'' . ($comma ? ',' : '') . "\n";
+                    }
+                }
+            }
+            $s .= str_repeat('    ', $tab - 1);
+        }
+        $s .= ']';
+        return $s;
+    }
+
     public function renderBehaviors(array $behaviors)
     {
         $s = "\n" . '    public function behaviors()' . "\n";
         $s .= '    {' . "\n";
-        $s .= '        return [' . "\n";
-        foreach (array_values($behaviors) as $i => $behavior) {
-            if (is_string($behavior)) {
-                $s .= '            \'' . $behavior . '\'' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-            } elseif (is_array($behavior)) {
-                $behaviorKeys = array_keys($behavior);
-                $behaviorValues = array_values($behavior);
-                if (count($behavior) == 1) {
-                    $s .= '            [\'' . $behaviorKeys[0] . '\' => \'' . $behaviorValues[0] . '\']' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-                } else {
-                    $s .= '            [' . "\n";
-                    foreach ($behaviorValues as $j => $behaviorValue) {
-                        if (is_string($behaviorValue)) {
-                            $s .= '                \'' . $behaviorKeys[$j] . '\' => \'' . $behaviorValue . '\'' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                        } elseif (is_array($behaviorValue)) {
-                            $s .= '                \'' . $behaviorKeys[$j] . '\' => [\'' . implode('\', \'', $behaviorValue) . '\']' . (($j < count($behavior) - 1) ? ",\n" : "\n");
-                        }
-                    }
-                    $s .= '            ]' . (($i < count($behaviors) - 1) ? ",\n" : "\n");
-                }
-            }
-        }
-        $s .= '        ];' . "\n";
+        $s .= '        return ' . static::arrayExport($behaviors, 3) . ';' . "\n";
         $s .= '    }' . "\n";
         return $s;
     }
