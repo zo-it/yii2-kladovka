@@ -171,7 +171,12 @@ class Generator extends GiiCrudGenerator
                 $s .= '\'' . implode('\', \'', $var) . '\'';
             } else {
                 $s .= "\n";
-                $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $var) . '\'' . "\n";
+                $chunks = array_chunk($var, 5);
+                $comma = count($chunks);
+                foreach ($chunks as $chunk) {
+                    $comma --;
+                    $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $chunk) . '\'' . ($comma ? ',' : '') . "\n";
+                }
                 $s .= str_repeat('    ', $tab - 1);
             }
         } elseif ($count == 1) {
