@@ -167,9 +167,7 @@ class Generator extends GiiCrudGenerator
         $s = '[';
         $count = count($var);
         if ((count(array_filter(array_map('is_int', array_keys($var)))) == $count) && (count(array_filter(array_map('is_scalar', $var))) == $count)) {
-            if ($count <= 5) {
-                $s .= '\'' . implode('\', \'', $var) . '\'';
-            } else {
+            if ($count > 5) {
                 $s .= "\n";
                 $chunks = array_chunk($var, 5);
                 $comma = count($chunks);
@@ -178,6 +176,8 @@ class Generator extends GiiCrudGenerator
                     $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $chunk) . '\'' . ($comma ? ',' : '') . "\n";
                 }
                 $s .= str_repeat('    ', $tab - 1);
+            } else {
+                $s .= '\'' . implode('\', \'', $var) . '\'';
             }
         } elseif ($count == 1) {
             $key = array_keys($var)[0];
