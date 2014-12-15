@@ -162,9 +162,45 @@ class Generator extends GiiCrudGenerator
         return $behaviors;
     }
 
-    public static function arrayExport(array $var)
+    public static function arrayExport(array $var, $tab = 3)
     {
-        return VarDumper::export($var);
+        $s = '[';
+        if (count(array_filter(array_map('is_int', array_keys($var)))) == count($var)) {
+            if (count($var) <= 5) {
+                $s .= '\'' . implode('\', \'', $var) . '\'';
+            } else {
+                $s .= "\n";
+                $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $var) . '\'' . "\n";
+                $s .= str_repeat('    ', $tab - 1);
+            }
+        } elseif (count($var) == 1) {
+            $key = array_keys($var)[0];
+            $value = array_values($var)[0];
+            if (is_array($value)) {
+                $arrayExport = static::arrayExport($value, $tab + 1);
+                if (strpos($arrayExport, "\n") === false) {
+                    $s .= '\'' . $key . '\' => ' . $arrayExport;
+                } else {
+                    $s .= "\n";
+                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . $arrayExport . "\n";
+                    $s .= str_repeat('    ', $tab - 1);
+                }
+            } elseif (is_scalar($value)) {
+                $s .= '\'' . $key . '\' => \'' . $value . '\'';
+            }
+        } elseif (count($var) > 1) {
+            $s .= "\n";
+            foreach ($var as $key => $value) {
+                if (is_array($value)) {
+                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ',' . "\n";
+                } elseif (is_scalar($value)) {
+                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\',' . "\n";
+                }
+            }
+            $s .= str_repeat('    ', $tab - 1);
+        }
+        $s .= ']';
+        return $s;
     }
 
     public function renderBehaviors(array $behaviors)
