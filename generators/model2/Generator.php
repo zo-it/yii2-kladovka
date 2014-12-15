@@ -199,10 +199,18 @@ class Generator extends GiiCrudGenerator
             $comma = $count;
             foreach ($var as $key => $value) {
                 $comma --;
-                if (is_array($value)) {
-                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
-                } elseif (is_scalar($value)) {
-                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\'' . ($comma ? ',' : '') . "\n";
+                if (is_int($key)) {
+                    if (is_array($value)) {
+                        $s .= str_repeat('    ', $tab) . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
+                    } elseif (is_scalar($value)) {
+                        $s .= str_repeat('    ', $tab) . $value . '\'' . ($comma ? ',' : '') . "\n";
+                    }
+                } elseif (is_string($key)) {
+                    if (is_array($value)) {
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
+                    } elseif (is_scalar($value)) {
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\'' . ($comma ? ',' : '') . "\n";
+                    }
                 }
             }
             $s .= str_repeat('    ', $tab - 1);
