@@ -182,17 +182,32 @@ class Generator extends GiiCrudGenerator
         } elseif ($count == 1) {
             $key = array_keys($var)[0];
             $value = array_values($var)[0];
-            if (is_array($value)) {
-                $arrayExport = static::arrayExport($value, $tab + 1);
-                if (strpos($arrayExport, "\n") === false) {
-                    $s .= '\'' . $key . '\' => ' . $arrayExport;
-                } else {
-                    $s .= "\n";
-                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . $arrayExport . "\n";
-                    $s .= str_repeat('    ', $tab - 1);
+            if (is_int($key)) {
+                if (is_array($value)) {
+                    $arrayExport = static::arrayExport($value, $tab + 1);
+                    if (strpos($arrayExport, "\n") === false) {
+                        $s .= $arrayExport;
+                    } else {
+                        $s .= "\n";
+                        $s .= str_repeat('    ', $tab) . $arrayExport . "\n";
+                        $s .= str_repeat('    ', $tab - 1);
+                    }
+                } elseif (is_scalar($value)) {
+                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
                 }
-            } elseif (is_scalar($value)) {
-                $s .= '\'' . $key . '\' => \'' . $value . '\'';
+            } elseif (is_string($key)) {
+                if (is_array($value)) {
+                    $arrayExport = static::arrayExport($value, $tab + 1);
+                    if (strpos($arrayExport, "\n") === false) {
+                        $s .= '\'' . $key . '\' => ' . $arrayExport;
+                    } else {
+                        $s .= "\n";
+                        $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . $arrayExport . "\n";
+                        $s .= str_repeat('    ', $tab - 1);
+                    }
+                } elseif (is_scalar($value)) {
+                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
+                }
             }
         } elseif ($count > 1) {
             $s .= "\n";
