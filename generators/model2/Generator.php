@@ -165,15 +165,16 @@ class Generator extends GiiCrudGenerator
     public static function arrayExport(array $var, $tab = 3)
     {
         $s = '[';
-        if (count(array_filter(array_map('is_int', array_keys($var)))) == count($var)) {
-            if (count($var) <= 5) {
+        $count = count($var);
+        if ((count(array_filter(array_map('is_int', array_keys($var)))) == $count) && (count(array_filter(array_map('is_scalar', $var))) == $count)) {
+            if ($count <= 5) {
                 $s .= '\'' . implode('\', \'', $var) . '\'';
             } else {
                 $s .= "\n";
                 $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $var) . '\'' . "\n";
                 $s .= str_repeat('    ', $tab - 1);
             }
-        } elseif (count($var) == 1) {
+        } elseif ($count == 1) {
             $key = array_keys($var)[0];
             $value = array_values($var)[0];
             if (is_array($value)) {
@@ -188,13 +189,15 @@ class Generator extends GiiCrudGenerator
             } elseif (is_scalar($value)) {
                 $s .= '\'' . $key . '\' => \'' . $value . '\'';
             }
-        } elseif (count($var) > 1) {
+        } elseif ($count > 1) {
             $s .= "\n";
+            $comma = $count;
             foreach ($var as $key => $value) {
+                $comma --;
                 if (is_array($value)) {
-                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ',' . "\n";
+                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . static::arrayExport($value, $tab + 1) . ($comma ? ',' : '') . "\n";
                 } elseif (is_scalar($value)) {
-                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\',' . "\n";
+                    $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => \'' . $value . '\'' . ($comma ? ',' : '') . "\n";
                 }
             }
             $s .= str_repeat('    ', $tab - 1);
@@ -207,7 +210,7 @@ class Generator extends GiiCrudGenerator
     {
         $s = "\n" . '    public function behaviors()' . "\n";
         $s .= '    {' . "\n";
-        $s .= '        return ' . static::arrayExport($behaviors) . ';' . "\n";
+        $s .= '        return ' . static::arrayExport($behaviors, 3) . ';' . "\n";
         $s .= '    }' . "\n";
         return $s;
     }
