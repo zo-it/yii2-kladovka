@@ -165,26 +165,27 @@ class Generator extends GiiCrudGenerator
     public static function arrayExport(array $var, $tab = 3)
     {
         $s = '[';
-        $count = count($var);
-        if ((count(array_filter(array_map('is_int', array_keys($var)))) == $count) && (count(array_filter(array_map('is_scalar', $var))) == $count)) {
-            if ($count > 5) {
+        if ((count($var) > 0) && (count(array_filter(array_map('is_int', array_keys($var)))) == count($var)) && (count(array_filter(array_map('is_scalar', $var))) == count($var))) {
+            if (count($var) > 5) {
                 $s .= "\n";
                 $chunks = array_chunk($var, 5);
                 $comma = count($chunks);
                 foreach ($chunks as $chunk) {
                     $comma --;
-                    $s .= str_repeat('    ', $tab) . '\'' . implode('\', \'', $chunk) . '\'' . ($comma ? ',' : '') . "\n";
+                    $s .= str_repeat('    ', $tab);
+                    $s .= '\'' . implode('\', \'', $chunk) . '\'';
+                    $s .= ($comma ? ",\n" : "\n");
                 }
                 $s .= str_repeat('    ', $tab - 1);
             } else {
                 $s .= '\'' . implode('\', \'', $var) . '\'';
             }
-        } elseif ($count == 1) {
+        } elseif (count($var) == 1) {
             $key = array_keys($var)[0];
             $value = array_values($var)[0];
-            if (is_int($key)) {
-                if (is_array($value)) {
-                    $arrayExport = static::arrayExport($value, $tab + 1);
+            if (is_array($value)) {
+                $arrayExport = static::arrayExport($value, $tab + 1);
+                if (is_int($key)) {
                     if (strpos($arrayExport, "\n") === false) {
                         $s .= $arrayExport;
                     } else {
@@ -192,12 +193,7 @@ class Generator extends GiiCrudGenerator
                         $s .= str_repeat('    ', $tab) . $arrayExport . "\n";
                         $s .= str_repeat('    ', $tab - 1);
                     }
-                } elseif (is_scalar($value)) {
-                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
-                }
-            } elseif (is_string($key)) {
-                if (is_array($value)) {
-                    $arrayExport = static::arrayExport($value, $tab + 1);
+                } elseif (is_string($key)) {
                     if (strpos($arrayExport, "\n") === false) {
                         $s .= '\'' . $key . '\' => ' . $arrayExport;
                     } else {
@@ -205,11 +201,11 @@ class Generator extends GiiCrudGenerator
                         $s .= str_repeat('    ', $tab) . '\'' . $key . '\' => ' . $arrayExport . "\n";
                         $s .= str_repeat('    ', $tab - 1);
                     }
-                } elseif (is_scalar($value)) {
-                    $s .= '\'' . $key . '\' => \'' . $value . '\'';
                 }
+            } elseif (is_scalar($value)) {
+                $s .= '\'' . $key . '\' => \'' . $value . '\'';
             }
-        } elseif ($count > 1) {
+        } elseif (count($var) > 1) {
             $s .= "\n";
             $comma = count($var);
             foreach ($var as $key => $value) {
