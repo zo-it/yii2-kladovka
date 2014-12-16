@@ -238,7 +238,7 @@ class Generator extends GiiCrudGenerator
     {
         $s = "\n" . '    public function behaviors()' . "\n";
         $s .= '    {' . "\n";
-        $s .= '        return ' . static::arrayExport($behaviors, 3) . ';' . "\n";
+        $s .= '        return ' . static::arrayExport(array_values($behaviors), 3) . ';' . "\n";
         $s .= '    }' . "\n";
         return $s;
     }
