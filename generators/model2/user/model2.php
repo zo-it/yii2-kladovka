@@ -80,7 +80,8 @@ class <?php echo $generator->getSecondModelName(); ?>Query extends ActiveQuery
     {
         parent::init();
 <?php if (array_key_exists('softDelete', $behaviors)) { ?>
-        $this->where($this->getAlias() . '.`deleted` = 0');
+        $alias = $this->getAlias();
+        $this->where($alias . '.`deleted` IS NULL OR ' . $alias . '.`deleted` = 0');
 <?php } elseif (array_key_exists('timeDelete', $behaviors)) { ?>
         $this->where($this->getAlias() . '.`deleted_at` IS NULL');
 <?php } ?>
