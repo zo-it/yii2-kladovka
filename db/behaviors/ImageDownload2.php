@@ -249,6 +249,7 @@ if (!is_dir($dir1)) {
                             if ($convert->execute()) {
                                 $owner->{$destAttributeName} = $basename;
                                 $newAttributes[$destAttributeName] = $owner->{$destAttributeName};
+chmod($outputFilename, 0664);
                             }
                         }
                     }
