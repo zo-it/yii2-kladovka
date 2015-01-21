@@ -230,10 +230,21 @@ class ImageDownload2 extends Behavior
                         $basename = $basenamePrefix . DIRECTORY_SEPARATOR . $primaryKey . '.' . $extension;
                         foreach ($destAttributes as $destAttributeName => $config) {
                             $outputFilename = Yii::getAlias($config['baseDir'] . DIRECTORY_SEPARATOR . $owner::tableName() . DIRECTORY_SEPARATOR . $destAttributeName . DIRECTORY_SEPARATOR . $basename);
-                            $dir = dirname($outputFilename);
-                            if (!file_exists($dir)) {
-                                mkdir($dir, $config['dirMode'], true);
-                            }
+$dir1 = dirname($outputFilename);
+$dir2 = dirname($dir1);
+$dir3 = dirname($dir2);
+if (!is_dir($dir3)) {
+    mkdir($dir3, $config['dirMode'], true);
+    chmod($dir3, $config['dirMode']);
+}
+if (!is_dir($dir2)) {
+    mkdir($dir2, $config['dirMode'], true);
+    chmod($dir2, $config['dirMode']);
+}
+if (!is_dir($dir1)) {
+    mkdir($dir1, $config['dirMode'], true);
+    chmod($dir1, $config['dirMode']);
+}
                             $convert = Convert::init($config['convertConfig'])->setInputFilename($inputFilename)->setOutputFilename($outputFilename);
                             if ($convert->execute()) {
                                 $owner->{$destAttributeName} = $basename;
