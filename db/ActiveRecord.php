@@ -15,7 +15,7 @@ class ActiveRecord extends YiiActiveRecord
         return Yii::createObject(ActiveQuery::className(), [get_called_class()]);
     }
 
-    public static function dump()
+    public function dump()
     {
         if ($this->hasErrors()) {
             VarDumper::dump([
@@ -31,7 +31,7 @@ class ActiveRecord extends YiiActiveRecord
         }
     }
 
-    public static function dumpAsString()
+    public function dumpAsString()
     {
         if ($this->hasErrors()) {
             return VarDumper::dumpAsString([
@@ -47,7 +47,7 @@ class ActiveRecord extends YiiActiveRecord
         }
     }
 
-    public static function log($message = 'No message.', $category = 'application')
+    public function log($message = 'No message.', $category = 'application')
     {
         if ($this->hasErrors()) {
             Yii::error(VarDumper::dumpAsString([
@@ -62,6 +62,13 @@ class ActiveRecord extends YiiActiveRecord
                 'class' => get_class($this),
                 'attributes' => $this->getAttributes()
             ]), $category);
+        }
+    }
+
+    public function throwException($message = 'No message.', $code = 0, \Exception $previous = null)
+    {
+        if ($this->hasErrors()) {
+            throw new InvalidModelException($this, $message, $code, $previous);
         }
     }
 }
