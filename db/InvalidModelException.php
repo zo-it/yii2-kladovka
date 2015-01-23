@@ -1,6 +1,6 @@
 <?php
 
-namespace app\components;
+namespace yii\kladovka\db;
 
 use yii\db\BaseActiveRecord;
 
