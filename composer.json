@@ -1,6 +1,6 @@
 {
     "name": "ivan-chkv/yii2-kladovka",
-    "description": "The collection of some classes for Yii 2.",
+    "description": "Yii 2 class collection.",
     "keywords": ["yii2", "kladovka"],
     "type": "yii2-extension",
     "license": "MIT",
