@@ -2,7 +2,8 @@
 
 namespace yii\kladovka\db;
 
-use yii\db\BaseActiveRecord;
+use yii\db\BaseActiveRecord,
+    yii\helpers\VarDumper;
 
 
 class InvalidModelException extends \UnexpectedValueException
@@ -19,5 +20,14 @@ class InvalidModelException extends \UnexpectedValueException
     public function getName()
     {
         return 'Invalid Model';
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . PHP_EOL . VarDumper::dumpAsString([
+            'class' => get_class($this->model),
+            'attributes' => $this->model->getAttributes(),
+            'errors' => $this->model->getErrors()
+        ]);
     }
 }
