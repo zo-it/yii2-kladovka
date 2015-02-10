@@ -29,10 +29,18 @@ class InvalidModelException extends \UnexpectedValueException
 
     public function __toString()
     {
-        return parent::__toString() . PHP_EOL . VarDumper::dumpAsString([
-            'class' => get_class($this->model),
-            'attributes' => $this->model->getAttributes(),
-            'errors' => $this->model->getErrors()
-        ]);
+        $model = $this->getModel();
+        if ($model->hasErrors()) {
+            return parent::__toString() . PHP_EOL . VarDumper::dumpAsString([
+                'class' => get_class($model),
+                'attributes' => $model->getAttributes(),
+                'errors' => $model->getErrors()
+            ]);
+        } else {
+            return parent::__toString() . PHP_EOL . VarDumper::dumpAsString([
+                'class' => get_class($model),
+                'attributes' => $model->getAttributes()
+            ]);
+        }
     }
 }
