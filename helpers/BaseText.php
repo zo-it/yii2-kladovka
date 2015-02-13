@@ -59,15 +59,6 @@ class BaseText
         return static::date($format, $timestamp);
     }
 
-    public static function slug($title)
-    {
-        $fix = [
-            '~[\s_]+~' => '_',
-            '~[^a-zа-яё_\-]~iu' => ''
-        ];
-        return preg_replace(array_keys($fix), array_values($fix), $title);
-    }
-
     public static function juiDateFormat($format)
     {
         return strtr($format, [
@@ -96,5 +87,14 @@ class BaseText
             'i' => 'mm',
             's' => 'ss'
         ]);
+    }
+
+    public static function slug($title)
+    {
+        $fix = [
+            '~[\s_]+~' => '_',
+            '~[^a-zа-яё_\-]~iu' => ''
+        ];
+        return preg_replace(array_keys($fix), array_values($fix), $title);
     }
 }
