@@ -67,8 +67,6 @@ class ActiveRecord extends YiiActiveRecord
 
     public function throwException($message = 'No message.', $code = 0, \Exception $previous = null)
     {
-        if ($this->hasErrors()) {
-            throw new InvalidModelException($this, $message, $code, $previous);
-        }
+        throw new InvalidModelException($this, $message, $code, $previous);
     }
 }
