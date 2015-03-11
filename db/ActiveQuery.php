@@ -18,7 +18,7 @@ class ActiveQuery extends YiiActiveQuery
             $tableName = '';
             foreach ($this->from as $alias => $tableName) {
                 if (is_string($alias)) {
-                    return [$tableName, $alias];
+                    return $alias;
                 } else {
                     break;
                 }
