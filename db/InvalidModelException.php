@@ -9,11 +9,11 @@ use yii\db\BaseActiveRecord,
 class InvalidModelException extends \UnexpectedValueException
 {
 
-    protected $model = null;
+    private $_model = null;
 
     public function __construct(BaseActiveRecord $model, $message = 'No message.', $code = 0, \Exception $previous = null)
     {
-        $this->model = $model;
+        $this->_model = $model;
         parent::__construct($message, $code, $previous);
     }
 
@@ -24,7 +24,7 @@ class InvalidModelException extends \UnexpectedValueException
 
     public function getModel()
     {
-        return $this->model;
+        return $this->_model;
     }
 
     public function __toString()
