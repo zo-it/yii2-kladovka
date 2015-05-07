@@ -8,6 +8,11 @@ use yii\db\ActiveQuery as YiiActiveQuery;
 class ActiveQuery extends YiiActiveQuery
 {
 
+    public function from($tables)
+    {
+        return parent::from($tables);
+    }
+
     public function getAlias()
     {
         if (empty($this->from)) {
