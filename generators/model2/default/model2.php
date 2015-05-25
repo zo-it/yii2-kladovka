@@ -55,4 +55,12 @@ class <?php echo $generator->getSecondModelName(); ?>Query extends ActiveQuery
         $this->where($this->getAlias() . '.`deleted_at` IS NULL');
 <?php } ?>
     }
+
+    /**
+     * @return self
+     */
+    public function id($id)
+    {
+        return $this->andWhere([$this->getAlias() . '.`id`' => $id]);
+    }
 }
