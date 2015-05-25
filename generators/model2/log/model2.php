@@ -43,6 +43,9 @@ class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $genera
         ];
     }
 
+    /**
+     * @return <?php echo $generator->getSecondModelName(); ?>Query
+     */
     public static function find()
     {
         return Yii::createObject(<?php echo $generator->getSecondModelName(); ?>Query::className(), [get_called_class()]);
