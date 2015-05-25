@@ -3,15 +3,17 @@
 namespace yii\kladovka\db;
 
 use yii\db\BaseActiveRecord,
+    Exception,
+    UnexpectedValueException,
     yii\helpers\VarDumper;
 
 
-class InvalidModelException extends \UnexpectedValueException
+class InvalidModelException extends UnexpectedValueException
 {
 
     private $_model = null;
 
-    public function __construct(BaseActiveRecord $model, $message = 'No message.', $code = 0, \Exception $previous = null)
+    public function __construct(BaseActiveRecord $model, $message = 'No message.', $code = 0, Exception $previous = null)
     {
         $this->_model = $model;
         parent::__construct($message, $code, $previous);
@@ -22,6 +24,9 @@ class InvalidModelException extends \UnexpectedValueException
         return 'Invalid Model';
     }
 
+    /**
+     * @return BaseActiveRecord
+     */
     public function getModel()
     {
         return $this->_model;
