@@ -115,6 +115,21 @@ class Generator extends GiiCrudGenerator
         }
         $use[] = Yii::$app->hasModule('mozayka') ? 'yii\mozayka\db\ActiveQuery' : 'yii\kladovka\db\ActiveQuery';
         $use[] = 'Yii';
+usort($use, function ($use1, $use2) {
+    if (preg_match('~^[^\s]+\s+as\s+([^\s]+)$~i', $use1, $match)) {
+        $use1 = $match[1];
+    } elseif (preg_match('~^[^\s]+\\\\([^\\\\\s]+)$~i', $use1, $match)) {
+        $use1 = $match[1];
+    }
+    if (preg_match('~^[^\s]+\s+as\s+([^\s]+)$~i', $use2, $match)) {
+        $use2 = $match[1];
+    } elseif (preg_match('~^[^\s]+\\\\([^\\\\\s]+)$~i', $use2, $match)) {
+        $use2 = $match[1];
+    }
+    $use1 = strtolower($use1);
+    $use2 = strtolower($use2);
+    return ($use1 > $use2) ? 1 : (($use1 < $use2) ? -1 : 0);
+});
         return $use;
     }
 
