@@ -54,12 +54,12 @@ class <?php echo $generator->getSecondModelName(); ?> extends <?php echo $genera
     public static function gridConfig()
     {
         return [
-            'rowOptions' => function ($model, $key, $index, $grid) {
+            'rowOptions' => function (Log $model, $key, $index, $grid) {
                 switch ($model->level) {
                     case Logger::LEVEL_ERROR: return ['class' => 'danger'];
                     case Logger::LEVEL_WARNING: return ['class' => 'warning'];
+                    default: return [];
                 }
-                return [];
             }
         ];
     }
