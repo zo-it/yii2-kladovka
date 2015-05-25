@@ -2,14 +2,18 @@
 
 namespace yii\kladovka\db;
 
-use yii\db\ActiveRecord as YiiActiveRecord,
+use Exception,
     yii\helpers\VarDumper,
-    Yii;
+    Yii,
+    yii\db\ActiveRecord as YiiActiveRecord;
 
 
 class ActiveRecord extends YiiActiveRecord
 {
 
+    /**
+     * @return ActiveQuery
+     */
     public static function find()
     {
         return Yii::createObject(ActiveQuery::className(), [get_called_class()]);
@@ -65,7 +69,7 @@ class ActiveRecord extends YiiActiveRecord
         }
     }
 
-    public function throwException($message = 'No message.', $code = 0, \Exception $previous = null)
+    public function throwException($message = 'No message.', $code = 0, Exception $previous = null)
     {
         throw new InvalidModelException($this, $message, $code, $previous);
     }
