@@ -213,7 +213,8 @@ class ImageDownload extends Behavior
                     $url = $match[1];
                     $curl = Curl::init([
                         'url' => $url,
-                        'isTempFilename' => true
+                        'isTempFilename' => true,
+                        'maxRedirs' => 3
                     ]);
                     $curl->execute();
                     $owner->{$sourceAttributeName} = $url . ' ' . $curl->getHttpCode();
